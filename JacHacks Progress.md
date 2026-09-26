@@ -58,3 +58,8 @@
 - Primary Remote: `https://github.com/AgenticPortfolioX/POR-Jac-Enforced.git`.
 - Initial commit published and tracking `origin/main`.
 - Repository confirmed as the definitive project home under `AgenticPortfolioX/POR-Jac-Enforced`.
+
+### 7. Jachammer.ai Deployment Entrypoint Alignment
+- Created root `main.jac` entrypoint linking the Jac schemas and verifier walkers for repository root execution.
+- Updated `jac.toml` with explicit hyphenated `entry-point = "main.jac"` (as well as `entry_point = "main.jac"`) to satisfy Jachammer.ai build detection.
+- Verified compilation and runtime behavior: `jac check main.jac` and `jac run main.jac` passed 100% with `PoRJE root scaffold booted`.
