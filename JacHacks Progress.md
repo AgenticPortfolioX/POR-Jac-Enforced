@@ -87,6 +87,17 @@
 - Confirmed the readiness probe: `/docs` returns 200; `/health` returns 404 in Jac 0.13.5, so the runbook supersedes `demo.md`'s older checklist line on that point.
 - Recorded remaining deviations honestly in `build/build1.md` and in the runbook: AC 6's `Freshness unknown` clause is unreachable without contradicting Prompt 5 or Prompt 8; `jac check jac/walkers/act.jac` retains 2 E1032 errors from the checker's `.py`-module introspection limit; the live Sepolia mint could not be exercised from this host because outbound TLS to the provider fails with `SSLCertVerificationError`, so the mint was proven on a local `anvil` chain instead.
 
+### 13. Reconciled with `origin/main`'s Jac 0.37 Commit
+- `origin/main` had gained `cfd910f` ("adapt Jac sources for 0.37 type and edge requirements"), a parallel change to the same files that did not contain this session's fixes and targeted a different Jac version.
+- Measured both targets against the compiler installed here (0.13.5): `edge HasPrice {}` PASSED; `edge HasPrice: any --> any {}` raised 3 errors. The `any`-based annotations were the subtle case — they parse, but `any` resolves to the builtin `any()` function rather than a type, so every assignment into a `list[any]` / `dict[str, any]` failed with E1001/E1053. Merging them unmodified took the tree from 1 failing file to 6.
+- Kept 0.13.5 and adopted only what compiles under it: the `Asset` import in `demo_control.jac`, the `list[PriceObservation]` / `list[ReserveAttestation]` / `list[str]` annotations, `reasons: list[str]` on `Stamp`, `frontend/next-env.d.ts`, and the refreshed frontend lockfile. Reverted the edge-endpoint declarations, `entry-point = "main"`, and every `any`-based annotation. Nothing of `cfd910f` was discarded from history — it remains an ancestor of the merge.
+- **Post-merge verification:** `jac check` reproduces the pre-merge baseline exactly (18 passed, 1 failed — `act.jac` alone with its 2 documented E1032s); all 7 files under `jac/tests/` pass; the three paths reproduce the runbook's evidence with stamps holding at exactly 3 across three consecutive happy runs; `MintedAs` edges number 3 and on-chain `totalSupply()` is exactly 3 × 250000, so the yellow and unknown runs minted nothing.
+
+### 14. `.env` Duplicate-Key Defect Found and Contained
+- `.env` carries duplicated keys, and `python-dotenv` resolves duplicates **last-wins**, so the application actually saw `DEPLOYER_PRIVATE_KEY=''`, `POR_TOKEN_ADDRESS=''`, `POR_ATTESTATION_ADDRESS=''`, and the zero `DEMO_RECIPIENT`. Running the documented commands straight from `.env` could not mint at all — `Act` failed closed with `Unknown format '', attempted to normalize to '0x'`.
+- Root cause: `scripts/deploy_contracts.py` **appended** the two address keys on every run. It now rewrites each key on its existing line and drops duplicates, so it cannot recur.
+- `.env` itself was left untouched — it is a credential file. Verification runs supplied values through exported environment variables, which `load_dotenv` does not override. The hazard and its check (`grep -c '^POR_TOKEN_ADDRESS=' .env` must print `1`) are documented in the runbook.
+
 ### 12. Credential Isolation Re-Verified Before Push
 - `.env` remains untracked and matched by `.gitignore:11:*.env`; `.env.example` was deleted from disk per project policy that all credentials live in `.env`. `git grep "env.example"` returns nothing, so no dangling reference remains.
 - Scanned the **entire git history** for the live deployer private key and the RPC provider key: **0 occurrences** of either.
