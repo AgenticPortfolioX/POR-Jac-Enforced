@@ -9,7 +9,7 @@ A Chainlink Proof of Reserve attestation and a price observation arrive as facts
 ## Component Diagram
 
 ```
-Frontend (Next.js) → HTTP → Jac Cloud (jac start) → Ingest, Freshness, Cover, Auditor, Act, Counsel → Jac Graph (Asset, PriceObservation, ReserveAttestation, ChildClaim, Liability, Stamp, MintRecord) → EVM (Sepolia): Chainlink AggregatorV3 feeds, PoRToken (only Act may mint), PoRAttestation (ERC-721 durable record).
+Frontend (Next.js) → HTTP → Jac Cloud (jac run) → Ingest, Freshness, Cover, Auditor, Act, Counsel → Jac Graph (Asset, PriceObservation, ReserveAttestation, ChildClaim, Liability, Stamp, MintRecord) → EVM (Sepolia): Chainlink AggregatorV3 feeds, PoRToken (only Act may mint), PoRAttestation (ERC-721 durable record).
 ```
 
 ## Data Flow
@@ -22,10 +22,10 @@ Ingest ──> Freshness ──> Cover ──> Auditor ──> Act ──> Couns
   │            │            │          └─ writes findings even when green (adversarial visibility)
   │            │            └─ computes coverage ratio + justified amount, writes them into its Stamp payload
   │            └─ checks price/reserve ages against POLICY, writes green|yellow|red|unknown
-  └─ writes PriceObservation, ReserveAttestation, ChildClaim, Liability nodes + edges
+  └─ upserts PriceObservation, ReserveAttestation, ChildClaim, Liability nodes + edges
 ```
 
-1. **Ingest** runs with `Asset` entry. It reads either Chainlink feeds (live, via `jac/lib/chainlink_py.py`) or labeled fixtures (`jac/lib/fixtures.jac`), detaches any prior `HasPrice` / `HasReserve` / `HasLiability` edges so re-runs are idempotent, then writes the observation nodes and edges.
+1. **Ingest** runs with `Asset` entry. It reads either Chainlink feeds (live, via `jac/lib/chainlink_py.py`) or labeled fixtures (`jac/lib/fixtures.jac`), then **upserts** the observation nodes in place — attaching only when none exists, otherwise mutating the existing node — so a re-ingest refreshes the facts without stacking a second observation. It must not delete-then-recreate; see **Spawned-sibling commit semantics** below for why that form is silently lost here.
 2. **Freshness** traverses `HasPrice` and `HasReserve`, compares both ages against `POLICY`, and writes a `Stamp` with color + reasons. Missing observations are `unknown`, never green — fail closed.
 3. **Cover** traverses price, reserve, and liability, checks the child claim (`DependsOn`), the flat-reserve pattern (`flat_history`), and computes `coverage_value / liability_value`. It writes the ratio and the justified mint amount into its `Stamp.payload`, which is what `Act` and `Counsel` later read.
 4. **Auditor** re-derives four independent findings (age skew, flat reserve, child attestation, liability cover) and writes all four as reasons **even when the verdict is green**, so a passing claim is still auditable. It never narrates.
@@ -33,6 +33,27 @@ Ingest ──> Freshness ──> Cover ──> Auditor ──> Act ──> Couns
 6. **Counsel** re-reads the stamps from the graph. If any of the three is missing it returns `{"spoken": false, ...}` — it cannot narrate a verdict that was never written. Otherwise it composes narration from the stamps' own reason strings.
 
 **Counsel is blind until stamps exist.** It has no independent access to prices, reserves, or coverage; its only inputs are the `Stamp` nodes. That is the point: the explainer cannot describe a decision the graph does not contain.
+
+## Spawned-sibling commit semantics
+
+This is the canonical reference for the rule; `jac/walkers/freshness.jac` and `jac/walkers/ingest.jac` cite it rather than restating it.
+
+**The rule.** When one ability spawns several sibling walkers (`DemoControl` spawns `Ingest`, `Freshness`, `Cover` and `Auditor` from a single frame), each child's commit **re-writes the parent node's edge set from that child's own snapshot**. A sibling that deletes an edge from a shared anchor does not remove it durably: the next sibling to commit restores it from the snapshot it took. **The deletion is silently lost.** There is no error, no warning, and no diagnostic — the walker reports success.
+
+**The consequence.** `del [edge …]` followed by a fresh attachment — the obvious way to make a walker re-runnable — is wrong here. The *delete* half is a no-op while the *attach* half is not, so every run appends another node. This was a live defect: re-ingesting an asset produced `HasPrice` counts of 1, 2, 3 across three runs. It was not merely untidy. `Freshness` reads the **oldest** surviving observation, so once the accumulated graph was older than `max_price_age_seconds` the happy path reported **red on an asset that had just been refreshed** — a false negative on a system whose entire claim is that a green means green.
+
+**The pattern.** **Upsert in place.** Attach only when no such edge exists; otherwise mutate the existing node's fields. A mutation has no edge to lose, so the invariant holds no matter how the walker is driven, how many siblings it has, or in what order they commit. Both places that must survive re-runs use it:
+
+| Walker | Node | Why |
+|---|---|---|
+| `Ingest` | `PriceObservation`, `ReserveAttestation`, `ChildClaim`, `Liability` | a re-ingest must refresh the facts, not stack a second set |
+| `Freshness`, `Cover`, `Auditor` | their own `Stamp` | one stamp per walker per asset, so `Act` can never read a stale green |
+
+**Clearing from the parent's own frame does not help.** It is tempting to conclude that the deletion works if it happens in the anchor frame *before* the spawns, while the persisted edges are still visible. It does not. `DemoControl` carried exactly such a `del [edge here ->:StampedBy:->]` for that reason; removing it changed nothing — stamps still dedupe to exactly three, because the approval walkers' upsert was holding the invariant all along. The deletion was dead code whose comment asserted it was load-bearing. It has been removed.
+
+**Diagnostic.** If a node or edge count grows with the number of runs, this rule is being violated. The regression guard is `test_re_ingest_does_not_accumulate_edges` in `jac/tests/paths_tests.jac`, which runs the happy path three times against one asset and asserts exactly one of each observation and exactly three stamps.
+
+**Not retroactive.** Upsert prevents accumulation; it does not clean a graph that already accumulated under the old form. Any asset written before the fix keeps its extra observations — drop the store (`jac db drop`, see the runbook) rather than expecting the walker to heal it.
 
 ## Invariants
 
@@ -65,4 +86,14 @@ tx_hash = evm_py.mint(...);
 
 and must **not** write `from jac.lib.evm_py import mint`, because that binds the function at import time — patching `jac.lib.evm_py.mint` afterwards would leave `Act` holding the original and the spy would silently record nothing while the tests still "passed". The Jac compiler inlines the module path and resolves `evm_py.mint` as a module attribute **at call time**, which is exactly what makes the monkey-patch effective. Nor may it be rewritten as `getattr(evm_py, "mint")`: the compiler never binds a runtime local named `evm_py`, so that form raises `NameError` at the call site.
 
-The cost of that form is that `jac check` reports `E1032: Type is Unknown, cannot access attribute "mint"` on `jac/walkers/act.jac`: the static checker cannot introspect a `.py` module's attributes. This is a checker limitation, not a defect — the call path is proven by the spy tests, which exercise the real `Act` ability end to end. It is the only remaining diagnostic in an otherwise clean `jac check` across all 25 Jac files, and it is accepted deliberately in exchange for a testable mint boundary.
+**The module-attribute form is still mandatory, but it no longer costs a diagnostic.** The first two constraints above are about binding time and are unconditional — the spy only works because `evm_py.mint` resolves at call time. What did *not* survive the move to Jac 0.37.23 is the third: earlier compiler versions reported `E1032: Type is Unknown, cannot access attribute "mint"` on `jac/walkers/act.jac`, because the static checker could not introspect a `.py` module's attributes. On 0.37.23 a whole-program `jac check` over all 24 Jac files reports **0 errors and 0 E1032** — the call site type-checks cleanly.
+
+The remaining diagnostics are warnings, none of them in `act.jac`, and each is deliberate:
+
+| Code | Count | Where | Why it stands |
+|---|---|---|---|
+| `W1037` | 4 | `get_asset.jac`, `get_stamps.jac` | explicit `dict[str, any]` on the JSON payload builders — the values are genuinely heterogeneous, and this is the sanctioned way to say so |
+| `W2075` | 2 | `auditor.jac`, `cover.jac` | `bool(x) == False` written for symmetry with the surrounding readable conditions |
+| `W3005` | 1 | `lib/utils.jac` | `def now_unix()` keeps its empty parens for call-site symmetry |
+
+So the mint boundary is still proven by the spy tests — but it is no longer a diagnostic anyone has to accept in exchange for it.

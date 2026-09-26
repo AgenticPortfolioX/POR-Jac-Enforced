@@ -2,9 +2,16 @@
 # Purpose: Python package dependencies for PoRJE
 # Owner walker/module: shared
 # Spec: see PRD §1
-# Status: SCAFFOLD — no logic implemented
+# Status: IMPLEMENTED — runtime libraries only
 
-jaclang
+# jac itself is deliberately NOT listed here. Jac 0.37.23 ships as a fused native
+# binary from the jaseci-labs/jac GitHub releases and is installed with install.sh;
+# `jac` is a 110MB ELF at ~/.local/bin/jac, not a Python package. Pinning it here
+# cannot work: the jaclang lineage on PyPI stops at 0.16.7, and the 2.0.0 entry is
+# an empty name reservation with no distribution files, so `jaclang>=0.37.23` is
+# unsatisfiable and would fail `pip install`. An unpinned `jaclang` is worse — it
+# silently installs the stale 0.16.7 compiler. The version is pinned where it
+# belongs: jac.toml, jac-version = "==0.37.23".
 jac-cloud
 web3>=6.0.0
 eth-account

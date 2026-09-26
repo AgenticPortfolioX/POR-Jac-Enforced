@@ -18,7 +18,7 @@ walker:pub GetAsset {
             edges.append({
                 "type": "HasPrice",
                 "target": {
-                    "id": str(id(p)),
+                    "id": str(jid(p)),
                     "value": float(p.value),
                     "timestamp": int(p.timestamp),
                     "source": str(p.source),
@@ -34,7 +34,7 @@ walker:pub GetAsset {
             edges.append({
                 "type": "HasReserve",
                 "target": {
-                    "id": str(id(r)),
+                    "id": str(jid(r)),
                     "amount": float(r.amount),
                     "timestamp": int(r.timestamp),
                     "source": str(r.source),
@@ -47,9 +47,9 @@ walker:pub GetAsset {
             for ch in [r ->:DependsOn:->] {
                 edges.append({
                     "type": "DependsOn",
-                    "source": str(id(r)),
+                    "source": str(jid(r)),
                     "target": {
-                        "id": str(id(ch)),
+                        "id": str(jid(ch)),
                         "asset_id": str(ch.asset_id),
                         "amount": float(ch.amount),
                         "timestamp": int(ch.timestamp),
@@ -67,7 +67,7 @@ walker:pub GetAsset {
             edges.append({
                 "type": "HasLiability",
                 "target": {
-                    "id": str(id(l)),
+                    "id": str(jid(l)),
                     "minted_units": float(l.minted_units),
                     "vault_shares": float(l.vault_shares),
                     "demo_position": float(l.demo_position),
@@ -82,7 +82,7 @@ walker:pub GetAsset {
             edges.append({
                 "type": "StampedBy",
                 "target": {
-                    "id": str(id(s)),
+                    "id": str(jid(s)),
                     "walker_name": str(s.walker_name),
                     "color": str(s.color),
                     "reasons": list(s.reasons),
@@ -98,7 +98,7 @@ walker:pub GetAsset {
             edges.append({
                 "type": "MintedAs",
                 "target": {
-                    "id": str(id(m)),
+                    "id": str(jid(m)),
                     "tx_hash": str(m.tx_hash),
                     "token_address": str(m.token_address),
                     "nft_token_id": int(m.nft_token_id),
@@ -115,6 +115,10 @@ walker:pub GetAsset {
 
         payload = {
             "id": str(here.id),
+            # `id` is the business id ("asset-1"); `node_id` is the Jac graph node
+            # id. They are different things and the frontend needs both: `node_id`
+            # is what every walker call passes as its path param.
+            "node_id": str(jid(here)),
             "name": str(here.name),
             "symbol": str(here.symbol),
             "chain": str(here.chain),

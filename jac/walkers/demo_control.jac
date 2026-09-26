@@ -5,7 +5,7 @@
 # Status: IMPLEMENTED — Prompt 8
 
 import from jac.schemas.nodes { Asset }
-import from jac.schemas.edges { HasReserve, DependsOn, StampedBy }
+import from jac.schemas.edges { HasReserve, DependsOn }
 import from jac.walkers.ingest { Ingest }
 import from jac.walkers.freshness { Freshness }
 import from jac.walkers.cover { Cover }
@@ -15,23 +15,18 @@ walker:pub DemoControl {
     has path: str = "happy";
 
     can run with Asset entry {
-        # Reset the asset's stamps BEFORE seeding fixtures, so one DemoControl run
-        # leaves exactly one Freshness + one Cover + one Auditor stamp.
+        # No stamp reset here, and none is possible from this frame.
         #
-        # This deletion must happen here, in the anchor's own ability frame, and
-        # before any sibling spawns. Jac commits a node's edge set from the walker
-        # that touched it: once a spawned sibling attaches an edge to this anchor,
-        # the anchor's in-memory edge list is rebuilt from the touched edges alone
-        # and the lazily-persisted StampedBy edges stop being visible to siblings
-        # spawned afterwards. The approval walkers would then each fail to find
-        # their own prior stamp and append a new one, so stamps would accumulate
-        # (3, 6, 9, ...) on every run. Deleting from the parent's own frame, while
-        # the persisted edges are still visible, avoids that entirely.
-        # See jac/walkers/freshness.jac for the matching upsert rationale.
-        # `del [edge ...]` is the typed statement form; the infix `here del --> x`
-        # is untyped-only and widens the read to `any` (W1051). Same frame, same
-        # effect — the correctness argument above is about *when* this runs, not how.
-        del [edge here ->:StampedBy:->];
+        # Stamps are upserted in place by each approval walker, so a re-run replaces
+        # the previous stamp for that walker rather than appending a second one. That
+        # upsert — not any deletion — is what holds the one-stamp-per-walker
+        # invariant.
+        #
+        # A `del [edge here ->:StampedBy:->]` here would read as a reset but is
+        # silently lost: each spawned child's commit re-writes this anchor's edge set
+        # from its own snapshot, restoring edges a sibling had just deleted. The same
+        # semantics are why Ingest upserts its observations instead of clearing them.
+        # See docs/architecture.md, "Spawned-sibling commit semantics".
 
         if self.path == "happy" {
             here spawn Ingest(use_fixture=True, fixture_name="por_live");
