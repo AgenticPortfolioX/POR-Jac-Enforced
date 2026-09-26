@@ -1,14 +1,14 @@
 [project]
 name = "por-jac-enforced"
 version = "0.1.0"
-entry-point = "main.jac"
-entry_point = "main.jac"
+description = "Proof of Reserve — Jac Enforced (PoRJE): PoR attestations on a graph, minted only when three adversarial walkers agree."
+# 0.37 requires a dotted module name here — no ".jac" extension, no path separators.
+# "main.jac" is rejected outright; the file main.jac is addressed as module "main".
+entry-point = "main"
+kind = "service"
+jac-version = "==0.37.23"
 
 [serve]
-port = 8000
-
-[server]
-host = "0.0.0.0"
 port = 8000
 
 [dependencies]
@@ -16,22 +16,6 @@ web3 = ">=6.0.0"
 eth-account = ">=0.10.0"
 requests = ">=2.31.0"
 python-dotenv = ">=1.0.0"
-
-[dependencies.npm]
-react = "^18.2.0"
-react-dom = "^18.2.0"
-react-router-dom = "^6.22.0"
-react-error-boundary = "^5.0.0"
-react-hook-form = "^7.71.0"
-zod = "^4.3.6"
-"@hookform/resolvers" = "^5.2.2"
-
-[dependencies.npm.dev]
-vite = "^6.4.1"
-"@vitejs/plugin-react" = "^4.2.1"
-typescript = "^5.3.3"
-"@types/react" = "^18.2.0"
-"@types/react-dom" = "^18.2.0"
 
 [dev-dependencies]
 pytest = ">=7.0.0"

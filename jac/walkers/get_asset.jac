@@ -11,7 +11,7 @@ walker:pub GetAsset {
     has asset_id: str = "";
 
     can run with Asset entry {
-        edges: list = [];
+        edges: list[dict[str, any]] = [];
 
         # HasPrice edges
         for p in [here ->:HasPrice:->] {

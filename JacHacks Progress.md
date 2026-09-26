@@ -90,13 +90,22 @@
 ### 13. Reconciled with `origin/main`'s Jac 0.37 Commit
 - `origin/main` had gained `cfd910f` ("adapt Jac sources for 0.37 type and edge requirements"), a parallel change to the same files that did not contain this session's fixes and targeted a different Jac version.
 - Measured both targets against the compiler installed here (0.13.5): `edge HasPrice {}` PASSED; `edge HasPrice: any --> any {}` raised 3 errors. The `any`-based annotations were the subtle case — they parse, but `any` resolves to the builtin `any()` function rather than a type, so every assignment into a `list[any]` / `dict[str, any]` failed with E1001/E1053. Merging them unmodified took the tree from 1 failing file to 6.
-- Kept 0.13.5 and adopted only what compiles under it: the `Asset` import in `demo_control.jac`, the `list[PriceObservation]` / `list[ReserveAttestation]` / `list[str]` annotations, `reasons: list[str]` on `Stamp`, `frontend/next-env.d.ts`, and the refreshed frontend lockfile. Reverted the edge-endpoint declarations, `entry-point = "main"`, and every `any`-based annotation. Nothing of `cfd910f` was discarded from history — it remains an ancestor of the merge.
+- Kept 0.13.5 and adopted only what compiles under it: the `Asset` import in `demo_control.jac`, the `list[PriceObservation]` / `list[ReserveAttestation]` / `list[str]` annotations, and `frontend/next-env.d.ts`. Reverted the edge-endpoint declarations, `entry-point = "main"`, and every `any`-based annotation. Nothing of `cfd910f` was discarded from history — it remains an ancestor of the merge.
 - **Post-merge verification:** `jac check` reproduces the pre-merge baseline exactly (18 passed, 1 failed — `act.jac` alone with its 2 documented E1032s); all 7 files under `jac/tests/` pass; the three paths reproduce the runbook's evidence with stamps holding at exactly 3 across three consecutive happy runs; `MintedAs` edges number 3 and on-chain `totalSupply()` is exactly 3 × 250000, so the yellow and unknown runs minted nothing.
 
 ### 14. `.env` Duplicate-Key Defect Found and Contained
 - `.env` carries duplicated keys, and `python-dotenv` resolves duplicates **last-wins**, so the application actually saw `DEPLOYER_PRIVATE_KEY=''`, `POR_TOKEN_ADDRESS=''`, `POR_ATTESTATION_ADDRESS=''`, and the zero `DEMO_RECIPIENT`. Running the documented commands straight from `.env` could not mint at all — `Act` failed closed with `Unknown format '', attempted to normalize to '0x'`.
 - Root cause: `scripts/deploy_contracts.py` **appended** the two address keys on every run. It now rewrites each key on its existing line and drops duplicates, so it cannot recur.
 - `.env` itself was left untouched — it is a credential file. Verification runs supplied values through exported environment variables, which `load_dotenv` does not override. The hazard and its check (`grep -c '^POR_TOKEN_ADDRESS=' .env` must print `1`) are documented in the runbook.
+
+### 15. Post-Merge Cleanup of `cfd910f` Residue
+- Audited all 14 files `cfd910f` touched and separated *intent* (three changes worth keeping) from *residue* (four items that survived the merge without justification).
+- **Deleted `jac/tests/syntax_test.jac`** — an orphaned scratch probe that redefined `Stamp`/`Asset` locally and exercised a delete-then-recreate pattern this codebase no longer uses. `grep` across `.jac`, `.py`, `.ts`, `.tsx`, `.md` and `.toml` found zero references.
+- **Reverted `frontend/package-lock.json`** to its pre-merge state. Its 46/32-line diff contained no dependency change — it only removed `libc` fields from optional platform packages, which is what an older npm writes. Restoring the newer lockfile stops the churn from recurring on the next `npm install`.
+- **Reverted `glob POLICY: dict = {`** to `glob POLICY = {` in `jac/lib/policy.jac` — the last surviving fragment of the `dict[str, any]` family, valid but pointless.
+- **Rewrote the stale comment in `foundry.toml`**, which still pointed at a hardhat dependency that `package.json` no longer contains.
+- Corrected two claims in the build record that overstated `cfd910f`'s contribution: `reasons: list[str]` on `Stamp` was already present pre-merge, and the frontend lockfile was not worth keeping.
+- **Re-verified:** `jac check` — 23 passed, 1 failed (`act.jac`, its 2 documented E1032s, unchanged); all 5 test files under `jac/tests/` report `Passed successfully.`
 
 ### 12. Credential Isolation Re-Verified Before Push
 - `.env` remains untracked and matched by `.gitignore:11:*.env`; `.env.example` was deleted from disk per project policy that all credentials live in `.env`. `git grep "env.example"` returns nothing, so no dangling reference remains.

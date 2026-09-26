@@ -28,9 +28,10 @@ walker:pub DemoControl {
         # (3, 6, 9, ...) on every run. Deleting from the parent's own frame, while
         # the persisted edges are still visible, avoids that entirely.
         # See jac/walkers/freshness.jac for the matching upsert rationale.
-        for prior_stamp in [here ->:StampedBy:->] {
-            here del --> prior_stamp;
-        }
+        # `del [edge ...]` is the typed statement form; the infix `here del --> x`
+        # is untyped-only and widens the read to `any` (W1051). Same frame, same
+        # effect — the correctness argument above is about *when* this runs, not how.
+        del [edge here ->:StampedBy:->];
 
         if self.path == "happy" {
             here spawn Ingest(use_fixture=True, fixture_name="por_live");

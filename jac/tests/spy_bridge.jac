@@ -26,6 +26,6 @@ def spy_attestation_call_count() -> int {
     return attestation_call_count();
 }
 
-def spy_last_mint_args() -> list {
+def spy_last_mint_args() -> list[any] {
     return list(last_mint_args());
 }

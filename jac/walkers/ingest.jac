@@ -61,19 +61,23 @@ walker:pub Ingest {
             };
         }
 
-        # Detach existing edges before re-wiring
-        for old_price in [here ->:HasPrice:->] {
-            here del --> old_price;
-        }
+        # Detach existing edges before re-wiring.
+        #
+        # `del [edge src ->:EdgeType:->]` is the typed statement form: it clears the
+        # whole edge set in one store call without materializing the neighbours
+        # first. The infix `src del --> dst` is untyped-only, so with typed edges
+        # declared it widens the read to `any` and warns W1051. The direction and
+        # type follow the reference, so exactly one edge set is cleared.
+        #
+        # This disconnects only. The superseded PriceObservation / ReserveAttestation
+        # / Liability nodes stay in the graph as orphans, as they did before: a
+        # re-ingest is idempotent in its wiring, not in its node count.
+        del [edge here ->:HasPrice:->];
         for old_res in [here ->:HasReserve:->] {
-            for old_child in [old_res ->:DependsOn:->] {
-                old_res del --> old_child;
-            }
-            here del --> old_res;
+            del [edge old_res ->:DependsOn:->];
         }
-        for old_liab in [here ->:HasLiability:->] {
-            here del --> old_liab;
-        }
+        del [edge here ->:HasReserve:->];
+        del [edge here ->:HasLiability:->];
 
         # Create PriceObservation node
         price_node = PriceObservation(

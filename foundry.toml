@@ -4,10 +4,12 @@
 # Spec: see PRD §10
 # Status: IMPLEMENTED — Prompt 4
 #
-# The hardhat toolchain in this repo is pinned to a hardhat-toolbox version that
-# cannot compile (see package.json), so `forge build` is the supported path.
-# scripts/deploy_contracts.py accepts either, as long as artifacts/{Name}.json
-# exists with {"abi": [...], "bytecode": "0x..."}.
+# `forge build` is the supported path. Hardhat was tried and removed: Hardhat 3
+# with hardhat-toolbox@7 silently no-ops here (exit 0, no artifacts), so the repo
+# carries no hardhat dependency at all. `@openzeppelin/contracts` stays in
+# package.json purely so the remapping below resolves out of node_modules.
+# scripts/deploy_contracts.py only needs artifacts/{Name}.json to exist, shaped
+# {"abi": [...], "bytecode": "0x..."}, which scripts/build_artifacts.py writes.
 
 [profile.default]
 src = "contracts"

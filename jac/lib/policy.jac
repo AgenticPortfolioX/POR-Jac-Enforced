@@ -2,9 +2,15 @@
 # Purpose: Global policy knobs and threshold configuration dictionary
 # Owner walker/module: shared
 # Spec: see PRD §5
-# Status: IMPLEMENTED — Prompt 2
+# Status: MIGRATED — Jac 0.37
+#
+# `dict[str, any]` is required, not optional. The values here are genuinely
+# heterogeneous (int seconds, float ratios, and a nested dict of colour meanings),
+# so an unannotated `glob POLICY = {...}` infers a union and every
+# `float(POLICY["..."])` call site fails E1053. Jac 0.37 also rejects a bare `dict`
+# (E1036) — the explicit `any` is the sanctioned way to say "deliberately dynamic".
 
-glob POLICY: dict = {
+glob POLICY: dict[str, any] = {
     "max_price_age_seconds": 300,
     "max_reserve_age_seconds": 3600,
     "min_coverage_ratio": 1.00,

@@ -121,10 +121,22 @@ any]`, `edges: list[any]` in `get_asset.jac`, `stamps: list[any]` in `get_stamps
 them unmodified took the tree from 1 failing file to 6. They were reverted to their bare
 `list` / `dict` form.
 
-Kept from `cfd910f`: the `Asset` import in `demo_control.jac`; `list[PriceObservation]`,
-`list[ReserveAttestation]` and `list[str]` in `freshness.jac`; `reasons: list[str]` on `Stamp`;
-`frontend/next-env.d.ts`; the `frontend/package-lock.json` refresh. Reverted: the edge-endpoint
-declarations, `entry-point = "main"` in `jac.toml`, and every `any`-based annotation.
+**Kept from `cfd910f`** — three changes, each one a real improvement that compiles under 0.13.5:
+
+| Kept | Why |
+|---|---|
+| `import from jac.schemas.nodes { Asset }` in `demo_control.jac` | The walker declares `with Asset entry`, so the archetype belongs in scope |
+| `list[PriceObservation]` / `list[ReserveAttestation]` / `list[str]` in `freshness.jac` | Real node and builtin types — strictly more informative than the bare `list` |
+| `frontend/next-env.d.ts` | Standard Next.js ambient types file; belongs in version control |
+
+**Reverted** — the edge-endpoint declarations (`edge HasPrice: any --> any {}`), `entry-point = "main"`
+in `jac.toml`, and every `any`-based annotation.
+
+**Left over from `cfd910f` and cleaned up afterwards** (see *Post-merge cleanup* below):
+`jac/tests/syntax_test.jac`, the `frontend/package-lock.json` churn, and `glob POLICY: dict`.
+An earlier draft of this file also listed `reasons: list[str]` on `Stamp` as kept from `cfd910f`.
+That was wrong — `reasons: list[str]` is already present in the pre-merge tree; `cfd910f` touched
+only `flat_history`, `payload` and `stamp_summary` in `nodes.jac`, all `any`-based and all reverted.
 
 **Post-merge verification.** `jac check` on the merged tree reproduces the pre-merge baseline
 exactly: 18 passed, 1 failed — `act.jac` alone, with its 2 documented E1032s. All 7 files under
@@ -132,6 +144,23 @@ exactly: 18 passed, 1 failed — `act.jac` alone, with its 2 documented E1032s. 
 `test_freshness.jac` 2, `test_auditor.jac` 1). On a cleared graph the three paths reproduce the
 runbook's evidence, stamps hold at exactly 3 across three consecutive happy runs, and
 `totalSupply()` lands at exactly 3 × 250000 — so the yellow and unknown runs minted nothing.
+
+## Post-merge cleanup
+
+Three pieces of `cfd910f` survived the merge that should not have — residue rather than
+intent — plus one stale comment left over from the Hardhat removal:
+
+| Item | Disposition | Reason |
+|---|---|---|
+| `jac/tests/syntax_test.jac` | **Deleted** | An orphaned scratch probe. It redefined `Stamp`/`Asset` locally, exercised a delete-then-recreate pattern the codebase no longer uses, and nothing imported or referenced it. `grep` found zero references. |
+| `frontend/package-lock.json` | **Reverted to pre-merge** | 46 insertions / 32 deletions with no dependency change: the diff only *removes* `libc` fields from optional platform packages, which is what an older npm writes. Restoring the newer lockfile removes recurring churn on the next `npm install`. No resolution changes, so nothing to re-verify. |
+| `jac/lib/policy.jac` — `glob POLICY: dict = {` | **Reverted to `glob POLICY = {`** | The `dict` annotation is valid, but it is the surviving fragment of `cfd910f`'s `dict[str, any]` and carries no benefit. Reverting keeps the file byte-identical to the verified baseline. |
+| `foundry.toml` comment | **Rewritten** | It still read "the hardhat toolchain in this repo is pinned to a hardhat-toolbox version that cannot compile (see package.json)" — but `package.json` no longer has a hardhat dependency at all. The comment now records *why* Hardhat was removed and why `@openzeppelin/contracts` is still a devDependency. |
+
+**Re-verified after cleanup:** `jac check` on all 23 modules — 23 passed, 1 failed (`act.jac`, its
+2 documented E1032s, unchanged); all 5 test files under `jac/tests/` report `Passed successfully.`
+The reverts are byte-identical to the pre-merge baseline, which is the tree the Prompt 13 evidence
+was captured on.
 
 ## A defect found in `.env` (not fixed here — it is a credential file)
 
