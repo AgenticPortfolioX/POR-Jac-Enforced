@@ -16,6 +16,7 @@ Run this ten minutes before the demo.
 
 1. **Contracts compiled.** `forge build` then `python scripts/build_artifacts.py`. The runtime reads `artifacts/PoRToken.json` and `artifacts/PoRAttestation.json`, which the flatten step writes from forge's `out/`.
 2. **`.env` complete.** `POR_TOKEN_ADDRESS`, `POR_ATTESTATION_ADDRESS`, `SEPOLIA_RPC_URL`, `DEPLOYER_PRIVATE_KEY`, `CHAIN_ID`, `DEMO_RECIPIENT`. `SEPOLIA_RPC_URL` must be the provider root (for example `https://eth-sepolia.g.alchemy.com/v2/<key>`) — `evm_py` passes it straight to `Web3.HTTPProvider`, so a bare host without a scheme will not connect.
+   - **Each key must appear exactly once.** `python-dotenv` resolves duplicate keys *last-wins*, so a second, blank `POR_TOKEN_ADDRESS=` further down the file silently replaces a real one with `''`. Check with `grep -c '^POR_TOKEN_ADDRESS=' .env` — it must print `1`. `deploy_contracts.py` used to append and is what creates these duplicates; it now rewrites each key on its existing line instead. If `.env` already carries duplicates, remove the extra lines before the demo.
 3. **`actWalker` set.** `python scripts/deploy_contracts.py` deploys both contracts and calls `setActWalker(deployer)`. `PoRToken.mint` is guarded by `onlyAct`, so until this call succeeds every mint reverts.
 4. **`DEMO_RECIPIENT` is a real address.** `0x000…000` is the shipped default and it does **not** work: OZ v5's `ERC20._mint` rejects the zero address, and `Act` will report `evm mint failed: 0xec442f05…` (`ERC20InvalidReceiver`). Set it to the deployer or any funded address.
 5. **Server is up.** Probe `http://localhost:8000/docs`. **`/health` returns 404** in Jac 0.13.5 — the docs page is the only readiness probe that answers. `demo.md`'s checklist still names `/health`; that line is preserved verbatim from Prompt 1 and is superseded by this note.
@@ -74,6 +75,19 @@ Verified independently of the graph — `balanceOf(recipient)` and `totalSupply(
 
 **Etherscan.** On Sepolia the tx and NFT links resolve at `https://sepolia.etherscan.io/tx/<tx>` and `https://sepolia.etherscan.io/token/<POR_ATTESTATION_ADDRESS>?a=<nft_id>`. The evidence above was captured against a local `anvil` chain (id 31337) because this machine cannot complete a TLS handshake with the Sepolia provider — see **Troubleshooting**. `ExplorerLink` is wired and correct; the hash simply does not exist on the public network.
 
+**Re-verified on the merged tree.** The evidence above predates the merge of `origin/main`. After merging, all three paths were re-run against a cleared graph and reproduce exactly — the happy path three times in a row:
+
+```json
+// three consecutive happy runs on the merged tree
+run 1: { "minted": true, "amount": 250000.0, "justified": 250000.0, "nft_id": 1 }
+run 2: { "minted": true, "amount": 250000.0, "justified": 250000.0, "nft_id": 2 }
+run 3: { "minted": true, "amount": 250000.0, "justified": 250000.0, "nft_id": 3 }
+
+stamps after all three runs: 3  ->  [Freshness green, Cover green, Auditor green]
+```
+
+Exactly **3** stamps survive three runs — the accumulation defect does not return. `MintedAs` edges number exactly 3 (one per happy run), and on-chain `totalSupply()` is `749999999999999987417088`, i.e. exactly 3 × 250000 with 18-decimal rounding, so the yellow and unknown runs added no mint:
+
 ## Path 2 — Yellow (stale or stuck reserve)
 
 ```bash
@@ -114,6 +128,7 @@ MintRecords before=1 after=1  ->  no new mint
 
 | Symptom | Cause | Fix |
 |---|---|---|
+| `Act` reports `evm mint failed: Unknown format '', attempted to normalize to '0x'` | An address key in `.env` resolves to `''` — almost always a duplicated key whose later, blank copy won | `grep -c '^POR_TOKEN_ADDRESS=' .env` must print `1`; delete the duplicate lines. `deploy_contracts.py` no longer appends, so it will not recreate them |
 | `Act` reports `evm mint failed: The private key must be exactly 32 bytes long` | `DEPLOYER_PRIVATE_KEY` empty or not 32 bytes | Set it in `.env`; restart the server so `evm_py`'s `load_dotenv` re-reads it |
 | `Act` reports `evm mint failed: 0xec442f05…` | `DEMO_RECIPIENT` is `0x000…000` | Use a real address — ERC20 cannot mint to zero |
 | `Act` reports `evm mint failed: 0x1e4fbdf7…` at deploy time | `build_transaction({})` estimated gas with no `from`, so `Ownable(msg.sender)` saw `address(0)` | Already fixed: `deploy_contracts.py` and `evm_py` set `w3.eth.default_account` before building |

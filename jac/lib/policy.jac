@@ -4,7 +4,7 @@
 # Spec: see PRD §5
 # Status: IMPLEMENTED — Prompt 2
 
-glob POLICY = {
+glob POLICY: dict = {
     "max_price_age_seconds": 300,
     "max_reserve_age_seconds": 3600,
     "min_coverage_ratio": 1.00,

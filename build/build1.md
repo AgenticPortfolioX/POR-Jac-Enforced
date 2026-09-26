@@ -97,6 +97,62 @@ supported path is Foundry: `forge build` (config in `foundry.toml`, solc 0.8.20,
 written — no stubs. The runbook carries the three-terminal procedure, the reset procedure,
 all three paths with evidence pasted from real runs, and a troubleshooting table.
 
+## Reconciliation with `origin/main`'s 0.37 commit
+
+`origin/main` carried `cfd910f` ("adapt Jac sources for 0.37 type and edge requirements"), a
+parallel change to the same files that does **not** contain this session's fixes. It targets a
+different Jac version, and the two are not compatible, so the merge kept 0.13.5 — the version
+installed here — and adopted only the parts of `cfd910f` that compile under it.
+
+Verified empirically before deciding:
+
+| Construct | From | `jac check` under installed 0.13.5 |
+|---|---|---|
+| `edge HasPrice {}` | this branch | PASSED |
+| `edge HasPrice: any --> any {}` | `cfd910f` | 3 errors |
+| `list[any]` / `dict[str, any]` as annotations | `cfd910f` | parse, but fail on assignment |
+| `list[PriceObservation]` / `list[str]` | `cfd910f` | PASSED |
+
+`cfd910f`'s `any`-based annotations are the subtle case: they *parse*, so an isolated snippet
+looks fine, but `any` resolves to the builtin `any()` function rather than a type, so every
+assignment into a `list[any]` / `dict[str, any]` fails with E1001/E1053 — `glob POLICY: dict[str,
+any]`, `edges: list[any]` in `get_asset.jac`, `stamps: list[any]` in `get_stamps.jac`,
+`flat_history: list[any]` in `nodes.jac`, and the `Stamp.payload` assignments in Cover. Merging
+them unmodified took the tree from 1 failing file to 6. They were reverted to their bare
+`list` / `dict` form.
+
+Kept from `cfd910f`: the `Asset` import in `demo_control.jac`; `list[PriceObservation]`,
+`list[ReserveAttestation]` and `list[str]` in `freshness.jac`; `reasons: list[str]` on `Stamp`;
+`frontend/next-env.d.ts`; the `frontend/package-lock.json` refresh. Reverted: the edge-endpoint
+declarations, `entry-point = "main"` in `jac.toml`, and every `any`-based annotation.
+
+**Post-merge verification.** `jac check` on the merged tree reproduces the pre-merge baseline
+exactly: 18 passed, 1 failed — `act.jac` alone, with its 2 documented E1032s. All 7 files under
+`jac/tests/` pass (`test_paths.jac` 3 tests, `test_act.jac` 6, `test_cover.jac` 2,
+`test_freshness.jac` 2, `test_auditor.jac` 1). On a cleared graph the three paths reproduce the
+runbook's evidence, stamps hold at exactly 3 across three consecutive happy runs, and
+`totalSupply()` lands at exactly 3 × 250000 — so the yellow and unknown runs minted nothing.
+
+## A defect found in `.env` (not fixed here — it is a credential file)
+
+`.env` carries duplicated keys, and `python-dotenv` resolves duplicates **last-wins**, so the
+values the application actually sees are the later, blank ones:
+
+```
+DEPLOYER_PRIVATE_KEY       -> ''
+POR_TOKEN_ADDRESS          -> ''
+POR_ATTESTATION_ADDRESS    -> ''
+DEMO_RECIPIENT             -> '0x0000...0000'
+CHAIN_ID                   -> '11155111'   (Sepolia, but the addresses are anvil's)
+```
+
+Running the documented commands straight from `.env` therefore cannot mint: `Act` fails closed
+with `Unknown format '', attempted to normalize to '0x'`. The duplication was created by
+`scripts/deploy_contracts.py`, which appended the addresses instead of updating them; it now
+rewrites each key on its existing line and drops duplicates, so it cannot recur. `.env` itself
+was left untouched — the values were supplied through exported environment variables for the
+verification run above, which `load_dotenv` does not override.
+
 ## Known deviations
 
 1. **AC 6, first clause — `Freshness unknown` on the unknown path is unreachable as

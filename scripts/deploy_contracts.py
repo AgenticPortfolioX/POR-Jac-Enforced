@@ -87,12 +87,37 @@ def main():
     send(token_contract.functions.setActWalker(deployer).build_transaction({"from": deployer}))
     print(f"setActWalker({deployer}) done")
 
-    # Append addresses to .env
+    # Update the addresses in .env in place.
+    #
+    # Do NOT append. dotenv resolves duplicate keys last-wins, so appending wrote a
+    # second POR_TOKEN_ADDRESS / POR_ATTESTATION_ADDRESS pair every time this script
+    # ran, and any later blank pair (a freshly restored template, for instance) would
+    # silently clobber the real addresses — leaving evm_py with an empty string and
+    # Act failing closed with "Unknown format '', attempted to normalize to '0x'".
+    # Rewriting each key on its existing line keeps exactly one definition per key.
     env_path = Path(__file__).parent.parent / ".env"
-    with open(env_path, "a") as f:
-        f.write(f"\nPOR_TOKEN_ADDRESS={token_address}")
-        f.write(f"\nPOR_ATTESTATION_ADDRESS={att_address}")
-    print(f".env updated with contract addresses")
+    updates = {
+        "POR_TOKEN_ADDRESS": token_address,
+        "POR_ATTESTATION_ADDRESS": att_address,
+    }
+    lines = env_path.read_text().splitlines() if env_path.exists() else []
+    seen: set[str] = set()
+    rewritten: list[str] = []
+    for line in lines:
+        key = line.split("=", 1)[0].strip() if "=" in line else ""
+        if key in updates:
+            # Keep only the first occurrence; drop any duplicates outright.
+            if key in seen:
+                continue
+            seen.add(key)
+            rewritten.append(f"{key}={updates[key]}")
+        else:
+            rewritten.append(line)
+    for key, value in updates.items():
+        if key not in seen:
+            rewritten.append(f"{key}={value}")
+    env_path.write_text("\n".join(rewritten) + "\n")
+    print(".env updated with contract addresses (in place)")
 
 
 if __name__ == "__main__":

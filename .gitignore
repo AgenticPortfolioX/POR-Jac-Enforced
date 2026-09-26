@@ -73,9 +73,6 @@ build/*
 # ==========================================
 frontend/.next/
 frontend/out/
-# Next.js regenerates this on every dev/build; the default create-next-app
-# .gitignore excludes it too.
-frontend/next-env.d.ts
 .next/
 out/
 .turbo/
