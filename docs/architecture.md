@@ -47,7 +47,7 @@ Ingest ──> Freshness ──> Cover ──> Auditor ──> Act ──> Couns
 
 The chain boundary is the one thing a demo cannot rely on: a Sepolia RPC endpoint, a funded deployer key, and deployed contracts are all required before `Act` can complete a real mint. The test suite therefore replaces the EVM bridge with a spy, so the *decision* to mint — the part PoRJE actually owns — is tested without a network.
 
-**The mechanism.** `jac/tests/evm_spy.py` is a Python module that inserts the project root on `sys.path`, imports `jac.lib.evm_py` **as a module object**, and replaces its `mint` and `mint_attestation` attributes with recording stubs. `jac/tests/test_act.jac` imports the spy (which patches on import), runs `Act` against a seeded graph, and then reads the recorded call arguments back through a thin Jac bridge, `jac/tests/spy_bridge.jac`:
+**The mechanism.** `jac/tests/evm_spy.py` is a Python module that inserts the project root on `sys.path`, imports `jac.lib.evm_py` **as a module object**, and replaces its `mint` and `mint_attestation` attributes with recording stubs. `jac/tests/act_tests.jac` imports the spy (which patches on import), runs `Act` against a seeded graph, and then reads the recorded call arguments back through a thin Jac bridge, `jac/tests/spy_bridge.jac`:
 
 ```jac
 def spy_last_mint_args() -> list { return list(last_mint_args()); }

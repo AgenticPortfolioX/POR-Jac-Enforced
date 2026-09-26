@@ -1,4 +1,4 @@
-# jac/tests/test_act.jac
+# jac/tests/act_tests.jac
 # Purpose: Unit tests for Act walker with evm_spy enforcement
 # Owner walker/module: Act
 # Spec: see PRD §10

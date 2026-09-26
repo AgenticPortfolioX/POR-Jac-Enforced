@@ -1,4 +1,4 @@
-# jac/tests/test_paths.jac
+# jac/tests/paths_tests.jac
 # Purpose: Integration tests for three demo paths
 # Owner walker/module: shared
 # Spec: see PRD §10

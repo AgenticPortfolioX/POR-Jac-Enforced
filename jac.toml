@@ -21,3 +21,9 @@ python-dotenv = ">=1.0.0"
 pytest = ">=7.0.0"
 
 [plugins]
+
+[test]
+# Test files use the *_tests.jac suffix: the test_* prefix collides with Python's
+# test-module import machinery, so discovery is pointed at the directory instead
+# of relying on the default test_* filename filter.
+directory = "jac/tests"

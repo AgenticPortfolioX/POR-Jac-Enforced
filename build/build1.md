@@ -20,7 +20,7 @@ The build sequence from the `JacPORBuild.jsonl` blueprint has been executed thro
 
 4. **Testing (Prompt 10)**:
    - `evm_spy.py` mocking bridge implemented for Act isolation.
-   - Comprehensive test suite created (`test_freshness.jac`, `test_cover.jac`, `test_auditor.jac`, `test_act.jac`, `test_paths.jac`).
+   - Comprehensive test suite created (`freshness_tests.jac`, `cover_tests.jac`, `auditor_tests.jac`, `act_tests.jac`, `paths_tests.jac`).
 
 5. **Frontend Application (Prompts 11-12)**:
    - Next.js application scaffolded (`package.json`, configuration files).
@@ -140,8 +140,8 @@ only `flat_history`, `payload` and `stamp_summary` in `nodes.jac`, all `any`-bas
 
 **Post-merge verification.** `jac check` on the merged tree reproduces the pre-merge baseline
 exactly: 18 passed, 1 failed — `act.jac` alone, with its 2 documented E1032s. All 7 files under
-`jac/tests/` pass (`test_paths.jac` 3 tests, `test_act.jac` 6, `test_cover.jac` 2,
-`test_freshness.jac` 2, `test_auditor.jac` 1). On a cleared graph the three paths reproduce the
+`jac/tests/` pass (`paths_tests.jac` 3 tests, `act_tests.jac` 6, `cover_tests.jac` 2,
+`freshness_tests.jac` 2, `auditor_tests.jac` 1). On a cleared graph the three paths reproduce the
 runbook's evidence, stamps hold at exactly 3 across three consecutive happy runs, and
 `totalSupply()` lands at exactly 3 × 250000 — so the yellow and unknown runs minted nothing.
 

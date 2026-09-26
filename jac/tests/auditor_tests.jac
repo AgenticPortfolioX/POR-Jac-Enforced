@@ -1,4 +1,4 @@
-# jac/tests/test_auditor.jac
+# jac/tests/auditor_tests.jac
 # Purpose: Unit tests for Auditor walker
 # Owner walker/module: Auditor
 # Spec: see PRD §10

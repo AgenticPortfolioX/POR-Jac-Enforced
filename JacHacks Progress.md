@@ -17,7 +17,7 @@
     - `jac/schemas/`: Graph node schemas (`nodes.jac`) and edge definitions (`edges.jac`).
     - `jac/walkers/`: 7 autonomous verifier walkers (`ingest.jac`, `freshness.jac`, `cover.jac`, `auditor.jac`, `act.jac`, `counsel.jac`, `demo_control.jac`).
     - `jac/lib/`: Policy dictionary (`policy.jac`), color ranking (`colors.jac`), Chainlink Python bridge (`chainlink.jac`, `chainlink_py.py`), EVM web3 stubs (`evm_py.py`), fixture loader (`fixtures.jac`), and utilities (`utils.jac`).
-    - `jac/tests/`: 5 test suites (`test_freshness.jac`, `test_cover.jac`, `test_auditor.jac`, `test_act.jac`, `test_paths.jac`).
+    - `jac/tests/`: 5 test suites (`freshness_tests.jac`, `cover_tests.jac`, `auditor_tests.jac`, `act_tests.jac`, `paths_tests.jac`).
   - **Contracts**: `contracts/PoRToken.sol`, `contracts/PoRAttestation.sol`, and interfaces (`AggregatorV3Interface.sol`, `IPoRToken.sol`).
   - **Scripts**: `deploy_contracts.py`, `seed_graph.py`, `run_demo_path.py`.
   - **Frontend**: Next.js 14 shell with TypeScript, Tailwind, 8 dashboard components (`GraphView`, `StampBadge`, `MintButton`, `AuditorPanel`, `CounselPanel`, `PathSelector`, `ExplorerLink`, `PolicyCard`), `jacClient.ts`, `types.ts`, and `constants.ts`.
@@ -50,7 +50,7 @@
   - `jac check jac/lib/*.jac`: **PASSED [100%]**
   - `jac check jac/walkers/*.jac`: **PASSED [100%]**
   - `jac check jac/tests/*.jac`: **PASSED [100%]**
-  - `jac test jac/tests/test_paths.jac`: **PASSED [100%]**
+  - `jac test jac/tests/paths_tests.jac`: **PASSED [100%]**
 - Verified entrypoint bootstrap: `jac run jac/main.jac` prints `PoRJE scaffold booted`.
 - Validated automated REST API discovery: `jac start jac/main.jac` automatically registers endpoints for all 7 walkers and introspection routes.
 

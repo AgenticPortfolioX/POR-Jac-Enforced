@@ -1,4 +1,4 @@
-# jac/tests/test_freshness.jac
+# jac/tests/freshness_tests.jac
 # Purpose: Unit tests for Freshness walker
 # Owner walker/module: Freshness
 # Spec: see PRD §10
