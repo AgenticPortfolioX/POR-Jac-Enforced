@@ -4,6 +4,7 @@
 # Spec: see PRD §9
 # Status: IMPLEMENTED — Prompt 8
 
+import from jac.schemas.nodes { Asset }
 import from jac.schemas.edges { HasReserve, DependsOn }
 import from jac.walkers.ingest { Ingest }
 import from jac.walkers.freshness { Freshness }

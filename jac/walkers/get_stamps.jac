@@ -9,7 +9,7 @@ import from jac.schemas.edges { StampedBy }
 
 walker:pub GetStamps {
     can run with Asset entry {
-        stamps: list = [];
+        stamps: list[any] = [];
         for s in [here ->:StampedBy:->] {
             stamps.append({
                 "walker_name": str(s.walker_name),

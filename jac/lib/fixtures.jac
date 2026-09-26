@@ -10,7 +10,7 @@ import from jac.lib.utils { now_unix }
 
 glob FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "fixtures");
 
-def load_fixture(name: str) -> dict {
+def load_fixture(name: str) -> dict[str, any] {
     path = os.path.join(FIXTURES_DIR, name + ".json");
     with open(path, "r") as f {
         raw = json.load(f);

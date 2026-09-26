@@ -30,7 +30,7 @@ node ReserveAttestation {
     has :pub feed_address: str;
     has :pub round_id: int = 0;
     has :pub answered_in_round: int = 0;
-    has :pub flat_history: list = [];
+    has :pub flat_history: list[any] = [];
 }
 
 node ChildClaim {
@@ -54,7 +54,7 @@ node Stamp {
     has :pub color: str;
     has :pub reasons: list[str];
     has :pub timestamp: int;
-    has :pub payload: dict = {};
+    has :pub payload: dict[str, any] = {};
 }
 
 node MintRecord {
@@ -65,6 +65,6 @@ node MintRecord {
     has :pub coverage_used: float;
     has :pub price_time: int;
     has :pub reserve_time: int;
-    has :pub stamp_summary: dict;
+    has :pub stamp_summary: dict[str, any];
     has :pub timestamp: int;
 }

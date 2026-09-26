@@ -13,11 +13,11 @@ import from jac.lib.utils { now_unix, abs_diff }
 walker:pub Freshness {
     can run with Asset entry {
         now: int = now_unix();
-        prices: list = [here ->:HasPrice:->];
-        reserves: list = [here ->:HasReserve:->];
+        prices: list[PriceObservation] = [here ->:HasPrice:->];
+        reserves: list[ReserveAttestation] = [here ->:HasReserve:->];
 
         color: str = COLOR_GREEN;
-        reasons: list = [];
+        reasons: list[str] = [];
 
         if len(prices) == 0 or len(reserves) == 0 {
             color = COLOR_UNKNOWN;
@@ -60,7 +60,7 @@ walker:pub Freshness {
         }
 
         # Remove any prior Freshness stamp
-        all_stamps: list = [here ->:StampedBy:->];
+        all_stamps: list[Stamp] = [here ->:StampedBy:->];
         for old_stamp in all_stamps {
             if str(old_stamp.walker_name) == "Freshness" {
                 here del --> old_stamp;

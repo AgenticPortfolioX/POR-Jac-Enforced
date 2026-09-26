@@ -1,8 +1,8 @@
 [project]
 name = "por-jac-enforced"
 version = "0.1.0"
-entry-point = "main.jac"
-entry_point = "main.jac"
+entry-point = "main"
+entry_point = "main"
 
 [serve]
 port = 8000
