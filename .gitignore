@@ -1,0 +1,102 @@
+# .gitignore
+# Purpose: Comprehensive gitignore scoping to block credentials, environment files, build artifacts, and caches
+# Owner walker/module: shared
+# Spec: see PRD §1
+
+# ==========================================
+# Credentials, Secrets & Environment Files
+# ==========================================
+.env
+.env*
+*.env
+*.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Private keys, certificates, seeds & keystores
+*.pem
+*.key
+*.pk
+*.keystore
+*.p12
+*.pfx
+*.cert
+*.crt
+id_rsa*
+id_ecdsa*
+id_ed25519*
+secrets/
+.secrets/
+credentials/
+.credentials/
+*.secret
+*.seed
+*private_key*
+*mnemonic*
+wallet.json
+wallets/
+keystore/
+
+# ==========================================
+# Dependencies & Virtual Environments
+# ==========================================
+node_modules/
+.venv/
+venv/
+ENV/
+env/
+
+# ==========================================
+# Python Caches & Build Artifacts
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# ==========================================
+# Next.js & Frontend Builds
+# ==========================================
+frontend/.next/
+frontend/out/
+.next/
+out/
+.turbo/
+
+# ==========================================
+# Smart Contract & Solidity Artifacts
+# ==========================================
+artifacts/
+cache/
+typechain/
+typechain-types/
+
+# ==========================================
+# Jac Cloud Runtime State & Logs
+# ==========================================
+.jac/
+.jac_cache/
+jac-cloud-state/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================================
+# OS & IDE Files
+# ==========================================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json

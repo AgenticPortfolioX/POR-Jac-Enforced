@@ -1,0 +1,8 @@
+{
+  "label": "fixture",
+  "asset_id": "child-vault-01",
+  "amount": 0.0,
+  "timestamp_offset_seconds": 300,
+  "present": false,
+  "provenance": "custodian_api_missing"
+}

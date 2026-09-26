@@ -1,0 +1,12 @@
+{
+  "name": "por-jac-enforced",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Proof of Reserve - Jac Enforced scaffolding",
+  "scripts": {
+    "deploy": "python scripts/deploy_contracts.py",
+    "seed": "python scripts/seed_graph.py",
+    "jac:serve": "jac serve jac/main.jac",
+    "frontend:dev": "cd frontend && npm run dev"
+  }
+}

@@ -1,0 +1,13 @@
+# requirements.txt
+# Purpose: Python package dependencies for PoRJE
+# Owner walker/module: shared
+# Spec: see PRD §1
+# Status: SCAFFOLD — no logic implemented
+
+jaclang
+jac-cloud
+web3>=6.0.0
+eth-account
+requests
+python-dotenv
+pytest

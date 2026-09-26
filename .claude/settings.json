@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/jmgra/antigravityagents/**)",
+      "WebFetch(domain:jachammer.ai)",
+      "PowerShell($p = 'c:\\\\Users\\\\jmgra\\\\antigravityagents\\\\.agents\\\\workflows\\\\POR_Jac_Enforced\\\\.env'; if \\(Test-Path $p\\) { Get-Content $p | Where-Object { $_ -match '=' } | ForEach-Object { $n = \\($_ -split '='\\)[0].Trim\\(\\); $v = \\($_ -split '=',2\\)[1]; if \\($v.Length -gt 10\\) { $v = $v.Substring\\(0,6\\) + '...[' + $v.Length + ']' } ; \"$n = $v\" } } else { '.env not found' })"
+    ]
+  }
+}

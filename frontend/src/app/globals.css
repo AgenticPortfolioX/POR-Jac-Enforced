@@ -1,0 +1,9 @@
+/* frontend/src/app/globals.css */
+/* Purpose: Global styles and Tailwind CSS directives */
+/* Owner walker/module: shared */
+/* Spec: see PRD §11 */
+/* Status: SCAFFOLD — no logic implemented */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

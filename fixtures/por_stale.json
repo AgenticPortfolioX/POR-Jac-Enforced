@@ -1,0 +1,9 @@
+{
+  "label": "fixture",
+  "amount": 1500000.0,
+  "timestamp_offset_seconds": 864000,
+  "feed_address": "0x1234567890123456789012345678901234567890",
+  "round_id": 950,
+  "answered_in_round": 950,
+  "provenance": "chainlink_por_stale"
+}
