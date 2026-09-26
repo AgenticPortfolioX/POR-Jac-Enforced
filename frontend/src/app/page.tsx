@@ -1,32 +1,199 @@
 // frontend/src/app/page.tsx
-// Purpose: Dashboard page rendering PoR panels and control interface
-// Owner walker/module: shared
-// Spec: see PRD §11
-// Status: SCAFFOLD — no logic implemented
+// Purpose: Main PoRJE demo page — all nine UI elements wired to Jac Cloud
+// Owner walker/module: frontend
+// Spec: see PRD §12
+// Status: IMPLEMENTED — Prompt 12
 
-import React from 'react';
-import GraphView from '@/components/GraphView';
-import StampBadge from '@/components/StampBadge';
-import MintButton from '@/components/MintButton';
-import AuditorPanel from '@/components/AuditorPanel';
-import CounselPanel from '@/components/CounselPanel';
-import PathSelector from '@/components/PathSelector';
-import ExplorerLink from '@/components/ExplorerLink';
-import PolicyCard from '@/components/PolicyCard';
+'use client';
 
-// # TODO: wire to jacClient per PRD §9
+import { useState, useEffect, useCallback } from 'react';
+import type { Node, Edge } from 'reactflow';
+import { fetchGraph, runWalker } from '@/lib/jacClient';
+import { ASSET_ID, WALKER_ORDER } from '@/lib/constants';
+import type { Stamp } from '@/lib/types';
+import { GraphView } from '@/components/GraphView';
+import { StampBadge } from '@/components/StampBadge';
+import { AuditorPanel } from '@/components/AuditorPanel';
+import { CounselPanel } from '@/components/CounselPanel';
+import { PathSelector } from '@/components/PathSelector';
+import { MintButton } from '@/components/MintButton';
+import { ExplorerLink } from '@/components/ExplorerLink';
+import { PolicyCard } from '@/components/PolicyCard';
 
-export default function Home() {
+export default function HomePage() {
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+  const [stamps, setStamps] = useState<Record<string, Stamp>>({});
+  const [auditorReasons, setAuditorReasons] = useState<string[]>([]);
+  const [narration, setNarration] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const [requested, setRequested] = useState(1000000);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    try {
+      const g = await fetchGraph(ASSET_ID);
+      setNodes(g.nodes);
+      setEdges(g.edges);
+      const byName: Record<string, Stamp> = {};
+      for (const n of g.nodes) {
+        if ((n.data as { nodeType?: string }).nodeType === 'Stamp') {
+          const s = n.data as unknown as Stamp;
+          byName[s.walker_name] = s;
+        }
+      }
+      setStamps(byName);
+      if (byName['Auditor']) {
+        setAuditorReasons(byName['Auditor'].reasons);
+      }
+    } catch {
+      // Graph not yet seeded — ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const allGreen = WALKER_ORDER.every((w) => stamps[w]?.color === 'green');
+  const stampsReady = WALKER_ORDER.every((w) => w in stamps);
+  const justified = (stamps['Cover']?.payload?.justified_amount as number) ?? 0;
+
+  const runPath = async (path: string) => {
+    setPending(true);
+    setNarration(null);
+    setTxHash(null);
+    setError(null);
+    try {
+      // Seed asset first (idempotent)
+      await runWalker('SeedAsset', {
+        id: ASSET_ID,
+        name: 'PoR pUSD',
+        symbol: 'pUSD',
+        chain: 'sepolia',
+        token_address: process.env.NEXT_PUBLIC_POR_TOKEN_ADDRESS ?? '',
+        created_at: 0,
+      });
+      await runWalker('DemoControl', { path, asset_id: ASSET_ID });
+      await refresh();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setPending(false);
+    }
+  };
+
+  const onMint = async () => {
+    setPending(true);
+    setError(null);
+    try {
+      type ActResponse = { minted: boolean; tx?: string; reason?: string };
+      const res = await runWalker<ActResponse>('Act', {
+        asset_id: ASSET_ID,
+        requested_amount: requested,
+        recipient: '0x0000000000000000000000000000000000000000',
+        token_address: process.env.NEXT_PUBLIC_POR_TOKEN_ADDRESS ?? '',
+        attestation_address:
+          process.env.NEXT_PUBLIC_POR_ATTESTATION_ADDRESS ?? '',
+      });
+      if (res.minted && res.tx) {
+        setTxHash(res.tx);
+      } else {
+        setError(res.reason ?? 'Mint refused');
+      }
+      await refresh();
+      // Ask Counsel
+      type CounselResponse = { spoken: boolean; narration?: string };
+      const counsel = await runWalker<CounselResponse>('Counsel', {
+        asset_id: ASSET_ID,
+      });
+      if (counsel.spoken) {
+        setNarration(counsel.narration ?? null);
+      }
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setPending(false);
+    }
+  };
+
   return (
-    <main className="min-h-screen p-8 flex flex-col gap-6">
-      <PathSelector />
-      <StampBadge />
+    <main className="mx-auto max-w-6xl px-4 py-8 space-y-6">
+      {/* Header */}
+      <header>
+        <h1 className="text-3xl font-bold tracking-tight text-white">
+          Proof of Reserve,{' '}
+          <span className="text-green-500">Jac Enforced</span>
+        </h1>
+        <p className="mt-1 text-sm text-neutral-400">
+          PoR attests. Jac enforces. The printer is the proof.
+        </p>
+      </header>
+
+      {/* Path Selector */}
+      <section>
+        <h2 className="mb-3 text-xs uppercase tracking-wider text-neutral-500">
+          Demo Path
+        </h2>
+        <PathSelector onSelect={runPath} disabled={pending} />
+      </section>
+
+      {/* Policy Card */}
       <PolicyCard />
-      <GraphView />
-      <AuditorPanel />
-      <CounselPanel />
-      <MintButton />
-      <ExplorerLink />
+
+      {/* Graph View */}
+      <GraphView nodes={nodes} edges={edges} />
+
+      {/* Stamp Badges */}
+      <section className="flex gap-3 flex-wrap">
+        {WALKER_ORDER.map((w) => (
+          <StampBadge
+            key={w}
+            walker={w}
+            color={(stamps[w]?.color as 'green' | 'yellow' | 'red' | 'unknown') ?? null}
+          />
+        ))}
+      </section>
+
+      {/* Auditor Panel */}
+      <AuditorPanel reasons={auditorReasons} />
+
+      {/* Counsel Panel */}
+      <CounselPanel narration={narration} enabled={stampsReady} />
+
+      {/* Mint Row */}
+      <section className="flex items-center gap-4 flex-wrap">
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="requested-amount"
+            className="text-sm text-neutral-400"
+          >
+            Requested amount:
+          </label>
+          <input
+            id="requested-amount"
+            type="number"
+            value={requested}
+            onChange={(e) => setRequested(Number(e.target.value))}
+            className="w-36 rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-green-500"
+          />
+        </div>
+        <MintButton
+          enabled={allGreen}
+          justified={justified}
+          onMint={onMint}
+          pending={pending}
+        />
+        <ExplorerLink txHash={txHash} />
+      </section>
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-lg border border-red-800 bg-red-950 px-4 py-3 text-sm text-red-300">
+          {error}
+        </div>
+      )}
     </main>
   );
 }

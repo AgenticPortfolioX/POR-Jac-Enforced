@@ -1,75 +1,102 @@
 // frontend/src/lib/types.ts
-// Purpose: TypeScript types mirroring Jac node schemas and edge definitions
-// Owner walker/module: shared
-// Spec: see PRD §3.1, §3.2
-// Status: SCAFFOLD — no logic implemented
+// Purpose: TypeScript interfaces mirroring Jac node archetypes
+// Owner walker/module: frontend
+// Spec: see PRD §11
+// Status: IMPLEMENTED — Prompt 11
 
-export type HealthColor = 'green' | 'yellow' | 'red' | 'unknown';
+import type { Node, Edge } from 'reactflow';
 
-export interface Asset {
-  asset_id: string;
+export interface JacAsset {
+  id: string;
+  name: string;
   symbol: string;
-  total_reserves: number;
-  status: HealthColor;
-  last_updated: number;
+  chain: string;
+  token_address: string;
+  overall_status: string;
+  created_at: number;
+  edges: JacEdge[];
+}
+
+export interface JacEdge {
+  type: string;
+  source?: string;
+  target: JacNodeData;
 }
 
 export interface PriceObservation {
-  feed_address: string;
+  id: string;
   value: number;
-  round_id: number;
   timestamp: number;
-  status: HealthColor;
+  source: string;
+  provenance: string;
+  round_id: number;
+  nodeType: 'PriceObservation';
 }
 
 export interface ReserveAttestation {
-  feed_address: string;
+  id: string;
   amount: number;
-  round_id: number;
   timestamp: number;
-  provenance: string;
-  status: HealthColor;
+  source: string;
+  feed_address: string;
+  round_id: number;
+  answered_in_round: number;
+  nodeType: 'ReserveAttestation';
 }
 
 export interface ChildClaim {
+  id: string;
   asset_id: string;
   amount: number;
   timestamp: number;
+  source: string;
   present: boolean;
   provenance: string;
-  status: HealthColor;
+  nodeType: 'ChildClaim';
 }
 
 export interface Liability {
-  liability_id: string;
-  token_address: string;
-  total_minted: number;
-  target_coverage: number;
-  last_audited: number;
+  id: string;
+  minted_units: number;
+  vault_shares: number;
+  demo_position: number;
+  description: string;
+  nodeType: 'Liability';
 }
 
 export interface Stamp {
-  stamp_id: string;
-  color: HealthColor;
-  freshness_score: number;
-  coverage_ratio: number;
-  reason: string;
+  id: string;
+  walker_name: string;
+  color: 'green' | 'yellow' | 'red' | 'unknown';
+  reasons: string[];
   timestamp: number;
+  payload: Record<string, unknown>;
+  nodeType: 'Stamp';
 }
 
 export interface MintRecord {
+  id: string;
   tx_hash: string;
-  recipient: string;
-  amount: number;
-  coverage_at_mint: number;
+  token_address: string;
+  nft_token_id: number;
+  minted_amount: number;
+  coverage_used: number;
+  price_time: number;
+  reserve_time: number;
+  stamp_summary: Record<string, string>;
   timestamp: number;
-  status: string;
+  nodeType: 'MintRecord';
 }
 
-export type EdgeType =
-  | 'HasObservation'
-  | 'HasAttestation'
-  | 'HasChildClaim'
-  | 'EvaluatesLiability'
-  | 'ProducesStamp'
-  | 'ResultsInMint';
+export type JacNodeData =
+  | PriceObservation
+  | ReserveAttestation
+  | ChildClaim
+  | Liability
+  | Stamp
+  | MintRecord;
+
+export interface ReactFlowGraph {
+  nodes: Node[];
+  edges: Edge[];
+}

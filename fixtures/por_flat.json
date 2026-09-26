@@ -1,9 +1,11 @@
 {
   "label": "fixture",
-  "amount": 1000000.0,
-  "timestamp_offset_seconds": 600,
-  "feed_address": "0x1234567890123456789012345678901234567890",
-  "round_id": 990,
-  "answered_in_round": 990,
-  "provenance": "chainlink_por_flatline"
+  "amount": 1250000.0,
+  "timestamp_offset_seconds": -30,
+  "feed_address": "0x0000000000000000000000000000000000000001",
+  "round_id": 1001,
+  "answered_in_round": 1001,
+  "provenance": "fixtures/por_flat.json",
+  "source": "fixture",
+  "flat_history": [1250000.0, 1250000.0, 1250000.0]
 }

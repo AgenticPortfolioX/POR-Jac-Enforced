@@ -1,22 +1,66 @@
 # jac/lib/chainlink_py.py
-# Purpose: Python helper to query Chainlink AggregatorV3 data feeds
+# Purpose: Python bridge to Chainlink AggregatorV3Interface feeds via web3.py
 # Owner walker/module: shared
-# Spec: see PRD §7.2
-# Status: SCAFFOLD — no logic implemented
+# Spec: see PRD §6.3
+# Status: IMPLEMENTED — Prompt 3
 
-import time
-from typing import Dict, Any
+from web3 import Web3
+import os
+import json
 
-def latest_round(feed_address: str, rpc_url: str = None) -> Dict[str, Any]:
+
+def _load_abi() -> list:
+    """Load AggregatorV3Interface ABI from contracts/interfaces."""
+    abi_path = os.path.join(
+        os.path.dirname(__file__), "..", "..", "contracts", "interfaces", "AggregatorV3Interface.json"
+    )
+    if os.path.exists(abi_path):
+        with open(abi_path, "r") as f:
+            return json.load(f)
+    # Minimal inline ABI if file not yet present
+    return [
+        {"name": "latestRoundData", "type": "function", "stateMutability": "view",
+         "inputs": [], "outputs": [
+             {"name": "roundId", "type": "uint80"},
+             {"name": "answer", "type": "int256"},
+             {"name": "startedAt", "type": "uint256"},
+             {"name": "updatedAt", "type": "uint256"},
+             {"name": "answeredInRound", "type": "uint80"},
+         ]},
+        {"name": "decimals", "type": "function", "stateMutability": "view",
+         "inputs": [], "outputs": [{"name": "", "type": "uint8"}]},
+    ]
+
+
+def _w3() -> Web3:
+    """Create a Web3 instance from SEPOLIA_RPC_URL env."""
+    rpc_url = os.environ.get("SEPOLIA_RPC_URL", "")
+    return Web3(Web3.HTTPProvider(rpc_url))
+
+
+def latest_round(feed_address: str) -> dict:
     """
-    Fetches the latest round data from a Chainlink AggregatorV3 feed.
-    Returns round_id, answer, started_at, updated_at, answered_in_round.
+    Fetch the latest round data from a Chainlink price feed.
+    Returns a dict with all primitives — no web3 types.
     """
-    # TODO: implement web3 AggregatorV3 call per PRD §7.2
+    w3 = _w3()
+    abi = _load_abi()
+    contract = w3.eth.contract(
+        address=Web3.to_checksum_address(feed_address),
+        abi=abi,
+    )
+    round_id, answer, started_at, updated_at, answered_in_round = (
+        contract.functions.latestRoundData().call()
+    )
+    decimals = int(contract.functions.decimals().call())
+    answer_float = float(answer) / float(10 ** decimals)
+
     return {
-        "round_id": 1,
-        "answer": 100000000,
-        "started_at": int(time.time()),
-        "updated_at": int(time.time()),
-        "answered_in_round": 1
+        "round_id": int(round_id),
+        "answer": float(answer_float),
+        "started_at": int(started_at),
+        "updated_at": int(updated_at),
+        "answered_in_round": int(answered_in_round),
+        "feed_address": str(feed_address),
+        "decimals": int(decimals),
     }

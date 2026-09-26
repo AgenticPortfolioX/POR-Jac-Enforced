@@ -1,14 +1,27 @@
 // frontend/src/components/CounselPanel.tsx
-// Purpose: Panel displaying remediation recommendations and policy counsel
-// Owner walker/module: Counsel
-// Spec: see PRD §11
-// Status: SCAFFOLD — no logic implemented
+// Purpose: Narrate post-stamp verdict; blind placeholder until three stamps exist
+// Owner walker/module: frontend
+// Spec: see PRD §12
+// Status: IMPLEMENTED — Prompt 12
 
-import React from 'react';
+interface CounselPanelProps {
+  narration: string | null;
+  enabled: boolean;
+}
 
-export interface CounselPanelProps {}
-
-export default function CounselPanel(_props: CounselPanelProps) {
-  // TODO: implement per PRD §11 (screen)
-  return <div>CounselPanel</div>;
+export function CounselPanel({ narration, enabled }: CounselPanelProps) {
+  return (
+    <div className="rounded-lg border border-neutral-800 bg-neutral-900 p-4 text-sm">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-neutral-400">
+        Counsel
+      </h2>
+      {!enabled ? (
+        <p className="italic text-neutral-500">
+          Counsel is blind until three stamps exist.
+        </p>
+      ) : (
+        <p className="text-neutral-200 leading-relaxed">{narration ?? '...'}</p>
+      )}
+    </div>
+  );
 }

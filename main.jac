@@ -2,17 +2,22 @@
 # Purpose: Root application entrypoint for Jachammer / Jac Cloud / Native Jac execution
 # Owner walker/module: shared
 # Spec: see PRD §3.3, §9
-# Status: SCAFFOLD — entrypoint registration
+# Status: IMPLEMENTED — entrypoint registration
 
 import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, ChildClaim, Liability, Stamp, MintRecord }
-import from jac.schemas.edges { HasObservation, HasAttestation, HasChildClaim, EvaluatesLiability, ProducesStamp, ResultsInMint }
-import from jac.walkers.ingest { IngestWalker }
-import from jac.walkers.freshness { FreshnessWalker }
-import from jac.walkers.cover { CoverWalker }
-import from jac.walkers.auditor { AuditorWalker }
-import from jac.walkers.act { ActWalker }
-import from jac.walkers.counsel { CounselWalker }
-import from jac.walkers.demo_control { DemoControlWalker }
+import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, StampedBy, MintedAs }
+import from jac.lib.policy { POLICY }
+import from jac.lib.colors { COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_UNKNOWN, color_rank, min_color }
+import from jac.walkers.ingest { Ingest }
+import from jac.walkers.freshness { Freshness }
+import from jac.walkers.cover { Cover }
+import from jac.walkers.auditor { Auditor }
+import from jac.walkers.act { Act }
+import from jac.walkers.counsel { Counsel }
+import from jac.walkers.demo_control { DemoControl }
+import from jac.walkers.get_asset { GetAsset }
+import from jac.walkers.get_stamps { GetStamps }
+import from jac.walkers.seed_asset { SeedAsset }
 
 with entry {
     print("PoRJE root scaffold booted");

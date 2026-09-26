@@ -1,65 +1,70 @@
 # jac/schemas/nodes.jac
-# Purpose: Graph node definitions for Proof of Reserve
+# Purpose: Graph node archetypes for Proof of Reserve, Jac Enforced
 # Owner walker/module: shared
 # Spec: see PRD §3.1
-# Status: SCAFFOLD — no logic implemented
+# Status: IMPLEMENTED — Prompt 2
 
 node Asset {
-    has asset_id: str;
-    has symbol: str;
-    has total_reserves: float = 0.0;
-    has status: str = "unknown";
-    has last_updated: int = 0;
+    has :pub id: str;
+    has :pub name: str;
+    has :pub symbol: str;
+    has :pub chain: str;
+    has :pub token_address: str;
+    has :pub created_at: int;
+    has :pub overall_status: str = "unknown";
 }
 
 node PriceObservation {
-    has feed_address: str;
-    has value: float;
-    has round_id: int;
-    has timestamp: int;
-    has status: str = "unknown";
+    has :pub value: float;
+    has :pub timestamp: int;
+    has :pub source: str;
+    has :pub provenance: str;
+    has :pub round_id: int = 0;
 }
 
 node ReserveAttestation {
-    has feed_address: str;
-    has amount: float;
-    has round_id: int;
-    has timestamp: int;
-    has provenance: str;
-    has status: str = "unknown";
+    has :pub amount: float;
+    has :pub timestamp: int;
+    has :pub source: str;
+    has :pub provenance: str;
+    has :pub feed_address: str;
+    has :pub round_id: int = 0;
+    has :pub answered_in_round: int = 0;
+    has :pub flat_history: list = [];
 }
 
 node ChildClaim {
-    has asset_id: str;
-    has amount: float;
-    has timestamp: int;
-    has provenance: str;
-    has present: bool = True;
-    has status: str = "unknown";
+    has :pub asset_id: str;
+    has :pub amount: float;
+    has :pub timestamp: int;
+    has :pub source: str;
+    has :pub present: bool;
+    has :pub provenance: str;
 }
 
 node Liability {
-    has liability_id: str;
-    has token_address: str;
-    has total_minted: float = 0.0;
-    has target_coverage: float = 1.0;
-    has last_audited: int = 0;
+    has :pub minted_units: float;
+    has :pub vault_shares: float;
+    has :pub demo_position: float;
+    has :pub description: str;
 }
 
 node Stamp {
-    has stamp_id: str;
-    has color: str = "unknown";
-    has freshness_score: float = 0.0;
-    has coverage_ratio: float = 0.0;
-    has reason: str = "";
-    has timestamp: int = 0;
+    has :pub walker_name: str;
+    has :pub color: str;
+    has :pub reasons: list[str];
+    has :pub timestamp: int;
+    has :pub payload: dict = {};
 }
 
 node MintRecord {
-    has tx_hash: str;
-    has recipient: str;
-    has amount: float;
-    has coverage_at_mint: float;
-    has timestamp: int;
-    has status: str;
+    has :pub tx_hash: str;
+    has :pub token_address: str;
+    has :pub nft_token_id: int;
+    has :pub minted_amount: float;
+    has :pub coverage_used: float;
+    has :pub price_time: int;
+    has :pub reserve_time: int;
+    has :pub stamp_summary: dict;
+    has :pub timestamp: int;
 }

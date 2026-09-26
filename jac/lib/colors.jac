@@ -1,19 +1,30 @@
 # jac/lib/colors.jac
-# Purpose: Health state color definitions and ranking helper
+# Purpose: Color constants and ranking helpers for stamp evaluation
 # Owner walker/module: shared
 # Spec: see PRD §4, §5
-# Status: SCAFFOLD — no logic implemented
+# Status: IMPLEMENTED — Prompt 2
 
-glob COLORS = {"green", "yellow", "red", "unknown"};
+glob COLOR_GREEN = "green";
+glob COLOR_YELLOW = "yellow";
+glob COLOR_RED = "red";
+glob COLOR_UNKNOWN = "unknown";
 
-def rank(c: str) -> int {
-    # TODO: green=0, yellow=1, red=2, unknown=3
-    if c == "green" {
+def color_rank(c: str) -> int {
+    if c == COLOR_GREEN {
         return 0;
-    } elif c == "yellow" {
+    }
+    if c == COLOR_YELLOW {
         return 1;
-    } elif c == "red" {
+    }
+    if c == COLOR_RED {
         return 2;
     }
     return 3;
+}
+
+def min_color(a: str, b: str) -> str {
+    if color_rank(a) >= color_rank(b) {
+        return a;
+    }
+    return b;
 }

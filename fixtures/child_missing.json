@@ -1,8 +1,9 @@
 {
   "label": "fixture",
-  "asset_id": "child-vault-01",
+  "asset_id": "USDC",
   "amount": 0.0,
-  "timestamp_offset_seconds": 300,
+  "timestamp_offset_seconds": -30,
   "present": false,
-  "provenance": "custodian_api_missing"
+  "provenance": "fixtures/child_missing.json",
+  "source": "fixture"
 }

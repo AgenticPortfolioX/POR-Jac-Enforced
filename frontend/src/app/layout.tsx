@@ -1,25 +1,24 @@
 // frontend/src/app/layout.tsx
-// Purpose: Root HTML and layout shell
-// Owner walker/module: shared
-// Spec: see PRD §11
-// Status: SCAFFOLD — no logic implemented
+// Purpose: Root layout wrapping all PoRJE pages
+// Owner walker/module: frontend
+// Spec: see PRD §12
+// Status: IMPLEMENTED — Prompt 12
 
 import './globals.css';
-import React from 'react';
+import type { ReactNode } from 'react';
 
 export const metadata = {
-  title: 'Proof of Reserve — Jac Enforced',
-  description: 'Policy-enforced Proof of Reserve powered by Jac Cloud and Chainlink',
+  title: 'PoRJE — Proof of Reserve, Jac Enforced',
+  description:
+    'Proof of Reserve attests. Jac enforces. The printer is the proof.',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="bg-neutral-950 text-neutral-100 min-h-screen">
+        {children}
+      </body>
     </html>
   );
 }

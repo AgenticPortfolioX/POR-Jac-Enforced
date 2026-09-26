@@ -2,17 +2,24 @@
 # Purpose: General mathematical and timestamp utility functions
 # Owner walker/module: shared
 # Spec: see PRD §3
-# Status: SCAFFOLD — no logic implemented
+# Status: IMPLEMENTED — Prompt 3
 
-def now() -> int {
-    # TODO: unix seconds
-    return 0;
+import time;
+
+def now_unix() -> int {
+    return int(time.time());
 }
 
-def abs(a: float, b: float) -> float {
-    # TODO
-    if a >= b {
+def abs_diff(a: float, b: float) -> float {
+    if a > b {
         return a - b;
     }
     return b - a;
+}
+
+def pct_change(old: float, new_val: float) -> float {
+    if old == 0.0 {
+        return 0.0;
+    }
+    return (new_val - old) / old;
 }

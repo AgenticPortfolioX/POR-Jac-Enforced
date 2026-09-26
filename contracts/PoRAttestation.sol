@@ -1,70 +1,48 @@
-// SPDX-License-Identifier: MIT
 // contracts/PoRAttestation.sol
-// Purpose: On-chain ledger recording reserve attestations and audit stamps
+// Purpose: ERC-721 NFT recording each PoR-enforced mint event on-chain
 // Owner walker/module: Act
-// Spec: see PRD §8.2
-// Status: SCAFFOLD — no logic implemented
+// Spec: see PRD §8.3
+// Status: IMPLEMENTED — Prompt 4
 
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-contract PoRAttestation {
-    struct Attestation {
-        address recipient;
-        uint256 minted;
-        uint256 coverage;
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract PoRAttestation is ERC721, Ownable {
+    uint256 private _nextId;
+
+    struct Record {
+        uint256 mintedAmount;
+        uint256 coverageUsed;
         uint256 priceTime;
         uint256 reserveTime;
         string stampSummary;
-        uint256 timestamp;
     }
 
-    address public owner;
-    Attestation[] public attestations;
+    mapping(uint256 => Record) public records;
 
-    event AttestationRecorded(
-        uint256 indexed id,
-        address indexed recipient,
-        uint256 minted,
-        uint256 coverage
+    event AttestationMinted(
+        uint256 indexed tokenId,
+        uint256 mintedAmount,
+        string stampSummary
     );
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "PoRAttestation: caller is not the owner");
-        _;
-    }
+    constructor() ERC721("PoR Attestation", "PoRATT") Ownable(msg.sender) {}
 
-    constructor() {
-        owner = msg.sender;
-    }
-
-    function recordAttestation(
+    function mintAttestation(
         address to,
-        uint256 minted,
-        uint256 coverage,
+        uint256 mintedAmount,
+        uint256 coverageUsed,
         uint256 priceTime,
         uint256 reserveTime,
         string calldata stampSummary
     ) external onlyOwner returns (uint256) {
-        attestations.push(Attestation({
-            recipient: to,
-            minted: minted,
-            coverage: coverage,
-            priceTime: priceTime,
-            reserveTime: reserveTime,
-            stampSummary: stampSummary,
-            timestamp: block.timestamp
-        }));
-        uint256 id = attestations.length - 1;
-        emit AttestationRecorded(id, to, minted, coverage);
+        uint256 id = ++_nextId;
+        _safeMint(to, id);
+        records[id] = Record(mintedAmount, coverageUsed, priceTime, reserveTime, stampSummary);
+        emit AttestationMinted(id, mintedAmount, stampSummary);
         return id;
-    }
-
-    function getAttestationCount() external view returns (uint256) {
-        return attestations.length;
-    }
-
-    function getAttestation(uint256 id) external view returns (Attestation memory) {
-        require(id < attestations.length, "PoRAttestation: non-existent id");
-        return attestations[id];
     }
 }

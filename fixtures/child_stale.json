@@ -1,8 +1,9 @@
 {
   "label": "fixture",
-  "asset_id": "child-vault-02",
-  "amount": 500000.0,
-  "timestamp_offset_seconds": 150000,
+  "asset_id": "USDC",
+  "amount": 1250000.0,
+  "timestamp_offset_seconds": -7200,
   "present": true,
-  "provenance": "custodian_api_stale"
+  "provenance": "fixtures/child_stale.json",
+  "source": "fixture"
 }

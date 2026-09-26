@@ -1,9 +1,11 @@
-/* frontend/src/app/globals.css */
-/* Purpose: Global styles and Tailwind CSS directives */
-/* Owner walker/module: shared */
-/* Spec: see PRD §11 */
-/* Status: SCAFFOLD — no logic implemented */
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom PoRJE dark theme enhancements */
+:root {
+  --color-green: #16a34a;
+  --color-yellow: #ca8a04;
+  --color-red: #dc2626;
+  --color-unknown: #525252;
+}

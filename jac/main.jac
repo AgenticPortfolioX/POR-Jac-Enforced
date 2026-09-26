@@ -1,21 +1,24 @@
 # jac/main.jac
-# Purpose: Main entrypoint and walker registry for Jac Cloud
+# Purpose: Main entrypoint and walker registry for PoRJE
 # Owner walker/module: shared
 # Spec: see PRD §3.3, §9
-# Status: SCAFFOLD — no logic implemented
+# Status: IMPLEMENTED — Prompts 2-9
 
-import from schemas.nodes { Asset, PriceObservation, ReserveAttestation, ChildClaim, Liability, Stamp, MintRecord }
-import from schemas.edges { HasObservation, HasAttestation, HasChildClaim, EvaluatesLiability, ProducesStamp, ResultsInMint }
-import from walkers.ingest { IngestWalker }
-import from walkers.freshness { FreshnessWalker }
-import from walkers.cover { CoverWalker }
-import from walkers.auditor { AuditorWalker }
-import from walkers.act { ActWalker }
-import from walkers.counsel { CounselWalker }
-import from walkers.demo_control { DemoControlWalker }
-
-# TODO: register walkers with Jac Cloud per PRD §9
+import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, ChildClaim, Liability, Stamp, MintRecord }
+import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, StampedBy, MintedAs }
+import from jac.lib.policy { POLICY }
+import from jac.lib.colors { COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_UNKNOWN, color_rank, min_color }
+import from jac.walkers.ingest { Ingest }
+import from jac.walkers.freshness { Freshness }
+import from jac.walkers.cover { Cover }
+import from jac.walkers.auditor { Auditor }
+import from jac.walkers.act { Act }
+import from jac.walkers.counsel { Counsel }
+import from jac.walkers.demo_control { DemoControl }
+import from jac.walkers.get_asset { GetAsset }
+import from jac.walkers.get_stamps { GetStamps }
+import from jac.walkers.seed_asset { SeedAsset }
 
 with entry {
-    print("PoRJE scaffold booted");
+    print("PoRJE root scaffold booted");
 }

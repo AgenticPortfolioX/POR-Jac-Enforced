@@ -1,14 +1,32 @@
 // frontend/src/components/MintButton.tsx
-// Purpose: Trigger on-chain token minting gated by green Stamp approval
-// Owner walker/module: Act
-// Spec: see PRD §11
-// Status: SCAFFOLD — no logic implemented
+// Purpose: Mint button — disabled unless all three stamps are green
+// Owner walker/module: frontend
+// Spec: see PRD §12
+// Status: IMPLEMENTED — Prompt 12
 
-import React from 'react';
+interface MintButtonProps {
+  enabled: boolean;
+  justified: number;
+  onMint: () => void;
+  pending: boolean;
+}
 
-export interface MintButtonProps {}
-
-export default function MintButton(_props: MintButtonProps) {
-  // TODO: implement per PRD §11 (screen)
-  return <div>MintButton</div>;
+export function MintButton({
+  enabled,
+  justified,
+  onMint,
+  pending,
+}: MintButtonProps) {
+  return (
+    <button
+      id="mint-button"
+      onClick={onMint}
+      disabled={!enabled || pending}
+      className="rounded-lg px-6 py-3 font-semibold text-sm transition-colors bg-green-700 hover:bg-green-600 text-white disabled:bg-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed"
+    >
+      {pending
+        ? 'Minting...'
+        : `Mint (justified: ${justified.toFixed(2)})`}
+    </button>
+  );
 }

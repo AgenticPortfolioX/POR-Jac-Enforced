@@ -1,14 +1,33 @@
 // frontend/src/components/StampBadge.tsx
-// Purpose: Visual indicator badge displaying current audit Stamp color and status
-// Owner walker/module: Auditor
-// Spec: see PRD §11
-// Status: SCAFFOLD — no logic implemented
+// Purpose: Color-coded badge for each walker's stamp result
+// Owner walker/module: frontend
+// Spec: see PRD §12
+// Status: IMPLEMENTED — Prompt 12
 
-import React from 'react';
+type Color = 'green' | 'yellow' | 'red' | 'unknown';
 
-export interface StampBadgeProps {}
+const colorMap: Record<Color, string> = {
+  green: 'bg-green-600 text-white',
+  yellow: 'bg-yellow-500 text-black',
+  red: 'bg-red-600 text-white',
+  unknown: 'bg-neutral-600 text-neutral-300',
+};
 
-export default function StampBadge(_props: StampBadgeProps) {
-  // TODO: implement per PRD §11 (screen)
-  return <div>StampBadge</div>;
+interface StampBadgeProps {
+  walker: string;
+  color: Color | null;
+}
+
+export function StampBadge({ walker, color }: StampBadgeProps) {
+  const pill = color ? colorMap[color] : 'bg-neutral-800 text-neutral-500';
+  const label = color ?? 'pending';
+
+  return (
+    <div className="flex items-center gap-2 rounded-lg border border-neutral-800 px-4 py-2">
+      <span className="text-sm font-medium text-neutral-300">{walker}</span>
+      <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${pill}`}>
+        {label}
+      </span>
+    </div>
+  );
 }
