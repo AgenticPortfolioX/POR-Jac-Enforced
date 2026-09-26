@@ -63,3 +63,32 @@
 - Created root `main.jac` entrypoint linking the Jac schemas and verifier walkers for repository root execution.
 - Updated `jac.toml` with explicit hyphenated `entry-point = "main.jac"` (as well as `entry_point = "main.jac"`) to satisfy Jachammer.ai build detection.
 - Verified compilation and runtime behavior: `jac check main.jac` and `jac run main.jac` passed 100% with `PoRJE root scaffold booted`.
+
+### 8. Jac 0.13.5 Compilation Closure
+- Added the missing edge-archetype imports (`StampedBy`) to `freshness.jac`, `cover.jac` and `auditor.jac`. `[here ->:StampedBy:->]` resolves the archetype at runtime through the module namespace, so an unimported edge type raised `NameError: name 'StampedBy' is not defined` as an HTTP 500.
+- Removed the E1030 errors the checker raised in the same three walkers. Binding a local that held "the existing stamp or nothing" made the checker infer `NoneType` on the second read; the walkers now mutate inside the traversal loop behind a `found: bool` flag, which requires no narrowing. Annotating the local as `Stamp | None` instead produced E1099, so the flag form is the one that stays clean.
+- Result: `jac check` PASSES on every module under `jac/`, and all 5 test files report `Passed successfully.`
+
+### 9. Stamp-Uniqueness Invariant (root cause found and fixed)
+- **Symptom:** each `DemoControl` run appended new `Stamp` nodes instead of replacing the walkers' own, so stamp counts grew 3 → 6 → 9 and `Act` could read a stale green.
+- **Root cause:** not edge deletion — two controlled probes (`DriveNoDel` / `DriveWithDel`) accumulated identically, refuting that hypothesis. The governing rule is that **any earlier sibling walker which adds an edge to the anchor makes later siblings spawned in the same ability blind to the anchor's persisted edges**, because each child's commit rewrites the anchor's edge set from its own snapshot.
+- **Fix, two parts:** `demo_control.jac` clears the anchor's stamps **in the anchor's own frame, before any sibling spawns**, while the persisted edges are still visible; `freshness.jac`, `cover.jac` and `auditor.jac` **upsert** their stamp rather than delete-and-recreate, so there is no edge left to lose however they are driven.
+- **Verified:** exactly 3 stamps (one per walker) stays stable across repeated runs of all three demo paths.
+
+### 10. EVM Path Proven End-to-End, Fail-Closed
+- `Act` now wraps both chain calls. A failure reports `{"minted": false, "reason": "evm mint failed: …"}` and writes no `MintRecord`; previously an empty `DEPLOYER_PRIVATE_KEY` surfaced as an HTTP 500, which is not a refusal. Invariant 6 now holds in both directions: no `MintRecord` without a mint, and no mint reported without a receipt.
+- Fixed a `build_transaction({})` defect in `evm_py.py` and `deploy_contracts.py`: gas was estimated with no `from`, so constructor-time `Ownable(msg.sender)` saw `address(0)` and deployment reverted with `0x1e4fbdf7` (`OwnableInvalidOwner`). Both now set `w3.eth.default_account` before building.
+- Produced a **real on-chain mint**, verified independently of the graph: `{"minted": true, "amount": 250000.0, "justified": 250000.0, "tx": "f83aa8fb…620eb", "nft_id": 1}`, with `balanceOf(recipient) == totalSupply() == 249999.999999999995805696`, `ownerOf(1)` = recipient, receipt `status: 1`, `gasUsed: 75166`.
+- Switched the contract build path to **Foundry**: Hardhat 3 with `hardhat-toolbox@7` silently no-ops (exit 0, no artifacts). Added `foundry.toml` (solc 0.8.20, `@openzeppelin/contracts@5.1.0` resolved from `node_modules`) and `scripts/build_artifacts.py`, which flattens `out/<Name>.sol/<Name>.json` into the `{"abi", "bytecode"}` shape the runtime loads. Exposed as `npm run contracts:build`.
+
+### 11. Prompt 13 — Deployment & Final Validation
+- Wrote `docs/architecture.md`, `docs/policy.md`, `docs/walkers.md` and `docs/demo-runbook.md` in full — no stubs remain.
+- Ran the three-path verification (`happy`, `yellow`, `unknown`) against a live server, capturing the actual walker reports, stamp colors, `Act` refusals and `MintRecord` counts into the runbook as pasted evidence.
+- Confirmed the readiness probe: `/docs` returns 200; `/health` returns 404 in Jac 0.13.5, so the runbook supersedes `demo.md`'s older checklist line on that point.
+- Recorded remaining deviations honestly in `build/build1.md` and in the runbook: AC 6's `Freshness unknown` clause is unreachable without contradicting Prompt 5 or Prompt 8; `jac check jac/walkers/act.jac` retains 2 E1032 errors from the checker's `.py`-module introspection limit; the live Sepolia mint could not be exercised from this host because outbound TLS to the provider fails with `SSLCertVerificationError`, so the mint was proven on a local `anvil` chain instead.
+
+### 12. Credential Isolation Re-Verified Before Push
+- `.env` remains untracked and matched by `.gitignore:11:*.env`; `.env.example` was deleted from disk per project policy that all credentials live in `.env`. `git grep "env.example"` returns nothing, so no dangling reference remains.
+- Scanned the **entire git history** for the live deployer private key and the RPC provider key: **0 occurrences** of either.
+- Confirmed all build outputs are ignored and never enter a commit: `artifacts/`, `out/`, `.jac/`, `node_modules/`, `frontend/.next/`.
+- Removed a stray `hardhat.config.js` that `npx hardhat` had generated (the repo's build path is Foundry), and dropped the unusable Hardhat 3 devDependencies plus the `"type": "module"` field it had injected into the root `package.json`. `@openzeppelin/contracts@5.1.0` is kept — `foundry.toml` resolves its remapping out of `node_modules`.

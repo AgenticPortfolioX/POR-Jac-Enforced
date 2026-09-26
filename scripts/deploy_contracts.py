@@ -20,7 +20,7 @@ def load_artifact(name: str) -> dict:
     path = Path(__file__).parent.parent / "artifacts" / f"{name}.json"
     if not path.exists():
         print(f"ERROR: artifact not found: {path}")
-        print("Build contracts first: npx hardhat compile  or  forge build")
+        print("Build contracts first: forge build && python scripts/build_artifacts.py")
         sys.exit(1)
     with open(path) as f:
         return json.load(f)
@@ -34,6 +34,11 @@ def main():
     w3 = Web3(Web3.HTTPProvider(rpc_url))
     account = Account.from_key(private_key)
     deployer = account.address
+    # build_transaction({}) below estimates gas by dry-running each call, and a
+    # from-less estimate makes constructor-time Ownable(msg.sender) see address(0)
+    # and revert with OwnableInvalidOwner. Default the account to the deployer so
+    # every estimate is made as the account that will actually sign.
+    w3.eth.default_account = deployer
     print(f"Deployer: {deployer}")
     print(f"Balance:  {w3.from_wei(w3.eth.get_balance(deployer), 'ether')} ETH")
 
@@ -61,7 +66,7 @@ def main():
         abi=token_artifact["abi"],
         bytecode=token_artifact["bytecode"],
     )
-    token_receipt = send(TokenContract.constructor("PoR pUSD", "pUSD").build_transaction({}))
+    token_receipt = send(TokenContract.constructor("PoR pUSD", "pUSD").build_transaction({"from": deployer}))
     token_address = token_receipt["contractAddress"]
     print(f"PoRToken deployed:       {token_address}")
     print(f"  Etherscan: https://sepolia.etherscan.io/address/{token_address}")
@@ -72,14 +77,14 @@ def main():
         abi=att_artifact["abi"],
         bytecode=att_artifact["bytecode"],
     )
-    att_receipt = send(AttContract.constructor().build_transaction({}))
+    att_receipt = send(AttContract.constructor().build_transaction({"from": deployer}))
     att_address = att_receipt["contractAddress"]
     print(f"PoRAttestation deployed: {att_address}")
     print(f"  Etherscan: https://sepolia.etherscan.io/address/{att_address}")
 
     # setActWalker(deployer) — for demo purposes; replace with Jac Cloud wallet in prod
     token_contract = w3.eth.contract(address=token_address, abi=token_artifact["abi"])
-    send(token_contract.functions.setActWalker(deployer).build_transaction({}))
+    send(token_contract.functions.setActWalker(deployer).build_transaction({"from": deployer}))
     print(f"setActWalker({deployer}) done")
 
     # Append addresses to .env

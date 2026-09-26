@@ -7,6 +7,10 @@
     "deploy": "python scripts/deploy_contracts.py",
     "seed": "python scripts/seed_graph.py",
     "jac:serve": "jac serve jac/main.jac",
-    "frontend:dev": "cd frontend && npm run dev"
+    "frontend:dev": "cd frontend && npm run dev",
+    "contracts:build": "forge build && python scripts/build_artifacts.py"
+  },
+  "devDependencies": {
+    "@openzeppelin/contracts": "^5.1.0"
   }
 }

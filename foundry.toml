@@ -1,0 +1,19 @@
+# foundry.toml
+# Purpose: Foundry build config for the PoR contracts
+# Owner walker/module: shared
+# Spec: see PRD §10
+# Status: IMPLEMENTED — Prompt 4
+#
+# The hardhat toolchain in this repo is pinned to a hardhat-toolbox version that
+# cannot compile (see package.json), so `forge build` is the supported path.
+# scripts/deploy_contracts.py accepts either, as long as artifacts/{Name}.json
+# exists with {"abi": [...], "bytecode": "0x..."}.
+
+[profile.default]
+src = "contracts"
+out = "out"
+libs = ["node_modules"]
+solc = "0.8.20"
+remappings = ["@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/"]
+optimizer = true
+optimizer_runs = 200

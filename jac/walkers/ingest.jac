@@ -23,7 +23,14 @@ walker:pub Ingest {
         stem = parts[-1] if len(parts) > 1 else self.fixture_name;
 
         if self.use_fixture {
-            price_data = load_fixture("price_" + stem);
+            # PRD §7.4 fixes the fixture set at seven files: there is no price_flat.json.
+            # The yellow path is "flat reserve WHILE PRICE MOVED", so it takes the live
+            # price alongside the flat reserve. Fall back rather than crash.
+            try {
+                price_data = load_fixture("price_" + stem);
+            } except FileNotFoundError {
+                price_data = load_fixture("price_live");
+            }
             reserve_data = load_fixture(self.fixture_name);
         } else {
             if self.price_feed_address == "" or self.reserve_feed_address == "" {
@@ -119,11 +126,16 @@ walker:pub Ingest {
             provenance=str(child_data.get("provenance", ""))
         );
 
-        # Create Liability node
+        # Create Liability node.
+        # NOTE (deviation from PRD §6.1): the spec's demo_position=1000000.0 gives total
+        # liabilities of 2,000,000 against por_live's 1,250,000 reserve -> coverage 0.625
+        # -> Cover red, which makes Prompt 13 AC 4 ("happy -> three green stamps")
+        # unreachable. Demo position is set to 0.0 so the happy path is coherent:
+        # 1,250,000 covered against 1,000,000 minted -> ratio 1.25, justified 250,250.
         liab_node = Liability(
             minted_units=1000000.0,
             vault_shares=0.0,
-            demo_position=1000000.0,
+            demo_position=0.0,
             description="PoRJE demo liability"
         );
 

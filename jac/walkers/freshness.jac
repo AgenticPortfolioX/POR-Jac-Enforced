@@ -59,23 +59,35 @@ walker:pub Freshness {
             }
         }
 
-        # Remove any prior Freshness stamp
-        all_stamps: list = [here ->:StampedBy:->];
-        for old_stamp in all_stamps {
+        # Upsert this walker's stamp — exactly one Freshness stamp per asset.
+        # NOTE: do NOT delete-then-recreate here. When several walkers are spawned
+        # from a single parent ability (DemoControl spawns Freshness, Cover and
+        # Auditor in one run), each child's commit re-writes the asset's edge set
+        # from its own snapshot, restoring edges a sibling had just deleted. The
+        # deletion is silently lost and stamps accumulate one per run, which would
+        # let Act read a stale green. Mutating the existing node in place has no
+        # edge to lose, so the invariant holds no matter how the walker is driven.
+        found: bool = False;
+        for old_stamp in [here ->:StampedBy:->] {
             if str(old_stamp.walker_name) == "Freshness" {
-                here del --> old_stamp;
+                old_stamp.color = color;
+                old_stamp.reasons = reasons;
+                old_stamp.timestamp = now;
+                old_stamp.payload = {};
+                found = True;
             }
         }
 
-        # Write new stamp
-        stamp: Stamp = Stamp(
-            walker_name="Freshness",
-            color=color,
-            reasons=reasons,
-            timestamp=now,
-            payload={}
-        );
-        here +>: StampedBy() :+> stamp;
+        if not found {
+            stamp: Stamp = Stamp(
+                walker_name="Freshness",
+                color=color,
+                reasons=reasons,
+                timestamp=now,
+                payload={}
+            );
+            here +>: StampedBy() :+> stamp;
+        }
 
         report {"walker": "Freshness", "color": color, "reasons": reasons};
     }

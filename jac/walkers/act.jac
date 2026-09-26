@@ -68,22 +68,34 @@ walker:pub Act {
         # `getattr(evm_py, ...)` (name is not bound at runtime).
         # `jac check` reports E1032 here: the static checker cannot introspect .py
         # modules. See docs/architecture.md § Testability.
-        tx_hash = evm_py.mint(
-            str(self.token_address),
-            str(self.recipient),
-            float(amount),
-            str(reason_json)
-        );
+        tx_hash: str = "";
+        nft_id: int = 0;
+        try {
+            tx_hash = str(evm_py.mint(
+                str(self.token_address),
+                str(self.recipient),
+                float(amount),
+                str(reason_json)
+            ));
 
-        nft_id = evm_py.mint_attestation(
-            str(self.attestation_address),
-            str(self.recipient),
-            float(amount),
-            float(justified),
-            int(price_time),
-            int(reserve_time),
-            dict(stamp_summary)
-        );
+            nft_id = int(evm_py.mint_attestation(
+                str(self.attestation_address),
+                str(self.recipient),
+                float(amount),
+                float(justified),
+                int(price_time),
+                int(reserve_time),
+                dict(stamp_summary)
+            ));
+        } except Exception as e {
+            # Fail closed. A chain call that cannot be completed — node has no funded
+            # key, RPC unreachable, contract reverted — must surface as an explicit
+            # refusal with no MintRecord written, never as an unhandled exception and
+            # never as a false success. Invariant 6 holds in both directions: no
+            # MintRecord without a mint, and no mint reported without a receipt.
+            report {"minted": False, "reason": "evm mint failed: " + str(e)};
+            return;
+        }
 
         record = MintRecord(
             tx_hash=str(tx_hash),

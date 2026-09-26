@@ -100,21 +100,31 @@ walker:pub Auditor {
             }
         }
 
-        # Remove prior Auditor stamp
+        # Upsert this walker's stamp — exactly one Auditor stamp per asset.
+        # See jac/walkers/freshness.jac for why this mutates in place instead of
+        # deleting the prior stamp: sibling spawns from one parent ability restore
+        # each other's deleted edges, so deletion does not survive.
+        found: bool = False;
         for old_stamp in [here ->:StampedBy:->] {
             if str(old_stamp.walker_name) == "Auditor" {
-                here del --> old_stamp;
+                old_stamp.color = color;
+                old_stamp.reasons = findings;
+                old_stamp.timestamp = now;
+                old_stamp.payload = {};
+                found = True;
             }
         }
 
-        stamp = Stamp(
-            walker_name="Auditor",
-            color=color,
-            reasons=findings,
-            timestamp=now,
-            payload={}
-        );
-        here +>: StampedBy() :+> stamp;
+        if not found {
+            stamp: Stamp = Stamp(
+                walker_name="Auditor",
+                color=color,
+                reasons=findings,
+                timestamp=now,
+                payload={}
+            );
+            here +>: StampedBy() :+> stamp;
+        }
 
         report {"walker": "Auditor", "color": color, "reasons": findings};
     }

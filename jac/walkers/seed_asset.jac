@@ -18,7 +18,11 @@ walker:pub SeedAsset {
         # Check if asset already exists
         for existing in [here -->[?:Asset]] {
             if str(existing.id) == str(self.id) {
-                report {"asset_id": str(existing.id), "created": False};
+                report {
+                    "asset_id": str(existing.id),
+                    "node_id": str(jid(existing)),
+                    "created": False
+                };
                 return;
             }
         }
@@ -34,6 +38,15 @@ walker:pub SeedAsset {
             created_at=int(self.created_at)
         );
         here ++> asset;
-        report {"asset_id": str(asset.id), "created": True};
+        # node_id is required by callers: walkers declared `with Asset entry` only run
+        # when spawned ON the asset node, i.e. POST /walker/{Name}/{node_id}.
+        # `jid()` is the Jac builtin for the graph node id (JacRuntimeInterface.object_ref).
+        # Do not write `asset.__jac__.id.hex`: it is the same value at runtime, but the
+        # static checker rejects it (E1030, "Asset has no attribute __jac__").
+        report {
+            "asset_id": str(asset.id),
+            "node_id": str(jid(asset)),
+            "created": True
+        };
     }
 }

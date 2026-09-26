@@ -121,6 +121,28 @@ test "test_act_does_not_call_evm_when_justified_is_zero" {
     spy_reset();
 }
 
+test "test_act_writes_mint_record_on_success" {
+    # The positive half of Invariant 6: a successful mint must leave a durable
+    # MintRecord node carrying the minted amount, the coverage that permitted it,
+    # and the stamp summary that authorized it.
+    asset = make_green_asset("test-act-record", 500000.0);
+    spy_install();
+    asset spawn Act(requested_amount=900000.0, recipient="0x1234", token_address="0xTOKEN", attestation_address="0xATT");
+    assert spy_mint_call_count() == 1;
+
+    records = [asset ->:MintedAs:->];
+    assert len(records) == 1;
+    assert float(records[0].minted_amount) == 500000.0;
+    assert float(records[0].coverage_used) == 500000.0;
+    assert float(records[0].nft_token_id) == 999.0;
+    assert str(records[0].stamp_summary["Freshness"]) == "green";
+    assert str(records[0].stamp_summary["Cover"]) == "green";
+    assert str(records[0].stamp_summary["Auditor"]) == "green";
+
+    spy_uninstall();
+    spy_reset();
+}
+
 test "test_act_passes_only_primitives_to_evm" {
     asset = make_green_asset("test-act-primitives", 500000.0);
     spy_install();

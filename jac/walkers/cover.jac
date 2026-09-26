@@ -89,21 +89,31 @@ walker:pub Cover {
             reasons.append("justified amount: " + str(justified));
         }
 
-        # Remove prior Cover stamp
+        # Upsert this walker's stamp — exactly one Cover stamp per asset.
+        # See jac/walkers/freshness.jac for why this mutates in place instead of
+        # deleting the prior stamp: sibling spawns from one parent ability restore
+        # each other's deleted edges, so deletion does not survive.
+        found: bool = False;
         for old_stamp in [here ->:StampedBy:->] {
             if str(old_stamp.walker_name) == "Cover" {
-                here del --> old_stamp;
+                old_stamp.color = color;
+                old_stamp.reasons = reasons;
+                old_stamp.timestamp = now;
+                old_stamp.payload = {"justified_amount": float(justified), "coverage_ratio": float(ratio)};
+                found = True;
             }
         }
 
-        stamp = Stamp(
-            walker_name="Cover",
-            color=color,
-            reasons=reasons,
-            timestamp=now,
-            payload={"justified_amount": float(justified), "coverage_ratio": float(ratio)}
-        );
-        here +>: StampedBy() :+> stamp;
+        if not found {
+            stamp: Stamp = Stamp(
+                walker_name="Cover",
+                color=color,
+                reasons=reasons,
+                timestamp=now,
+                payload={"justified_amount": float(justified), "coverage_ratio": float(ratio)}
+            );
+            here +>: StampedBy() :+> stamp;
+        }
 
         report {
             "walker": "Cover",

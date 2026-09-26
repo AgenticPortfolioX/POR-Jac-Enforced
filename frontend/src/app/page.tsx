@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Node, Edge } from 'reactflow';
-import { fetchGraph, runWalker } from '@/lib/jacClient';
+import { fetchGraph, runWalker, seedAsset } from '@/lib/jacClient';
 import { ASSET_ID, WALKER_ORDER } from '@/lib/constants';
 import type { Stamp } from '@/lib/types';
 import { GraphView } from '@/components/GraphView';
@@ -30,10 +30,14 @@ export default function HomePage() {
   const [pending, setPending] = useState(false);
   const [requested, setRequested] = useState(1000000);
   const [error, setError] = useState<string | null>(null);
+  // Graph node id of the seeded Asset. Every walker except SeedAsset runs only
+  // when spawned ON this node (POST /walker/{Name}/{nodeId}), so nothing in the
+  // UI can read or write the graph until SeedAsset has reported it.
+  const [nodeId, setNodeId] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (nd: string) => {
     try {
-      const g = await fetchGraph(ASSET_ID);
+      const g = await fetchGraph(ASSET_ID, nd);
       setNodes(g.nodes);
       setEdges(g.edges);
       const byName: Record<string, Stamp> = {};
@@ -52,9 +56,28 @@ export default function HomePage() {
     }
   }, []);
 
+  /** Ensure the Asset exists and remember its node id. Idempotent. */
+  const ensureSeeded = useCallback(async (): Promise<string> => {
+    if (nodeId) return nodeId;
+    const nd = await seedAsset(process.env.NEXT_PUBLIC_POR_TOKEN_ADDRESS ?? '');
+    setNodeId(nd);
+    return nd;
+  }, [nodeId]);
+
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const nd = await ensureSeeded();
+        if (!cancelled) await refresh(nd);
+      } catch (e) {
+        if (!cancelled) setError(String(e));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ensureSeeded, refresh]);
 
   const allGreen = WALKER_ORDER.every((w) => stamps[w]?.color === 'green');
   const stampsReady = WALKER_ORDER.every((w) => w in stamps);
@@ -66,17 +89,10 @@ export default function HomePage() {
     setTxHash(null);
     setError(null);
     try {
-      // Seed asset first (idempotent)
-      await runWalker('SeedAsset', {
-        id: ASSET_ID,
-        name: 'PoR pUSD',
-        symbol: 'pUSD',
-        chain: 'sepolia',
-        token_address: process.env.NEXT_PUBLIC_POR_TOKEN_ADDRESS ?? '',
-        created_at: 0,
-      });
-      await runWalker('DemoControl', { path, asset_id: ASSET_ID });
-      await refresh();
+      // Seed asset first (idempotent) — returns the node id DemoControl needs.
+      const nd = await ensureSeeded();
+      await runWalker('DemoControl', { path, asset_id: ASSET_ID }, nd);
+      await refresh(nd);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -88,26 +104,33 @@ export default function HomePage() {
     setPending(true);
     setError(null);
     try {
+      const nd = await ensureSeeded();
       type ActResponse = { minted: boolean; tx?: string; reason?: string };
-      const res = await runWalker<ActResponse>('Act', {
-        asset_id: ASSET_ID,
-        requested_amount: requested,
-        recipient: '0x0000000000000000000000000000000000000000',
-        token_address: process.env.NEXT_PUBLIC_POR_TOKEN_ADDRESS ?? '',
-        attestation_address:
-          process.env.NEXT_PUBLIC_POR_ATTESTATION_ADDRESS ?? '',
-      });
+      const res = await runWalker<ActResponse>(
+        'Act',
+        {
+          asset_id: ASSET_ID,
+          requested_amount: requested,
+          recipient: '0x0000000000000000000000000000000000000000',
+          token_address: process.env.NEXT_PUBLIC_POR_TOKEN_ADDRESS ?? '',
+          attestation_address:
+            process.env.NEXT_PUBLIC_POR_ATTESTATION_ADDRESS ?? '',
+        },
+        nd
+      );
       if (res.minted && res.tx) {
         setTxHash(res.tx);
       } else {
         setError(res.reason ?? 'Mint refused');
       }
-      await refresh();
+      await refresh(nd);
       // Ask Counsel
       type CounselResponse = { spoken: boolean; narration?: string };
-      const counsel = await runWalker<CounselResponse>('Counsel', {
-        asset_id: ASSET_ID,
-      });
+      const counsel = await runWalker<CounselResponse>(
+        'Counsel',
+        { asset_id: ASSET_ID },
+        nd
+      );
       if (counsel.spoken) {
         setNarration(counsel.narration ?? null);
       }

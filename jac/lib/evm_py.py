@@ -20,6 +20,11 @@ def _w3_and_account():
     private_key = os.environ.get("DEPLOYER_PRIVATE_KEY", "")
     w3 = Web3(Web3.HTTPProvider(rpc_url))
     acct = Account.from_key(private_key)
+    # build_transaction({}) estimates gas by dry-running the call, and an
+    # unestimated call has no `from`. PoRToken.mint is guarded by onlyAct, so a
+    # from-less estimate would revert and the real send would never be built.
+    # Defaulting the account here makes every estimate run as the signer.
+    w3.eth.default_account = acct.address
     return w3, acct
 
 

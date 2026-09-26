@@ -14,27 +14,29 @@ import type {
 } from './types';
 import { JAC_CLOUD_URL, ASSET_ID } from './constants';
 
-export async function fetchGraph(
-  assetId: string = ASSET_ID
-): Promise<ReactFlowGraph> {
-  const res = await fetch(`${JAC_CLOUD_URL}/walker/GetAsset`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ asset_id: assetId }),
-  });
-  if (!res.ok) {
-    throw new Error(`GetAsset failed: ${res.status} ${res.statusText}`);
-  }
-  const data = await res.json();
-  const asset: JacAsset = data.reports?.[0] ?? data;
-  return toReactFlowGraph(asset);
+/** Jac Cloud wraps every walker result in a `{ ok, data }` envelope. */
+interface JacEnvelope {
+  ok?: boolean;
+  error?: unknown;
+  data?: { reports?: unknown[] };
 }
 
-export async function runWalker<T = unknown>(
+/**
+ * POST a walker and return its `reports` array.
+ *
+ * `nodeId` is a PATH parameter, not a body field: every walker declared
+ * `with Asset entry` only runs when it is spawned ON the asset node, i.e.
+ * POST /walker/{Name}/{nodeId}. Omitting it spawns on root — correct only for
+ * SeedAsset, whose entry is `Root`. See scripts/run_demo_path.py for the same
+ * rule on the CLI side.
+ */
+async function postWalker(
   name: string,
-  body: Record<string, unknown> = {}
-): Promise<T> {
-  const res = await fetch(`${JAC_CLOUD_URL}/walker/${name}`, {
+  body: Record<string, unknown>,
+  nodeId?: string
+): Promise<unknown[]> {
+  const path = `/walker/${name}${nodeId ? `/${nodeId}` : ''}`;
+  const res = await fetch(`${JAC_CLOUD_URL}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -42,7 +44,57 @@ export async function runWalker<T = unknown>(
   if (!res.ok) {
     throw new Error(`Walker ${name} failed: ${res.status} ${res.statusText}`);
   }
-  return res.json() as Promise<T>;
+  const data = (await res.json()) as JacEnvelope;
+  if (data.ok === false) {
+    throw new Error(`Walker ${name} refused: ${JSON.stringify(data.error)}`);
+  }
+  return data.data?.reports ?? [];
+}
+
+export async function fetchGraph(
+  assetId: string = ASSET_ID,
+  nodeId?: string
+): Promise<ReactFlowGraph> {
+  const reports = await postWalker('GetAsset', { asset_id: assetId }, nodeId);
+  const asset = reports[0] as JacAsset | undefined;
+  if (!asset?.edges) {
+    throw new Error('GetAsset returned no asset report');
+  }
+  return toReactFlowGraph(asset);
+}
+
+/** POST a walker and return its first report entry. */
+export async function runWalker<T = unknown>(
+  name: string,
+  body: Record<string, unknown> = {},
+  nodeId?: string
+): Promise<T> {
+  const reports = await postWalker(name, body, nodeId);
+  return reports[0] as T;
+}
+
+/**
+ * Create the root Asset if absent and return its graph node id.
+ *
+ * SeedAsset is the only walker with a `Root` entry, so it is the only one that
+ * may be POSTed without a node id — and the only way to discover the asset's
+ * node id, which every other walker needs.
+ */
+export async function seedAsset(
+  tokenAddress: string = ''
+): Promise<string> {
+  const report = await runWalker<{ node_id?: string }>('SeedAsset', {
+    id: ASSET_ID,
+    name: 'PoR pUSD',
+    symbol: 'pUSD',
+    chain: 'sepolia',
+    token_address: tokenAddress,
+    created_at: 0,
+  });
+  if (!report?.node_id) {
+    throw new Error('SeedAsset returned no node_id');
+  }
+  return report.node_id;
 }
 
 export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
