@@ -30,22 +30,29 @@ and the raw output. Do not attempt fixes.
 
 ## Part 2: Terminal Setup Before You Present
 
-Two terminals. Leave them open side by side. Backend on the left, frontend on the right.
+You will need **two separate terminal tabs** open in your code editor (like VS Code or Cursor).
 
-**Terminal 1 (backend and graph, this is where the Jac Walkers print)**
+**How to open two terminals:**
+1. Open your terminal at the bottom of the screen (`Ctrl + ~` or `View > Terminal`). This is **Terminal 1**.
+2. Click the **`+` (plus) icon** in the top right corner of the terminal panel to open a new tab. This is **Terminal 2**.
+
+**Terminal 1 (Backend - The Jac Server)**
+Copy and paste these commands into the first terminal:
 ```powershell
 cd C:\Users\jmgra\antigravityagents\.agents\workflows\POR_Jac_Enforced
 $env:PORJE_TRACE=1
 ```
 
-**Terminal 2 (frontend, this is the demo screen)**
+**Terminal 2 (Frontend - The React UI)**
+Click over to your second terminal tab, then copy and paste this command:
 ```powershell
 cd C:\Users\jmgra\antigravityagents\.agents\workflows\POR_Jac_Enforced\frontend
 ```
 
-Nothing runs yet. You start the two servers as Command 1 and Command 2 once you begin.
+Nothing runs yet. You will start the two servers as Command 1 and Command 2 once you begin your presentation.
 
-Browser: open http://localhost:3000 in one tab and https://sepolia.etherscan.io/address/0x77a3A9fCe83c715AB8020fe72e94669C3298b321` in a second tab. Keep them side by side.
+**Browser Setup:**
+Open `http://localhost:3000` in one browser window and `https://sepolia.etherscan.io/address/0x77a3A9fCe83c715AB8020fe72e94669C3298b321` in another. Keep them side by side with your code editor.
 
 ---
 
