@@ -29,15 +29,14 @@ and the raw output. Do not attempt fixes.
 Two terminals. Leave them open side by side. Backend on the left, frontend on the right.
 
 **Terminal 1 (backend and graph, this is where the Jac Walkers print)**
-```
-cd ~/proof-of-reserve-jac
-source .venv/bin/activate
-export PORJE_TRACE=1
+```powershell
+cd C:\Users\jmgra\antigravityagents\.agents\workflows\POR_Jac_Enforced
+$env:PORJE_TRACE=1
 ```
 
 **Terminal 2 (frontend, this is the demo screen)**
-```
-cd ~/proof-of-reserve-jac/frontend
+```powershell
+cd C:\Users\jmgra\antigravityagents\.agents\workflows\POR_Jac_Enforced\frontend
 ```
 
 Nothing runs yet. You start the two servers as Command 1 and Command 2 once you begin.
