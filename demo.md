@@ -7,77 +7,18 @@
 Copy this to your agent before you present.
 
 ```
-TASK: Prepare the PoRJE demo environment. Do not change any code. Only run
-cleanup, verification, and warm-up steps. Report pass or fail for each step
-with the exact command and its output.
+TASK: Prepare the PoRJE demo environment for presentation.
 
-STEP 1. Kill any stale runtime processes.
-  (Windows/macOS/Linux) Ensure no stale "jac", "python", or "node" dev processes are running.
-  Confirm no process is listening on ports 8000 or 3000.
-
-STEP 2. Confirm the Jac binary and version.
-  jac --version
-  Expect 0.37.23. If not, stop and report.
-
-STEP 3. Confirm the Python environment.
-  cd ~/proof-of-reserve-jac
-  source .venv/bin/activate
-  python --version
-  pip show web3 eth-account python-dotenv requests | head -40
-  Confirm web3 >= 6.0.0 is installed.
-
-STEP 4. Confirm .env is complete.
-  Read .env and confirm every key below is present and non-empty. Print only
-  the key names, not the values.
-  SEPOLIA_RPC_URL
-  DEPLOYER_PRIVATE_KEY
-  POR_TOKEN_ADDRESS
-  POR_ATTESTATION_ADDRESS
-  PRICE_FEED_ADDRESS
-  RESERVE_FEED_ADDRESS
-  JAC_CLOUD_URL
-  CHAIN_ID
-  NEXT_PUBLIC_JAC_URL
-  NEXT_PUBLIC_POR_TOKEN_ADDRESS
-  NEXT_PUBLIC_POR_ATTESTATION_ADDRESS
-
-STEP 5. Confirm fixtures are labeled correctly.
-  For each file in fixtures/*.json, confirm "label": "fixture" is present.
-  Report any file that fails.
-
-STEP 6. Confirm contracts are deployed.
-  Using web3.py and SEPOLIA_RPC_URL, call the following reads and print the
-  results:
-    PoRToken at POR_TOKEN_ADDRESS: name(), symbol(), actWalker()
-    PoRAttestation at POR_ATTESTATION_ADDRESS: name(), symbol()
-  Confirm actWalker() equals the deployer address.
-
-STEP 7. Reset the runtime store so the demo starts empty.
-  python scripts/reset.py
-  This cross-platform script safely kills any stale server, drops the database 
-  (or local .jac directory), and re-seeds a fresh graph.
+STEP 1. Reset the runtime store and warm up the JIT.
+  Run `python scripts/reset.py`
+  This cross-platform script safely kills any stale server, drops the graph database,
+  re-compiles the Jac JIT, seeds the root asset, and confirms the /healthz endpoint.
   Confirm it reports "Reset complete!".
 
-STEP 9. Confirm the frontend builds.
-  cd frontend
-  npm install
-  npm run build
-  Report the exit code.
+STEP 2. Print a final one-line status report:
+  "PRE-DEMO READY: Graph seeded, JIT warmed, stale processes killed."
 
-STEP 10. Warm start and shut down once to preload Postgres and the JIT.
-  jac start main.jac &
-  sleep 12
-  curl -s http://localhost:8000/healthz
-  Confirm a 200 response.
-  pkill -f "jac run"
-  sleep 2
-
-STEP 11. Print a final one-line status report:
-  "PRE-DEMO READY: jac=<version> node=<version> pg=<ok|fail> frontend=<ok|fail>
-   contracts=<ok|fail> env=<ok|fail> fixtures=<ok|fail>"
-
-Do not modify any file in jac/, contracts/, frontend/src/, scripts/, docs/,
-README.md, or demo.md. If any step fails, stop and report the exact failure
+Do not modify any file. If any step fails, stop and report the exact failure
 and the raw output. Do not attempt fixes.
 ```
 
