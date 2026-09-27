@@ -35,6 +35,19 @@ const nodeTypes = {
     <NodeShell
       {...props}
       className="bg-cl-surface2 border-transparent"
+      data={{
+        ...props.data,
+        label: (
+          <div className="flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="16" height="16" className="shrink-0">
+              <path fill="#2A5ADA" d="M50 0L93.3013 25V75L50 100L6.69873 75V25L50 0Z" />
+              <path fill="#0E33A3" d="M50 100L93.3013 75V25L50 50V100Z"/>
+              <path fill="#3B82F6" d="M50 50L6.69873 25L50 0L93.3013 25L50 50Z"/>
+            </svg>
+            <span className="truncate">Chainlink PoR (pUSD)</span>
+          </div>
+        )
+      }}
     />
   ),
   priceobservation: (props: NodeProps) => (
