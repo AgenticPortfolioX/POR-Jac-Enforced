@@ -1,7 +1,11 @@
 # Proof of Reserve, Jac Enforced
 
 <p align="center">
-  <img src="docs/assets/jac_link_2.png" alt="Proof of Reserve, Jac Enforced - Jac Link 2 Logo" width="600" />
+  <a href="https://youtu.be/hxnEmkkocPc">
+    <img src="docs/assets/jac_link_2.png" alt="Proof of Reserve, Jac Enforced - watch the demo" width="600" />
+  </a>
+  <br/>
+  <sub>▶ Click the image to watch the demo</sub>
 </p>
 
 **PoR attests. Jac enforces. The printer is the proof.**
