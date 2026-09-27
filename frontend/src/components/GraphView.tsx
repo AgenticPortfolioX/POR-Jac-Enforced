@@ -136,8 +136,8 @@ const nodeTypes = {
     );
   },
   mintrecord: (props: NodeProps) => {
-    const isMinted = props.data.tx_hash != null || props.data.isMinted === true;
     const isApproved = props.data.isApproved ?? false;
+    const isMinted = isApproved && (props.data.tx_hash != null || props.data.isMinted === true);
     const rawAmount = props.data.minted_amount ?? props.data.amount ?? 250000;
     const numericAmount = typeof rawAmount === 'number'
       ? rawAmount
@@ -291,7 +291,7 @@ export function GraphView({
   const showGold = isActing;
 
   const decoratedNodes = useMemo(() => {
-    const renderNodes = nodes.map(n => {
+    const renderNodes: Node[] = nodes.map(n => {
       const key = getNodeKey(n);
       const isCurrent = key === currentKey;
       const isFinalHop = isAnimating && hopIndex === queue.length - 1;

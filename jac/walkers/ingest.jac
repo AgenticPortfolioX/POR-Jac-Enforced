@@ -17,6 +17,12 @@ walker:pub Ingest {
     has child_present: bool = True;
 
     can run with Asset entry {
+        for s in [here ->:StampedBy:->] {
+            s.color = "unknown";
+            s.reasons = [];
+        }
+        here.overall_status = "unknown";
+
         parts = self.fixture_name.split("_");
         stem = parts[-1] if len(parts) > 1 else self.fixture_name;
 

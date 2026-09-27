@@ -75,10 +75,11 @@ export async function runWalker<T = unknown>(
  * node id, which every other walker needs.
  */
 export async function seedAsset(
-  tokenAddress: string = ''
+  tokenAddress: string = '',
+  customId: string = ASSET_ID
 ): Promise<string> {
   const report = await runWalker<{ node_id?: string }>('SeedAsset', {
-    id: ASSET_ID,
+    id: customId,
     name: 'PoR pUSD',
     symbol: 'pUSD',
     chain: 'sepolia',
@@ -246,7 +247,7 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
     mintNode.data = {
       ...mintNode.data,
       isApproved,
-      isMinted: true,
+      isMinted: isApproved,
     };
   }
 

@@ -66,7 +66,7 @@ export default function HomePage() {
   /** Ensure the Asset exists and remember its node id. Idempotent. */
   const ensureSeeded = useCallback(async (): Promise<string> => {
     if (nodeId) return nodeId;
-    const nd = await seedAsset(process.env.NEXT_PUBLIC_POR_TOKEN_ADDRESS ?? '');
+    const nd = await seedAsset(process.env.NEXT_PUBLIC_POR_TOKEN_ADDRESS ?? '', ASSET_ID);
     setNodeId(nd);
     return nd;
   }, [nodeId]);
@@ -75,7 +75,8 @@ export default function HomePage() {
     let cancelled = false;
     (async () => {
       try {
-        const nd = await ensureSeeded();
+        const nd = await seedAsset(process.env.NEXT_PUBLIC_POR_TOKEN_ADDRESS ?? '', ASSET_ID);
+        setNodeId(nd);
         if (!cancelled) await refresh(nd);
       } catch (e) {
         if (!cancelled) setError(String(e));
@@ -84,7 +85,7 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [ensureSeeded, refresh]);
+  }, [refresh]);
 
   const allGreen = WALKER_ORDER.every((w) => stamps[w]?.color === 'green');
   const stampsReady = WALKER_ORDER.every((w) => w in stamps);
@@ -93,20 +94,19 @@ export default function HomePage() {
   /**
    * Walk the path one walker at a time, refreshing and re-highlighting between
    * each so the traversal is visible rather than instantaneous.
-   *
-   * DemoControl would run all four in a single server-side frame - same result,
-   * nothing to watch. Here each walker is its own request against the same
-   * asset, which also means a stamp can be seen flipping colour in place.
    */
   const runPath = async (path: string) => {
     setPending(true);
     setNarration(null);
     setTxHash(null);
     setError(null);
+    setStamps({});
+    setAuditorReasons([]);
     setWalkLog([]);
+    setActiveStep(null);
     try {
-      // Seed asset first (idempotent) - returns the node id the walkers need.
       const nd = await ensureSeeded();
+
       const cfg = PATH_CONFIG[path as PathName] ?? PATH_CONFIG.approved;
 
       for (const step of WALK_STEPS) {
@@ -291,7 +291,7 @@ export default function HomePage() {
               </h2>
               <div className="space-y-4">
                 <MintButton
-                  enabled={allGreen}
+                  enabled={walkLog.length > 0 && allGreen}
                   justified={justified}
                   onMint={onMint}
                   pending={pending}
