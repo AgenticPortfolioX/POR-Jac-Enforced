@@ -238,7 +238,9 @@ export default function HomePage() {
                     <span className="text-cl-caution mt-1">Audit Findings: {auditorReasons.join(', ')}</span>
                   )}
                   {narration && (
-                    <span className="text-cl-red italic mt-1 border-l border-cl-red pl-2">Counsel: "{narration}"</span>
+                    <span className={`italic mt-1 border-l pl-2 ${allGreen ? 'text-cl-muted border-cl-green/50' : 'text-cl-red border-cl-red'}`}>
+                      Counsel: "{narration}"
+                    </span>
                   )}
                 </div>
               </div>
