@@ -19,6 +19,7 @@ import from jac.walkers.get_stamps { GetStamps }
 import from jac.walkers.seed_asset { SeedAsset }
 import from jac.walkers.health_check { HealthCheck }
 import from jac.walkers.demo_orchestrator { DemoOrchestrator }
+import from jac.walkers.status { Status }
 
 with entry {
     print("");
@@ -36,6 +37,7 @@ with entry {
     print(FG_GREEN  + "    [OK] Counsel           " + DIM + "-- explainability narration" + RESET);
     print(FG_GREEN  + "    [OK] SeedAsset         " + DIM + "-- bootstrap root asset node" + RESET);
     print(FG_GREEN  + "    [OK] DemoOrchestrator  " + DIM + "-- orchestrate full demo path" + RESET);
+    print(FG_GREEN  + "    [OK] Status            " + DIM + "-- read-only graph health snapshot" + RESET);
     print("");
     print(SEP);
     print(BOLD + FG_GREEN + "  SERVICE READY  --  awaiting walker calls on :8000" + RESET);
