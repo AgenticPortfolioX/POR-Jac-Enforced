@@ -4,6 +4,11 @@ import from jac.walkers.demo_control { DemoControl }
 import from jac.walkers.get_asset { GetAsset }
 import from jac.walkers.act { Act }
 import from jac.walkers.counsel { Counsel }
+import from jac.lib.term_colors {
+    RESET, BOLD, DIM, SEP,
+    FG_GREEN, FG_YELLOW, FG_RED, FG_CYAN, FG_MAGENTA, FG_WHITE, FG_BLUE, FG_GRAY,
+    BG_GREEN, BG_YELLOW, BG_RED, BG_BLUE, BG_BLACK
+}
 
 walker:pub DemoOrchestrator {
     has path: str = "approved";
@@ -14,6 +19,23 @@ walker:pub DemoOrchestrator {
     has attestation_address: str = "";
 
     can run with Root entry {
+        path_color: str = FG_GREEN;
+        path_icon: str = "✅";
+        if self.path == "caution" {
+            path_color = FG_YELLOW;
+            path_icon = "⚠️ ";
+        } elif self.path == "unknown" {
+            path_color = FG_RED;
+            path_icon = "❌";
+        }
+
+        print("");
+        print(SEP);
+        print(BOLD + BG_BLACK + FG_CYAN + "  PoRJE DEMO RUN STARTED" + RESET);
+        print(BOLD + "  PATH: " + path_color + path_icon + "  " + str(self.path).upper() + RESET);
+        print(SEP);
+        print("");
+
         # 1. Seed Asset
         here spawn SeedAsset(
             id=self.asset_id,
@@ -54,6 +76,13 @@ walker:pub DemoOrchestrator {
 
         # 5. Counsel (Explainability summary)
         asset_node spawn Counsel();
+
+        print("");
+        print(SEP);
+        print(BOLD + FG_CYAN + "  PoRJE DEMO RUN COMPLETE" + RESET);
+        print(BOLD + "  PATH: " + path_color + path_icon + "  " + str(self.path).upper() + RESET);
+        print(SEP);
+        print("");
 
         report {"status": "orchestrated", "path": self.path};
     }

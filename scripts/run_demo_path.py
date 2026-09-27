@@ -51,11 +51,16 @@ def seed() -> str:
 
 
 def main():
-    if len(sys.argv) < 2 or sys.argv[1] not in ["approved", "caution", "unknown", "live"]:
+    if len(sys.argv) < 2 or sys.argv[1] not in ["approved", "caution", "unknown", "live", "happy", "yellow"]:
         print("Usage: python run_demo_path.py <approved|caution|unknown|live>")
         sys.exit(1)
 
     path = sys.argv[1]
+    if path == "happy":
+        path = "approved"
+    elif path == "yellow":
+        path = "caution"
+    
     print(f"\n=== Verification Path: {path.upper()} ===")
 
     # DemoOrchestrator handles SeedAsset -> DemoControl -> GetAsset -> Act -> Counsel

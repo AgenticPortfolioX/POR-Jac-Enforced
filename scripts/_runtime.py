@@ -158,6 +158,7 @@ def start_server(
     output is invisible under the test runner and visible here.
     """
     env = dict(os.environ)
+    env["PYTHONIOENCODING"] = "utf-8"
     if trace:
         env["PORJE_TRACE"] = "1"
     if extra_env:

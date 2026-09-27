@@ -365,6 +365,10 @@ export function GraphView({
         edges={decoratedEdges}
         nodeTypes={nodeTypes}
         fitView
+        fitViewOptions={{ padding: 0.2, minZoom: 0.5, maxZoom: 1.5 }}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
         proOptions={{ hideAttribution: true }}
       >
         <Background color="rgba(245,247,250,0.04)" gap={24} size={1.5} />

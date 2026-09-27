@@ -1,9 +1,9 @@
 import os;
-import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, ChildClaim, Liability }
-import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability }
-import from jac.lib.fixtures { load_fixture }
+import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, ChildClaim, Liability, Stamp }
+import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, StampedBy }
 import from jac.lib.chainlink { fetch }
 import from jac.lib.utils { now_unix }
+import jac.lib.fixtures as fix;
 
 walker:pub Ingest {
     has price_feed_address: str = "";
@@ -28,11 +28,11 @@ walker:pub Ingest {
 
         if self.use_fixture {
             try {
-                price_data = load_fixture("price_" + stem);
+                price_data = fix.load_fixture("price_" + stem);
             } except FileNotFoundError {
-                price_data = load_fixture("price_live");
+                price_data = fix.load_fixture("price_live");
             }
-            reserve_data = load_fixture(self.fixture_name);
+            reserve_data = fix.load_fixture(self.fixture_name);
         } else {
             p_feed = self.price_feed_address if self.price_feed_address != "" else os.environ.get("PRICE_FEED_ADDRESS", "");
             r_feed = self.reserve_feed_address if self.reserve_feed_address != "" else os.environ.get("RESERVE_FEED_ADDRESS", "");
@@ -121,7 +121,7 @@ walker:pub Ingest {
         # ChildClaim upsert
         child_fixture_name = "child_" + stem;
         try {
-            child_data = load_fixture(child_fixture_name);
+            child_data = fix.load_fixture(child_fixture_name);
         } except FileNotFoundError {
             child_data = {
                 "label": "fixture",

@@ -48,6 +48,8 @@ Click into your bottom terminal, then copy and paste this command:
 cd C:\Users\jmgra\antigravityagents\.agents\workflows\POR_Jac_Enforced\frontend
 
 ```
+term 3 command 3
+cd C:\Users\jmgra\antigravityagents\.agents\workflows\POR_Jac_Enforced
 
 Nothing runs yet. You will start the two servers as Command 1 and Command 2 once you begin your presentation.
 

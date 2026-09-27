@@ -4,6 +4,7 @@ import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, S
 import from jac.lib.policy { POLICY }
 import from jac.lib.colors { COLOR_GREEN, COLOR_CAUTION, COLOR_RED, COLOR_UNKNOWN, min_color }
 import from jac.lib.utils { now_unix, abs_diff, PORJE_TRACE }
+import from jac.lib.term_colors { RESET, BOLD, DIM, SEP, FG_GREEN, FG_YELLOW, FG_RED, FG_GRAY, FG_WHITE }
 
 walker:pub Auditor {
     can run with Asset entry {
@@ -122,6 +123,19 @@ walker:pub Auditor {
             here +>: StampedBy() :+> stamp;
         }
 
+        verdict_color: str = FG_GREEN;
+        verdict_icon: str  = "✅";
+        if color == COLOR_CAUTION {
+            verdict_color = FG_YELLOW;
+            verdict_icon  = "⚠️ ";
+        } elif color == COLOR_RED or color == COLOR_UNKNOWN {
+            verdict_color = FG_RED;
+            verdict_icon  = "❌";
+        }
+        print(BOLD + FG_WHITE + "  [AUDITOR]   " + verdict_icon + "  " + verdict_color + str(color).upper() + RESET);
+        for f in findings {
+            print(DIM + "    • " + str(f) + RESET);
+        }
         if PORJE_TRACE { print(f"[TRACE] Auditor: exit color={color}"); }
         report {"walker": "Auditor", "color": color, "reasons": findings};
     }
