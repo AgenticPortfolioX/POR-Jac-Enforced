@@ -1,12 +1,28 @@
 import os
 import json
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 
 from web3 import Web3
 from eth_account import Account
 from dotenv import load_dotenv
+load_dotenv(Path(__file__).parent.parent.parent / ".env")
 
-load_dotenv()
+
+def _to_wei(amount: float) -> int:
+    """Convert a token amount to its 18-decimal integer representation.
+
+    Using Decimal avoids the floating-point rounding that int(float(x) * 10**18)
+    exhibits for values that are not exactly representable in IEEE 754. For
+    example, 250000.0 is exact, but amounts derived from coverage calculations
+    may not be, and a one-wei discrepancy in the scaled value would cause the
+    ERC-20 contract to receive a different amount than the justification record.
+    """
+    return int(
+        (Decimal(str(amount)) * Decimal(10 ** 18)).quantize(
+            Decimal("1"), rounding=ROUND_HALF_UP
+        )
+    )
 
 
 def _w3_and_account():
@@ -38,7 +54,7 @@ def _send(w3, acct, tx_dict: dict):
     tx_dict.update({
         "from": acct.address,
         "nonce": nonce,
-        "gas": 400_000,
+        "gas": 3_000_000,
         "maxFeePerGas": w3.to_wei("30", "gwei"),
         "maxPriorityFeePerGas": w3.to_wei("2", "gwei"),
         "chainId": chain_id,
@@ -46,6 +62,8 @@ def _send(w3, acct, tx_dict: dict):
     signed = acct.sign_transaction(tx_dict)
     tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    if receipt.status == 0:
+        raise Exception("EVM revert")
     return receipt
 
 
@@ -57,7 +75,7 @@ def mint(token_address: str, to: str, amount: float, reason_json: str) -> str:
     w3, acct = _w3_and_account()
     abi = _load_abi("PoRToken")
     contract = w3.eth.contract(address=Web3.to_checksum_address(str(token_address)), abi=abi)
-    scaled = int(float(amount) * 10 ** 18)
+    scaled = _to_wei(amount)
     tx = contract.functions.mint(
         Web3.to_checksum_address(str(to)),
         scaled,
@@ -83,8 +101,8 @@ def mint_attestation(
     w3, acct = _w3_and_account()
     abi = _load_abi("PoRAttestation")
     contract = w3.eth.contract(address=Web3.to_checksum_address(str(attestation_address)), abi=abi)
-    scaled_minted = int(float(minted) * 10 ** 18)
-    scaled_coverage = int(float(coverage) * 10 ** 18)
+    scaled_minted = _to_wei(minted)
+    scaled_coverage = _to_wei(coverage)
     summary_str = json.dumps(dict(stamp_summary))
     tx = contract.functions.mintAttestation(
         Web3.to_checksum_address(str(to)),

@@ -1,5 +1,17 @@
 # INVENTORY
 
+> Regenerated 2026-09-27 after audit. Previous version claimed 17 tests across 5 files — this is still correct for the git tree. The run tree at /home/grams121/porje has 63 tests across 12 files; that tree is not present on this host and those counts are not reproducible here.
+
+## 0.0 Runtime
+
+| Field | Value |
+|---|---|
+| Jac version | 0.13.5 (reported by `jac --version`; toolchain labels itself as compatible with 0.37 API surface) |
+| Python | 3.14.3 |
+| Platform | Windows AMD64 |
+| Test count (this tree) | 17 tests across 5 test-bearing files |
+| Test run time | ~0.37s |
+
 ## 0.1 Walkers
 There are 10 walkers in `jac/walkers`:
 1. `act.jac` - Act
@@ -25,12 +37,12 @@ There are 7 node types defined in `jac/schemas/nodes.jac`:
 
 ## 0.3 Edge Types
 There are 6 edge types defined in `jac/schemas/edges.jac`:
-1. `HasPrice` (Asset --> PriceObservation)
-2. `HasReserve` (Asset --> ReserveAttestation)
-3. `DependsOn` (ReserveAttestation --> ChildClaim)
-4. `HasLiability` (Asset --> Liability)
-5. `StampedBy` (Asset --> Stamp)
-6. `MintedAs` (Asset --> MintRecord)
+1. `HasPrice`
+2. `HasReserve`
+3. `DependsOn`
+4. `HasLiability`
+5. `StampedBy`
+6. `MintedAs`
 
 ## 0.4 Existing Tests
 There are **17 tests across 5 test-bearing files** in `jac/tests`:
@@ -47,7 +59,7 @@ There are **17 tests across 5 test-bearing files** in `jac/tests`:
 `spy_bridge.jac` is also present in the directory but is a **helper module, not a test file**
 (it carries no tests) — which is why six `.jac` files hold five files' worth of tests.
 
-All 17 execute and pass on Jac 0.37.23: `jac test -d jac/tests` → `17 passed in 15.66s`.
+All 17 execute and pass: `jac test -d jac/tests` → `17 passed`.
 
 ## 0.5 Walker Report Shapes
 
@@ -59,8 +71,7 @@ Verified against the live server (the response envelope is
 - `Auditor`: `{ "walker": "Auditor", "color": str, "reasons": list[str] }`
 - `Counsel`: `{ "spoken": bool, "narration": str, "missing": list[str] }`
 - `Act`: `{ "minted": bool, "amount": float, "justified": float, "tx": str, "nft_id": int, "reason": str }`
-  — on refusal `minted: false` and `reason` carries the cause:
-  `"evm mint failed: The private key must be exactly 32 bytes long, instead of 0 bytes."`
+  — on refusal `minted: false` and `reason` carries the cause
 - `Ingest`: `{ "asset_id": str, "price_source": str, "reserve_source": str }` —
   inputs are `use_fixture: bool`, `fixture_name: str` (the child fixture is derived as
   `child_<stem>`, where `stem` is the last `_`-separated segment), `child_present: bool`,
@@ -70,7 +81,8 @@ Verified against the live server (the response envelope is
 - `GetAsset`: the **flat asset object** —
   `{ "id", "node_id", "name", "symbol", "chain", "token_address", "created_at", "overall_status", "edges": list }`
   — there is **no `nodes` key**; the frontend derives nodes from the edge targets, which are
-  inlined in the `edges` array.
+  inlined in the `edges` array. `ReserveAttestation` targets now include `flat_history: list[float]`
+  for yellow-verdict evidence display.
 
 ## 0.6 Cover Justified Amount Formula
 ```jac
@@ -99,7 +111,16 @@ if sum([1 for stamp in stamps if stamp.color == "green"]) == 3 {
 - `POR_ATTESTATION_ADDRESS`
 - `SEPOLIA_RPC_URL`
 - `DEPLOYER_PRIVATE_KEY`
+- `DEMO_RECIPIENT` (CLI path; UI path uses hardcoded 0x748ABdeF0775132E8F941e1513152D5eb02D3a4B)
 - (Optional) `PRICE_FEED_ADDRESS`, `RESERVE_FEED_ADDRESS`
 
 ## 0.10 /healthz
 Endpoint returns `{"status": "ok"}` when the Jac runtime is fully booted.
+
+## 0.11 Trace Instrumentation
+All five approval walkers (Freshness, Cover, Auditor, Counsel, Act) emit gated `[TRACE]`
+lines when `PORJE_TRACE=1`. The flag is read once at module load from `jac/lib/utils.jac`:
+```jac
+glob PORJE_TRACE: bool = os.environ.get("PORJE_TRACE", "0") == "1";
+```
+Set `PORJE_TRACE=0` (or omit it) for silent runs.

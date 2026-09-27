@@ -36,6 +36,7 @@ walker:pub GetAsset {
                     "feed_address": str(r.feed_address),
                     "round_id": int(r.round_id),
                     "answered_in_round": int(r.answered_in_round),
+                    "flat_history": list(r.flat_history),
                     "nodeType": "ReserveAttestation"
                 }
             });

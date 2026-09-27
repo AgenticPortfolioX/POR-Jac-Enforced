@@ -3,10 +3,11 @@ import from jac.schemas.nodes { Asset, Stamp }
 import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, StampedBy }
 import from jac.lib.policy { POLICY }
 import from jac.lib.colors { COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_UNKNOWN, min_color }
-import from jac.lib.utils { now_unix, abs_diff }
+import from jac.lib.utils { now_unix, abs_diff, PORJE_TRACE }
 
 walker:pub Cover {
     can run with Asset entry {
+        if PORJE_TRACE { print(f"[TRACE] Cover: entry on {str(jid(here))}"); }
         now = now_unix();
         prices = [here ->:HasPrice:->];
         reserves = [here ->:HasReserve:->];
@@ -110,6 +111,7 @@ walker:pub Cover {
             here +>: StampedBy() :+> stamp;
         }
 
+        if PORJE_TRACE { print(f"[TRACE] Cover: exit color={color}, justified={float(justified)}"); }
         report {
             "walker": "Cover",
             "color": color,

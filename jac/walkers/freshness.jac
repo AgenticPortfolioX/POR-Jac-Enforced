@@ -3,10 +3,11 @@ import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, Sta
 import from jac.schemas.edges { HasPrice, HasReserve, StampedBy }
 import from jac.lib.policy { POLICY }
 import from jac.lib.colors { COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_UNKNOWN, min_color }
-import from jac.lib.utils { now_unix, abs_diff }
+import from jac.lib.utils { now_unix, abs_diff, PORJE_TRACE }
 
 walker:pub Freshness {
     can run with Asset entry {
+        if PORJE_TRACE { print(f"[TRACE] Freshness: entry on {str(jid(here))}"); }
         now: int = now_unix();
         prices: list[PriceObservation] = [here ->:HasPrice:->];
         reserves: list[ReserveAttestation] = [here ->:HasReserve:->];
@@ -84,6 +85,7 @@ walker:pub Freshness {
             here +>: StampedBy() :+> stamp;
         }
 
+        if PORJE_TRACE { print(f"[TRACE] Freshness: exit color={color}"); }
         report {"walker": "Freshness", "color": color, "reasons": reasons};
     }
 }

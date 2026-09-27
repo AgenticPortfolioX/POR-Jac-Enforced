@@ -1,10 +1,13 @@
 
 import from jac.schemas.nodes { Asset, Stamp }
 import from jac.schemas.edges { StampedBy }
+import from jac.lib.utils { PORJE_TRACE }
 
 walker:pub Counsel {
     can run with Asset entry {
+        if PORJE_TRACE { print(f"[TRACE] Counsel: entry on {str(jid(here))}"); }
         stamps = [here ->:StampedBy:->];
+
         by_name = {};
         for s in stamps {
             by_name[str(s.walker_name)] = s;
@@ -48,6 +51,7 @@ walker:pub Counsel {
             narration = narration + "No mint was justified. A PoR page might still show a number; this printer will not treat that number as a permit.";
         }
 
+        if PORJE_TRACE { print(f"[TRACE] Counsel: spoken={True}"); }
         report {"spoken": True, "narration": narration};
     }
 }

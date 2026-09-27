@@ -4,7 +4,7 @@ import json;
 
 import from jac.schemas.nodes { Asset, MintRecord }
 import from jac.schemas.edges { HasPrice, HasReserve, StampedBy, MintedAs }
-import from jac.lib.utils { now_unix }
+import from jac.lib.utils { now_unix, PORJE_TRACE }
 
 walker:pub Act {
     has requested_amount: float = 0.0;
@@ -13,6 +13,7 @@ walker:pub Act {
     has attestation_address: str = "";
 
     can run with Asset entry {
+        if PORJE_TRACE { print(f"[TRACE] Act: entry on {str(jid(here))}, requested={float(self.requested_amount)}"); }
         stamps = [here ->:StampedBy:->];
         by_name = {};
         for s in stamps {
@@ -107,6 +108,7 @@ walker:pub Act {
         here +>: MintedAs() :+> record;
         here.overall_status = "minted";
 
+        if PORJE_TRACE { print(f"[TRACE] Act: exit minted=True, amount={float(amount)}"); }
         report {
             "minted": True,
             "amount": float(amount),

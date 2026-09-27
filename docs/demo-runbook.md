@@ -29,15 +29,11 @@ Run this ten minutes before the demo.
      ```
      Any output is a key that a later duplicate has blanked.
 3. **`actWalker` set.** `python scripts/deploy_contracts.py` deploys both contracts and calls `setActWalker(deployer)`. `PoRToken.mint` is guarded by `onlyAct`, so until this call succeeds every mint reverts.
-4. **`DEMO_RECIPIENT` is a real address.** `0x000…000` is the shipped default and it does **not** work: OZ v5's `ERC20._mint` rejects the zero address, and `Act` will report `evm mint failed: 0xec442f05…` (`ERC20InvalidReceiver`). Set it to the deployer or any funded address.
+4. **`DEMO_RECIPIENT` is a real address.** The UI mint recipient is hard-coded to `0x748ABdeF0775132E8F941e1513152D5eb02D3a4B`. The CLI path reads `DEMO_RECIPIENT` from `.env`; set it to any funded non-zero address.
 5. **Server is up.** Probe `http://localhost:8000/healthz` — it returns **200** about 10 s after launch. `/docs` also returns 200 but serves the OpenAPI page, so it is not a readiness signal. **`/health` returns 404**; `demo.md`'s checklist names `/health`, and that line is preserved verbatim from Prompt 1 — this note supersedes it.
 6. **No fixture is mislabeled.** Every file in `fixtures/` must carry `"label": "fixture"` — a missing label is a boot error by design (Invariant 5).
 7. **Graph is clean** (optional). See **Reset** below.
-8. **The UI must not be used to mint.** `frontend/src/app/page.tsx` hard-codes the
-   zero address as the mint recipient, so the UI mint path cannot succeed as
-   shipped. Use the CLI path, or apply the fix under **Known gap — the UI mint
-   recipient** below. The graph side of the UI (paths, badges, stamps, Counsel)
-   is unaffected.
+8. **Graph and mint are both live.** `frontend/src/app/page.tsx` uses `0x748ABdeF0775132E8F941e1513152D5eb02D3a4B` as the mint recipient. The Mint button in the UI initiates a real on-chain mint to this configured demo recipient. It succeeds only when all three stamps are green and the requested amount is within the justified amount computed by Cover.
 
 ## Reset
 
@@ -298,27 +294,13 @@ happy — with the final run green.
 
 ### The UI mint recipient
 
-`frontend/src/app/page.tsx` hard-codes the recipient:
+`frontend/src/app/page.tsx` hard-codes the recipient to `0x748ABdeF0775132E8F941e1513152D5eb02D3a4B`:
 
 ```ts
-recipient: '0x0000000000000000000000000000000000000000',
+const DEMO_RECIPIENT = '0x748ABdeF0775132E8F941e1513152D5eb02D3a4B';
 ```
 
-OZ v5's `ERC20._mint` rejects the zero address, so **the UI mint button can never
-succeed**, whatever credentials are configured. The CLI path is unaffected — it reads
-`DEMO_RECIPIENT` from the environment.
-
-The fix is to source it from the environment the way the adjacent addresses already
-are (`NEXT_PUBLIC_POR_TOKEN_ADDRESS`, `NEXT_PUBLIC_POR_ATTESTATION_ADDRESS`):
-
-```ts
-recipient: process.env.NEXT_PUBLIC_DEMO_RECIPIENT ?? '',
-```
-
-and set `NEXT_PUBLIC_DEMO_RECIPIENT` to a funded non-zero address. Note the empty
-default: a blank recipient produces a clean fail-closed refusal from `Act` rather
-than a revert from deep inside the token contract. **Not applied** — it changes the
-mint path, which is the one place this project deliberately asks before acting.
+The Mint button in the UI initiates a real on-chain mint to this configured demo recipient. It succeeds only when all three stamps are green and the requested amount is within the justified amount computed by Cover.
 
 ### Frontend browser verification
 

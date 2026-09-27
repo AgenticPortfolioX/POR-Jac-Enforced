@@ -34,7 +34,8 @@ const nodeTypes = {
       {...props}
       data={{
         ...props.data,
-        label: `Price: ${props.data.value ?? '?'} (${props.data.source ?? '?'})`,
+        label: `Chainlink Price: $${props.data.value ?? '?'}`,
+        detail: `Source: ${props.data.source ?? '?'}`,
       }}
     />
   ),
@@ -43,7 +44,8 @@ const nodeTypes = {
       {...props}
       data={{
         ...props.data,
-        label: `Reserve: ${props.data.amount ?? '?'} (${props.data.source ?? '?'})`,
+        label: `Proven Reserves: ${props.data.amount ?? '?'}`,
+        detail: `Source: ${props.data.source ?? '?'}`,
       }}
     />
   ),
@@ -52,7 +54,8 @@ const nodeTypes = {
       {...props}
       data={{
         ...props.data,
-        label: `Child: ${props.data.asset_id ?? '?'} present=${String(props.data.present ?? '?')}`,
+        label: `Child Attestation`,
+        detail: `ID: ${props.data.asset_id ?? '?'} | Present: ${String(props.data.present ?? '?')}`,
       }}
     />
   ),
@@ -61,7 +64,8 @@ const nodeTypes = {
       {...props}
       data={{
         ...props.data,
-        label: `Liability: ${props.data.minted_units ?? '?'}`,
+        label: `Current Liability`,
+        detail: `Minted: ${props.data.minted_units ?? '?'} units`,
       }}
     />
   ),
@@ -71,15 +75,21 @@ const nodeTypes = {
     const justified = props.data?.payload?.justified_amount;
     const showAmount =
       props.data?.walker_name === 'Cover' && justified != null;
+    
+    let roleDescription = "";
+    if (props.data?.walker_name === 'Freshness') roleDescription = "Verifies data age limits";
+    if (props.data?.walker_name === 'Cover') roleDescription = "Calculates overcollateralization";
+    if (props.data?.walker_name === 'Auditor') roleDescription = "Final transaction approval";
+
     return (
       <NodeShell
         {...props}
         data={{
           ...props.data,
-          label: `${props.data.walker_name ?? '?'}: ${props.data.color ?? 'pending'}`,
+          label: `${props.data.walker_name ?? '?'} Decision: ${props.data.color?.toUpperCase() ?? 'PENDING'}`,
           detail: showAmount
-            ? `justified ${Number(justified).toLocaleString()}`
-            : undefined,
+            ? `Approved Amount: ${Number(justified).toLocaleString()} units`
+            : roleDescription,
         }}
       />
     );
@@ -89,7 +99,8 @@ const nodeTypes = {
       {...props}
       data={{
         ...props.data,
-        label: `Mint: ${props.data.minted_amount ?? '?'}`,
+        label: `Mint Authorization`,
+        detail: `Approved Mint: ${props.data.minted_amount ?? '?'} units`,
       }}
     />
   ),

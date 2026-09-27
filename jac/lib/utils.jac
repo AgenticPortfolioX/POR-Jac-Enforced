@@ -1,4 +1,7 @@
 import time;
+import os;
+
+glob PORJE_TRACE: bool = os.environ.get("PORJE_TRACE", "0") == "1";
 
 def now_unix() -> int {
     return int(time.time());
