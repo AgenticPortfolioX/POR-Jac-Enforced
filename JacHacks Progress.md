@@ -52,7 +52,7 @@
   - `jac check jac/tests/*.jac`: **PASSED [100%]**
   - `jac test jac/tests/paths_tests.jac`: **PASSED [100%]**
 - Verified entrypoint bootstrap: `jac run jac/main.jac` prints `PoRJE scaffold booted`.
-- Validated automated REST API discovery: `jac start jac/main.jac` automatically registers endpoints for all 7 walkers and introspection routes.
+- Validated automated REST API discovery: `jac start jac/main.jac` automatically registers endpoints for all 7 walkers and introspection routes. *(0.13.5-era record, kept as written. Jac 0.37 has no `jac start`; the server is now `jac run main.jac --no-client`. See `docs/demo-runbook.md`.)*
 
 ### 6. GitHub Remote Repository Setup
 - Primary Remote: `https://github.com/AgenticPortfolioX/POR-Jac-Enforced.git`.

@@ -39,7 +39,7 @@ Every module under `jac/` passes `jac check` and every test file passes `jac tes
 |---|---|
 | `jac check` on all walkers/schemas/lib | PASS |
 | `jac test jac/tests/*.jac` (5 files, run individually) | Passed successfully |
-| `jac start jac/main.jac` | Serves on `:8000`; `/docs` is the readiness probe |
+| `jac start jac/main.jac` | **Superseded.** This row records the 0.13.5-era result: serves on `:8000`, `/docs` as the readiness probe. Jac 0.37 has no `jac start` — the command is now `jac run main.jac --no-client`, and `/healthz` is the readiness probe (`/health` is 404, `/docs` is the API page). See `docs/demo-runbook.md`. |
 
 Two items were fixed to get there:
 - **Edge archetypes must be imported where they are used.** `[here ->:StampedBy:->]` in
