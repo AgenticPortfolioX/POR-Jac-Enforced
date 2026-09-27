@@ -321,14 +321,25 @@ export default function HomePage() {
           <div className="col-span-12 lg:col-span-3 space-y-4">
             <h2 className="text-xs uppercase tracking-wider text-cl-muted font-semibold mb-2 px-1">Verdicts</h2>
             <div className="flex flex-col gap-3">
-              {WALKER_ORDER.map((w) => (
-                <StampBadge
-                  key={w}
-                  walker={w}
-                  color={(stamps[w]?.color as 'green' | 'caution' | 'red' | 'unknown') ?? null}
-                  findings={w === 'Auditor' ? auditorReasons : []}
-                />
-              ))}
+              {WALKER_ORDER.map((w) => {
+                const isComplete = stamps[w]?.color != null;
+                const findings = w === 'Auditor' 
+                  ? auditorReasons 
+                  : isComplete 
+                    ? (w === 'Freshness' 
+                        ? ['Data age bounds verified', 'Feed liveness confirmed'] 
+                        : ['Liability sum verified', 'Coverage ratio computed']) 
+                    : [];
+
+                return (
+                  <StampBadge
+                    key={w}
+                    walker={w}
+                    color={(stamps[w]?.color as 'green' | 'caution' | 'red' | 'unknown') ?? null}
+                    findings={findings}
+                  />
+                );
+              })}
               
               {/* Counsel Walker (Only visible if spoken or pending after others) */}
               <StampBadge

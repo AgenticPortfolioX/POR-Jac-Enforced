@@ -24,7 +24,7 @@ export function MintButton({
     >
       {pending
         ? 'Minting...'
-        : `Mint (justified: ${justified.toFixed(2)})`}
+        : 'Mint'}
     </button>
   );
 }

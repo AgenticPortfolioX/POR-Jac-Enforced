@@ -1,3 +1,5 @@
+import { WALKER_BRAND_COLORS } from '@/lib/constants';
+
 type Color = 'green' | 'caution' | 'red' | 'unknown';
 
 const colorMap: Record<Color, string> = {
@@ -5,13 +7,6 @@ const colorMap: Record<Color, string> = {
   caution: 'border-cl-caution text-cl-caution bg-cl-caution/10',
   red: 'border-cl-red text-cl-red bg-cl-red/10',
   unknown: 'border-cl-unknown text-cl-unknown bg-cl-unknown/10',
-};
-
-const leftBarMap: Record<Color, string> = {
-  green: 'bg-cl-green',
-  caution: 'bg-cl-caution',
-  red: 'bg-cl-red',
-  unknown: 'bg-cl-unknown',
 };
 
 interface StampBadgeProps {
@@ -23,12 +18,12 @@ interface StampBadgeProps {
 
 export function StampBadge({ walker, color, findings = [], narration = null }: StampBadgeProps) {
   const borderPill = color ? colorMap[color] : 'border-cl-gray/10 text-cl-muted';
-  const leftBar = color ? leftBarMap[color] : 'bg-transparent';
   const label = color ?? 'pending';
+  const brandColor = WALKER_BRAND_COLORS[walker] || '#F5F7FA';
 
   return (
     <div className={`relative flex flex-col justify-start rounded-[12px] border bg-cl-surface1 px-5 py-4 overflow-hidden min-w-[220px] transition-colors duration-300 ${color ? 'border-cl-gray/20' : 'border-cl-gray/10'}`}>
-      <div className={`absolute left-0 top-0 bottom-0 w-1 ${leftBar}`} />
+      <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: brandColor }} />
       
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs uppercase tracking-wider text-cl-primary font-semibold">
