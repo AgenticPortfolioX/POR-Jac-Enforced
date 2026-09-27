@@ -102,6 +102,7 @@ export function WalkWheel({ log, activeWalker, isApproved }: WalkWheelProps) {
     return { step, index, state };
   });
 
+  const hasRun = log.length > 0;
   const greenCount = slices.filter((s) => s.state === 'green').length;
   const anyFailed = slices.some((s) => s.state === 'red' || s.state === 'unknown');
   const anyCaution = slices.some((s) => s.state === 'caution');
@@ -109,21 +110,21 @@ export function WalkWheel({ log, activeWalker, isApproved }: WalkWheelProps) {
   const ingestDone = slices[0]?.state === 'done';
   const enforcementGreen = greenCount === 3 && ingestDone;
 
-  const approved = isApproved !== undefined ? isApproved : enforcementGreen;
+  const approved = hasRun && allSettled && (isApproved !== undefined ? isApproved : enforcementGreen);
 
-  const status = anyFailed
-    ? 'Refused'
-    : anyCaution
-      ? 'Caution'
-      : activeWalker
-        ? 'Running'
-        : approved
-          ? 'Approved'
-          : allSettled
-            ? 'Done'
-            : log.length > 0
-              ? 'Refused'
-              : 'Idle';
+  const status = !hasRun && !activeWalker
+    ? 'Idle'
+    : anyFailed
+      ? 'Refused'
+      : anyCaution
+        ? 'Caution'
+        : activeWalker
+          ? 'Running'
+          : approved
+            ? 'Approved'
+            : allSettled
+              ? 'Done'
+              : 'Running';
 
   const halo = approved
     ? GOLD_COLOR
@@ -133,11 +134,13 @@ export function WalkWheel({ log, activeWalker, isApproved }: WalkWheelProps) {
         ? '#FFDD59'
         : null;
 
-  const caption = anyFailed || anyCaution
-    ? 'Issuance locked'
-    : approved
-      ? 'Mint Approved (Gold)'
-      : `${greenCount} / 3 checks passed`;
+  const caption = !hasRun && !activeWalker
+    ? 'Awaiting walk execution'
+    : anyFailed || anyCaution
+      ? 'Issuance locked'
+      : approved
+        ? 'Mint Approved (Gold)'
+        : `${greenCount} / 3 checks passed`;
 
   const summary = slices
     .map((s) => `${s.step.walker}: ${s.state}`)

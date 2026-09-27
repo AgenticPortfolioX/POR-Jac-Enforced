@@ -76,17 +76,21 @@ const nodeTypes = {
       }}
     />
   ),
-  childclaim: (props: NodeProps) => (
-    <NodeShell
-      {...props}
-      className="text-[10px] p-2 bg-cl-surface1 border-cl-gray/20"
-      data={{
-        ...props.data,
-        label: `Child Claim`,
-        detail: `${props.data.asset_id ?? '?'} | ${props.data.present ? 'Present' : 'Missing'}`,
-      }}
-    />
-  ),
+  childclaim: (props: NodeProps) => {
+    const rawAsset = props.data.asset_id;
+    const assetName = (!rawAsset || rawAsset === 'USDC') ? 'PUSD' : rawAsset;
+    return (
+      <NodeShell
+        {...props}
+        className="text-[10px] p-2 bg-cl-surface1 border-cl-gray/20"
+        data={{
+          ...props.data,
+          label: `Child Claim`,
+          detail: `${assetName} | ${props.data.present ? 'Present' : 'Missing'}`,
+        }}
+      />
+    );
+  },
   liability: (props: NodeProps) => (
     <NodeShell
       {...props}
