@@ -191,8 +191,8 @@ export default function HomePage() {
       <div className="mx-auto max-w-[1400px] space-y-6">
         
         {/* Header */}
-        <header className="flex flex-col md:flex-row md:items-start justify-between border-b border-cl-gray/10 pb-4 gap-4">
-          <div className="shrink-0 mt-2">
+        <header className="flex flex-col md:flex-row md:items-start justify-between border-b border-cl-gray/10 pb-6 gap-6">
+          <div className="shrink-0 mt-2 w-full md:w-1/4">
             <div className="text-[10px] uppercase tracking-[0.2em] text-cl-muted mb-1 font-semibold">Chainlink attestation, Jac enforcement</div>
             <h1 className="text-2xl font-normal tracking-tight text-white">
               Proof of Reserve, Jac Enforced
@@ -200,7 +200,7 @@ export default function HomePage() {
           </div>
           
           {/* Live Execution Feed */}
-          <div className="flex-1 w-full md:max-w-xl lg:max-w-2xl bg-[#0A0C10] border border-cl-gray/10 rounded-[8px] p-3 shadow-inner flex flex-col justify-center min-h-[72px] font-mono text-[11px] overflow-hidden relative">
+          <div className="w-full md:w-1/2 bg-[#0A0C10] border border-cl-gray/10 rounded-[8px] p-3 shadow-inner flex flex-col justify-center min-h-[72px] font-mono text-[11px] overflow-hidden relative">
             {activeStep ? (
               <div className="flex items-start gap-3">
                 <span className="text-cl-blue font-bold mt-0.5 animate-pulse">▶</span>
@@ -237,11 +237,6 @@ export default function HomePage() {
                   {!allGreen && auditorReasons.length > 0 && (
                     <span className="text-cl-caution mt-1">Audit Findings: {auditorReasons.join(', ')}</span>
                   )}
-                  {narration && (
-                    <span className={`italic mt-1 border-l pl-2 ${allGreen ? 'text-cl-muted border-cl-green/50' : 'text-cl-red border-cl-red'}`}>
-                      Counsel: "{narration}"
-                    </span>
-                  )}
                 </div>
               </div>
             ) : (
@@ -250,6 +245,32 @@ export default function HomePage() {
                 <span className="uppercase tracking-widest">System Idle. Awaiting execution.</span>
               </div>
             )}
+          </div>
+
+          {/* Counsel Walker in Header */}
+          <div className="w-full md:w-1/4">
+            {(() => {
+              const isCounselComplete = walkLog.some((log) => log.walker === 'Act');
+              const counselColor = !isCounselComplete ? null : (allGreen ? 'green' : (stamps['Auditor']?.color === 'red' || stamps['Cover']?.color === 'red' ? 'red' : 'caution'));
+              
+              // Trim narration
+              let shortNarration = narration;
+              if (narration && allGreen) {
+                 shortNarration = "All conditions met. The mint was justified and successfully processed.";
+              } else if (narration) {
+                 const parts = narration.split('. ');
+                 shortNarration = parts[0] + (parts.length > 1 ? '.' : '');
+              }
+
+              return (
+                <StampBadge
+                  key="Counsel"
+                  walker="Counsel"
+                  color={counselColor}
+                  narration={shortNarration}
+                />
+              );
+            })()}
           </div>
         </header>
 
@@ -385,21 +406,6 @@ export default function HomePage() {
                   />
                 );
               })}
-              
-              {/* Counsel Walker (Only visible if spoken or pending after others) */}
-              {(() => {
-                const isCounselComplete = walkLog.some((log) => log.walker === 'Act'); // Counsel speaks during/after Act
-                const counselColor = !isCounselComplete ? null : (allGreen ? 'green' : (stamps['Auditor']?.color === 'red' || stamps['Cover']?.color === 'red' ? 'red' : 'caution'));
-                
-                return (
-                  <StampBadge
-                    key="Counsel"
-                    walker="Counsel"
-                    color={counselColor}
-                    narration={narration}
-                  />
-                );
-              })()}
             </div>
           </div>
 
