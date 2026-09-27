@@ -101,7 +101,7 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
     Liability: { x: 50, y: 150 },
     PriceObservation: { x: 260, y: 150 },
     ReserveAttestation: { x: 540, y: 150 },
-    ChildClaim: { x: 750, y: 150 },
+    ChildClaim: { x: 750, y: 225 },
     FreshnessStamp: { x: 260, y: 300 },
     CoverStamp: { x: 540, y: 300 },
     AuditorStamp: { x: 400, y: 400 },
@@ -133,6 +133,12 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
     });
 
     const parentId = e.source ?? asset.id;
+    
+    // The user prefers ChildClaim to visually bridge Reserve and Cover instead of Asset
+    if (n.nodeType === 'ChildClaim') {
+      return;
+    }
+
     edges.push({
       id: `e-${parentId}-${nodeId}`,
       source: parentId,
@@ -141,6 +147,33 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
       type: 'smoothstep',
     });
   });
+
+  // Inject custom bridges for ChildClaim
+  const reserveNode = nodes.find(n => n.type === 'reserveattestation');
+  const childClaimNode = nodes.find(n => n.type === 'childclaim');
+  const coverNode = nodes.find(n => n.type === 'stamp' && n.data.walker_name === 'Cover');
+
+  if (reserveNode && childClaimNode) {
+    edges.push({
+      id: `e-reserve-childclaim`,
+      source: reserveNode.id,
+      target: childClaimNode.id,
+      label: 'DependsOn',
+      type: 'smoothstep',
+      style: { stroke: '#4B5563', strokeWidth: 1.5 },
+    });
+  }
+
+  if (childClaimNode && coverNode) {
+    edges.push({
+      id: `e-childclaim-cover`,
+      source: childClaimNode.id,
+      target: coverNode.id,
+      label: 'VerifiedBy',
+      type: 'smoothstep',
+      style: { stroke: '#4B5563', strokeWidth: 1.5 },
+    });
+  }
 
   // Inject dotted review edges for the Auditor
   const freshnessNode = nodes.find(n => n.type === 'stamp' && n.data.walker_name === 'Freshness');
