@@ -296,37 +296,27 @@ Full results and the operator checklist: [docs/demo-runbook.md](docs/demo-runboo
 
 ## Run it
 
-Jac 0.37.23 ships as a fused native binary from the [jaseci-labs/jac releases](https://github.com/jaseci-labs/jac/releases) - it is **not** on PyPI (`jaclang` there stops at 0.16.7). Install with `install.sh`, then:
+Jac 0.37.23+ is required. Install it, then from the project root:
 
 ```bash
-jac run main.jac --no-client     # serves on :8000
-curl -s -o /dev/null -w '%{http_code}\n' localhost:8000/healthz   # → 200
+# Terminal 1 — backend
+$env:PYTHONIOENCODING="utf-8"   # Windows PowerShell
+jac start jac/main.jac          # serves on :8000
+
+# Terminal 2 — frontend
+cd frontend && npm install && npm run dev   # → localhost:3000
+
+# Terminal 3 — seed and walk
+python scripts/seed_graph.py
+python scripts/run_demo_path.py approved
+python scripts/run_demo_path.py caution
+python scripts/run_demo_path.py unknown
 ```
 
-> Jac 0.37 has no `jac start`. `/healthz` is the readiness probe; `/health` is 404 and `/docs` is the API page.
-
-Then seed the graph and walk a path:
+**Reset the graph** (wipes the local SQLite store and re-seeds):
 
 ```bash
-jac install                                    # runtime deps into .jac/venv
-.jac/venv/bin/python scripts/seed_graph.py     # prints the asset node_id
-.jac/venv/bin/python scripts/run_demo_path.py approved
-.jac/venv/bin/python scripts/run_demo_path.py caution
-.jac/venv/bin/python scripts/run_demo_path.py unknown
-```
-
-The frontend is a Next.js surface over the same HTTP API:
-
-```bash
-cd frontend && npm install && npm run dev      # → localhost:3000
-```
-
-**Reset the graph** - the store is Postgres, not a file in the repo, and the database name is a hash of the project path, so run this **from the project root**:
-
-```bash
-pkill -f "jac run"
-jac db drop jac_por_jac_enforced_a3a8aeca -y
-jac run main.jac --no-client
+python scripts/reset.py
 ```
 
 ---
