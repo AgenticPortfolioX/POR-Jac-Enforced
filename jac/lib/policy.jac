@@ -3,7 +3,7 @@
 # heterogeneous (int seconds, float ratios, and a nested dict of colour meanings),
 # so an unannotated `glob POLICY = {...}` infers a union and every
 # `float(POLICY["..."])` call site fails E1053. Jac 0.37 also rejects a bare `dict`
-# (E1036) — the explicit `any` is the sanctioned way to say "deliberately dynamic".
+# (E1036) - the explicit `any` is the sanctioned way to say "deliberately dynamic".
 
 glob POLICY: dict[str, any] = {
     "max_price_age_seconds": 300,

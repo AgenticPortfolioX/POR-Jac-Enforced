@@ -1,4 +1,4 @@
-# Walkers — Proof of Reserve, Jac Enforced
+# Walkers - Proof of Reserve, Jac Enforced
 
 Ten walkers, each with exactly one authority. Nine of them are declared `with Asset entry`, which means they run **only** when spawned on the asset node:
 
@@ -6,18 +6,18 @@ Ten walkers, each with exactly one authority. Nine of them are declared `with As
 POST /walker/{Name}/{node_id}
 ```
 
-`SeedAsset` is the exception — its entry is `Root`, so it is the only walker reachable at `POST /walker/SeedAsset`, and the only way to discover the `node_id` every other walker needs. Spawning an `Asset`-entry walker on root runs nothing and reports nothing.
+`SeedAsset` is the exception - its entry is `Root`, so it is the only walker reachable at `POST /walker/SeedAsset`, and the only way to discover the `node_id` every other walker needs. Spawning an `Asset`-entry walker on root runs nothing and reports nothing.
 
 ---
 
 ## Ingest
 
-- **Purpose.** Load the price observation, the reserve attestation, the child claim, and the liability onto the graph — from Chainlink feeds when live, from labeled fixtures for the demo.
+- **Purpose.** Load the price observation, the reserve attestation, the child claim, and the liability onto the graph - from Chainlink feeds when live, from labeled fixtures for the demo.
 - **Inputs.** `price_feed_address`, `reserve_feed_address`, `child_asset_id` (default `"USDC"`), `use_fixture` (default `True`), `fixture_name` (default `"por_live"`), `child_present` (default `True`). The fixture stem is derived from the name (`por_live` → `live`), which selects `price_{stem}`, `child_{stem}`, and the named reserve fixture.
-- **`child_present`.** ANDs into the child claim's `present` flag, so `Ingest(..., child_present=False)` marks the backing layer absent in one call. This exists so the `unknown` demo path is a single `Ingest` rather than an ingest plus a follow-up traversal that reaches into the reserve and flips the child — which is what lets the UI walk the path as four uniform steps (see `DemoControl`).
-- **Writes.** **Upserts** `PriceObservation`, `ReserveAttestation`, `ChildClaim`, and `Liability` in place: it attaches a node only when none exists, otherwise it mutates the existing node's fields, so a re-ingest refreshes the facts and exactly one observation of each type survives any number of runs. Edges are `HasPrice`, `HasReserve`, `HasLiability` from the Asset and `DependsOn` from reserve to child. It must **not** delete-then-recreate — `Ingest` runs as a spawned sibling, and a sibling's `del [edge …]` is silently lost under 0.37 commit semantics, which is what let observations accumulate one per run. See **Spawned-sibling commit semantics** in `docs/architecture.md`.
+- **`child_present`.** ANDs into the child claim's `present` flag, so `Ingest(..., child_present=False)` marks the backing layer absent in one call. This exists so the `unknown` demo path is a single `Ingest` rather than an ingest plus a follow-up traversal that reaches into the reserve and flips the child - which is what lets the UI walk the path as four uniform steps (see `DemoControl`).
+- **Writes.** **Upserts** `PriceObservation`, `ReserveAttestation`, `ChildClaim`, and `Liability` in place: it attaches a node only when none exists, otherwise it mutates the existing node's fields, so a re-ingest refreshes the facts and exactly one observation of each type survives any number of runs. Edges are `HasPrice`, `HasReserve`, `HasLiability` from the Asset and `DependsOn` from reserve to child. It must **not** delete-then-recreate - `Ingest` runs as a spawned sibling, and a sibling's `del [edge …]` is silently lost under 0.37 commit semantics, which is what let observations accumulate one per run. See **Spawned-sibling commit semantics** in `docs/architecture.md`.
 - **`flat_history`.** Carried onto the reserve node when the fixture supplies it, and **cleared to `[]` when it does not**. The clear is load-bearing rather than defensive: the reserve node now persists across runs, so a `por_flat` ingest followed by a `por_live` one would otherwise leave the flat windows attached and `Cover` would keep reading yellow on a healthy reserve. Only `por_flat.json` carries the key.
-- **Forbidden.** Minting, stamping, EVM calls, and inventing a fixture that does not exist. There is no `price_flat.json` (the fixture set is fixed at seven files), so the yellow path loads `por_flat` with `price_live` — the scenario is "flat reserve **while price moved**" and the price must come from somewhere. A missing `child_{stem}` fixture falls back to an inline present child rather than crashing.
+- **Forbidden.** Minting, stamping, EVM calls, and inventing a fixture that does not exist. There is no `price_flat.json` (the fixture set is fixed at seven files), so the yellow path loads `por_flat` with `price_live` - the scenario is "flat reserve **while price moved**" and the price must come from somewhere. A missing `child_{stem}` fixture falls back to an inline present child rather than crashing.
 - **Report shape.**
   ```json
   {"asset_id": "asset-1", "price_source": "fixture", "reserve_source": "fixture"}
@@ -30,7 +30,7 @@ POST /walker/{Name}/{node_id}
 
 - **Purpose.** Decide whether the two observations are still facts about *now*.
 - **Inputs.** `HasPrice` and `HasReserve` edges; `POLICY["max_price_age_seconds"]`, `POLICY["max_reserve_age_seconds"]`.
-- **Writes.** One `Stamp` node (`walker_name="Freshness"`) linked by a `StampedBy` edge, after deleting any prior Freshness stamp. The stamp carries `payload={}` — Freshness publishes a verdict, not a number.
+- **Writes.** One `Stamp` node (`walker_name="Freshness"`) linked by a `StampedBy` edge, after deleting any prior Freshness stamp. The stamp carries `payload={}` - Freshness publishes a verdict, not a number.
 - **Forbidden.** Minting, reading the liability, reading the child claim, and judging coverage. It looks at clocks only. It also may not treat absence as a pass: no price or no reserve yields `unknown`.
 - **Report shape.**
   ```json
@@ -46,7 +46,7 @@ POST /walker/{Name}/{node_id}
 - **Purpose.** Compute what the reserve actually covers, and how much may therefore be printed.
 - **Inputs.** `HasPrice`, `HasReserve`, `HasLiability` edges; `DependsOn` child; `flat_history` on the reserve; `min_coverage_ratio`, `coverage_floor_ratio`, `flat_reserve_epsilon`, `flat_reserve_windows`, `child_max_age_seconds`.
 - **Writes.** One `Stamp` node (`walker_name="Cover"`) via `StampedBy`, replacing any prior Cover stamp. **Its payload is the interface the rest of the system depends on**: `{"justified_amount": float, "coverage_ratio": float}`. `Act` reads `justified_amount` to size the mint; `Counsel` reads both to narrate.
-- **Forbidden.** Minting, and deciding freshness — it consumes the price and reserve values but does not re-judge their ages. It may not treat missing inputs as covered: no price, reserve, or liability yields `unknown`.
+- **Forbidden.** Minting, and deciding freshness - it consumes the price and reserve values but does not re-judge their ages. It may not treat missing inputs as covered: no price, reserve, or liability yields `unknown`.
 - **Report shape.**
   ```json
   {"walker": "Cover", "color": "green",
@@ -61,19 +61,19 @@ POST /walker/{Name}/{node_id}
 
 ## Auditor
 
-- **Purpose.** Attack the claim independently and leave a full record — including when it passes.
+- **Purpose.** Attack the claim independently and leave a full record - including when it passes.
 - **Inputs.** `HasPrice`, `HasReserve`, `HasLiability`, `DependsOn` child, `flat_history`; `max_price_age_seconds`, `min_coverage_ratio`, `coverage_floor_ratio`, `flat_reserve_epsilon`, `flat_reserve_windows`, `child_max_age_seconds`.
-- **Writes.** One `Stamp` node (`walker_name="Auditor"`) via `StampedBy`, replacing any prior Auditor stamp. Its `reasons` are always the **four** findings — `age skew`, `flat reserve`, `child attestation`, `liability cover` — each with its own verdict word, even on green. `payload={}`.
-- **Forbidden.** Minting **and narrating**. The Auditor writes findings to the graph and stops; it never produces prose for a human. It also may not silently pass on missing data: with no price or reserve it writes all four findings as `— unknown`.
+- **Writes.** One `Stamp` node (`walker_name="Auditor"`) via `StampedBy`, replacing any prior Auditor stamp. Its `reasons` are always the **four** findings - `age skew`, `flat reserve`, `child attestation`, `liability cover` - each with its own verdict word, even on green. `payload={}`.
+- **Forbidden.** Minting **and narrating**. The Auditor writes findings to the graph and stops; it never produces prose for a human. It also may not silently pass on missing data: with no price or reserve it writes all four findings as `- unknown`.
 - **Report shape.**
   ```json
   {"walker": "Auditor", "color": "green",
-   "reasons": ["age skew — none",
-               "flat reserve — none",
-               "child attestation — present",
-               "liability cover — holds"]}
+   "reasons": ["age skew - none",
+               "flat reserve - none",
+               "child attestation - present",
+               "liability cover - holds"]}
   ```
-  Note the difference from Cover: Cover's flat-reserve check is guarded by `reserve.amount > 0` and does not overwrite an existing reason, while the Auditor always emits a flat-reserve line. The Auditor is deliberately the noisier of the two — its job is visibility, not economy.
+  Note the difference from Cover: Cover's flat-reserve check is guarded by `reserve.amount > 0` and does not overwrite an existing reason, while the Auditor always emits a flat-reserve line. The Auditor is deliberately the noisier of the two - its job is visibility, not economy.
 
 ---
 
@@ -82,7 +82,7 @@ POST /walker/{Name}/{node_id}
 - **Purpose.** The only walker permitted to mint. It converts three green stamps into a sized, recorded transfer.
 - **Inputs.** All `StampedBy` stamps on the asset; `Cover.payload["justified_amount"]`; `requested_amount`, `recipient`, `token_address`, `attestation_address`. Price and reserve timestamps for the record.
 - **Writes.** On success only: calls `evm_py.mint(token, recipient, amount, reason_json)` and `evm_py.mint_attestation(attestation, recipient, amount, justified, price_time, reserve_time, stamp_summary)`, then writes a `MintRecord` node via a `MintedAs` edge and sets `asset.overall_status = "minted"`.
-- **Forbidden.** Everything that is not minting. It has no opinion about freshness, coverage, or children — it reads only the stamps and the Cover payload. It may not mint when any of the three stamps is missing or non-green, and it may not mint more than `min(requested, justified)`. On refusal it writes **nothing**: no MintRecord, no status change.
+- **Forbidden.** Everything that is not minting. It has no opinion about freshness, coverage, or children - it reads only the stamps and the Cover payload. It may not mint when any of the three stamps is missing or non-green, and it may not mint more than `min(requested, justified)`. On refusal it writes **nothing**: no MintRecord, no status change.
 - **Report shape.** Refusals:
   ```json
   {"minted": false, "reason": "Cover stamp is yellow"}
@@ -93,16 +93,16 @@ POST /walker/{Name}/{node_id}
   ```json
   {"minted": true, "amount": 250000.0, "justified": 250000.0, "tx": "0x…", "nft_id": 1}
   ```
-  `amount` is the minted quantity and `justified` the ceiling that permitted it — they differ whenever the caller asked for more than coverage allows. That difference is the product.
+  `amount` is the minted quantity and `justified` the ceiling that permitted it - they differ whenever the caller asked for more than coverage allows. That difference is the product.
 
 ---
 
 ## Counsel
 
 - **Purpose.** Explain what the graph decided, in words, after the fact.
-- **Inputs.** The `Stamp` nodes only — Freshness, Cover, and Auditor, with their colors, reasons, and Cover's payload.
+- **Inputs.** The `Stamp` nodes only - Freshness, Cover, and Auditor, with their colors, reasons, and Cover's payload.
 - **Writes.** Nothing. Counsel is read-only on the graph; narration goes into its report.
-- **Forbidden.** Speaking before the verdicts exist. If any of the three stamps is missing it returns `{"spoken": false, ...}` and stops. It may not compute coverage, re-judge freshness, or speculate about a decision that was never written — it has no access to prices, reserves, or liabilities.
+- **Forbidden.** Speaking before the verdicts exist. If any of the three stamps is missing it returns `{"spoken": false, ...}` and stops. It may not compute coverage, re-judge freshness, or speculate about a decision that was never written - it has no access to prices, reserves, or liabilities.
 - **Report shape.**
   ```json
   {"spoken": false, "reason": "stamps incomplete", "missing": ["Cover", "Auditor"]}
@@ -117,10 +117,10 @@ POST /walker/{Name}/{node_id}
 ## DemoControl
 
 - **Purpose.** Drive one of the three demo paths in a single call: seed fixtures, then run the three approval walkers.
-- **Inputs.** `path` — one of `"happy"`, `"yellow"`, `"unknown"`.
+- **Inputs.** `path` - one of `"happy"`, `"yellow"`, `"unknown"`.
 - **Writes.** Delegates all writes to the walkers it spawns: `Ingest`, then `Freshness`, `Cover`, `Auditor`. For `unknown` it passes `child_present=False` to `Ingest`, which marks the child claim absent, simulating a missing backing layer.
 - **Not used by the UI.** It runs all four walkers inside one frame, which is right for the CLI and the tests and invisible on screen. The frontend instead sends the four walkers as separate requests so the traversal can be watched; `test_stepwise_walk_matches_demo_control` asserts the two routes agree.
-- **Forbidden.** Minting and narrating. DemoControl spawns only the four walkers above — **never Act, never Counsel**. The demo operator clicks the printer separately, on purpose, so the refusal is a visible act rather than a side effect of seeding.
+- **Forbidden.** Minting and narrating. DemoControl spawns only the four walkers above - **never Act, never Counsel**. The demo operator clicks the printer separately, on purpose, so the refusal is a visible act rather than a side effect of seeding.
 - **Report shape.**
   ```json
   {"path": "happy", "status": "walkers_run"}
@@ -155,7 +155,7 @@ POST /walker/{Name}/{node_id}
 
 ## GetStamps
 
-- **Purpose.** Read-only list of just the stamps on an asset — the quickest way to check a verdict without pulling the whole graph.
+- **Purpose.** Read-only list of just the stamps on an asset - the quickest way to check a verdict without pulling the whole graph.
 - **Inputs.** None beyond the entry node.
 - **Writes.** Nothing.
 - **Forbidden.** All writes.

@@ -84,8 +84,8 @@ walker:pub Act {
                 dict(stamp_summary)
             ));
         } except Exception as e {
-            # Fail closed. A chain call that cannot be completed — node has no funded
-            # key, RPC unreachable, contract reverted — must surface as an explicit
+            # Fail closed. A chain call that cannot be completed - node has no funded
+            # key, RPC unreachable, contract reverted - must surface as an explicit
             # refusal with no MintRecord written, never as an unhandled exception and
             # never as a false success. Invariant 6 holds in both directions: no
             # MintRecord without a mint, and no mint reported without a receipt.

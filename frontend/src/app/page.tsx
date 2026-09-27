@@ -66,7 +66,7 @@ export default function HomePage() {
         setAuditorReasons(byName['Auditor'].reasons);
       }
     } catch {
-      // Graph not yet seeded — ignore
+      // Graph not yet seeded - ignore
     }
   }, []);
 
@@ -101,7 +101,7 @@ export default function HomePage() {
    * Walk the path one walker at a time, refreshing and re-highlighting between
    * each so the traversal is visible rather than instantaneous.
    *
-   * DemoControl would run all four in a single server-side frame — same result,
+   * DemoControl would run all four in a single server-side frame - same result,
    * nothing to watch. Here each walker is its own request against the same
    * asset, which also means a stamp can be seen flipping colour in place.
    */
@@ -112,7 +112,7 @@ export default function HomePage() {
     setError(null);
     setWalkLog([]);
     try {
-      // Seed asset first (idempotent) — returns the node id the walkers need.
+      // Seed asset first (idempotent) - returns the node id the walkers need.
       const nd = await ensureSeeded();
       const cfg = PATH_CONFIG[path as PathName] ?? PATH_CONFIG.happy;
 
@@ -209,7 +209,7 @@ export default function HomePage() {
         <PathSelector onSelect={runPath} disabled={pending} />
       </section>
 
-      {/* Walk — the traversal, made visible */}
+      {/* Walk - the traversal, made visible */}
       <section>
         <div className="mb-2 flex items-baseline gap-3">
           <h2 className="text-xs uppercase tracking-wider text-neutral-500">
@@ -217,7 +217,7 @@ export default function HomePage() {
           </h2>
           <span className="text-xs text-neutral-400">
             {activeStep
-              ? `${activeStep.walker} — ${activeStep.intent}…`
+              ? `${activeStep.walker} - ${activeStep.intent}…`
               : walkLog.length > 0
                 ? 'walk complete'
                 : 'pick a path to walk the claim'}

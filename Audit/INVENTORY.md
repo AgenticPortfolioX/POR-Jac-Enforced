@@ -1,6 +1,6 @@
 # INVENTORY
 
-> Regenerated 2026-09-27 after audit. Previous version claimed 17 tests across 5 files — this is still correct for the git tree. The run tree at /home/grams121/porje has 63 tests across 12 files; that tree is not present on this host and those counts are not reproducible here.
+> Regenerated 2026-09-27 after audit. Previous version claimed 17 tests across 5 files - this is still correct for the git tree. The run tree at /home/grams121/porje has 63 tests across 12 files; that tree is not present on this host and those counts are not reproducible here.
 
 ## 0.0 Runtime
 
@@ -57,7 +57,7 @@ There are **17 tests across 5 test-bearing files** in `jac/tests`:
 | **Total** | **17** |
 
 `spy_bridge.jac` is also present in the directory but is a **helper module, not a test file**
-(it carries no tests) — which is why six `.jac` files hold five files' worth of tests.
+(it carries no tests) - which is why six `.jac` files hold five files' worth of tests.
 
 All 17 execute and pass: `jac test -d jac/tests` → `17 passed`.
 
@@ -71,16 +71,16 @@ Verified against the live server (the response envelope is
 - `Auditor`: `{ "walker": "Auditor", "color": str, "reasons": list[str] }`
 - `Counsel`: `{ "spoken": bool, "narration": str, "missing": list[str] }`
 - `Act`: `{ "minted": bool, "amount": float, "justified": float, "tx": str, "nft_id": int, "reason": str }`
-  — on refusal `minted: false` and `reason` carries the cause
-- `Ingest`: `{ "asset_id": str, "price_source": str, "reserve_source": str }` —
+  - on refusal `minted: false` and `reason` carries the cause
+- `Ingest`: `{ "asset_id": str, "price_source": str, "reserve_source": str }` -
   inputs are `use_fixture: bool`, `fixture_name: str` (the child fixture is derived as
   `child_<stem>`, where `stem` is the last `_`-separated segment), `child_present: bool`,
   and the live-feed overrides `price_feed_address` / `reserve_feed_address` / `child_asset_id`
 - `SeedAsset`: `{ "asset_id": str, "created": bool, "node_id": str }`
-  — note `created`, **not** `existing`; `created: false` means the asset was already seeded
-- `GetAsset`: the **flat asset object** —
+  - note `created`, **not** `existing`; `created: false` means the asset was already seeded
+- `GetAsset`: the **flat asset object** -
   `{ "id", "node_id", "name", "symbol", "chain", "token_address", "created_at", "overall_status", "edges": list }`
-  — there is **no `nodes` key**; the frontend derives nodes from the edge targets, which are
+  - there is **no `nodes` key**; the frontend derives nodes from the edge targets, which are
   inlined in the `edges` array. `ReserveAttestation` targets now include `flat_history: list[float]`
   for yellow-verdict evidence display.
 

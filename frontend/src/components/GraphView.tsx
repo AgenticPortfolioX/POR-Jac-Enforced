@@ -111,7 +111,7 @@ interface GraphViewProps {
   edges: Edge[];
   /** Edge types the walker currently on screen traverses. These animate. */
   traverses?: readonly string[];
-  /** Walker whose stamp node just landed — it gets a green ring. */
+  /** Walker whose stamp node just landed - it gets a green ring. */
   activeWalker?: string | null;
 }
 

@@ -22,7 +22,7 @@ export interface WalkStep {
 /**
  * The visible walk. The UI drives these one at a time rather than calling
  * DemoControl, so each walker can be seen arriving, traversing and stamping.
- * `DemoControl` still exists for the CLI and for tests — it runs all four in
+ * `DemoControl` still exists for the CLI and for tests - it runs all four in
  * one frame, which is correct server-side but invisible on screen.
  */
 export const WALK_STEPS: readonly WalkStep[] = [

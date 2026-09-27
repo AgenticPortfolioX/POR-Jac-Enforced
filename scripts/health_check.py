@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Phase 1.6 — fresh-boot isolation.
+Phase 1.6 - fresh-boot isolation.
 
 The "is the localhost working correctly" confirmation. Where the other scripts
 check things that are already running, this one proves the system comes up
@@ -9,14 +9,14 @@ the graph back. A server that only works because of state left behind by an
 earlier run is not a working server.
 
     1. Kill any running jac process.
-    2. Drop the project's database (the only reset that clears the graph — see
+    2. Drop the project's database (the only reset that clears the graph - see
        docs/demo-runbook.md; `rm -rf .jac/data` resets nothing).
     3. Start `jac run jac/main.jac --no-client` in the background.
     4. Wait up to 30 seconds for /healthz to return 200.
     5. Run the seed.
     6. POST /walker/GetAsset/{node_id}.
     7. Assert the response is well-formed and carries ZERO edges. `SeedAsset`
-       creates the Asset node and nothing else — no Liability, no observations.
+       creates the Asset node and nothing else - no Liability, no observations.
        The Liability is created by `Ingest`, which the demo's three paths reach
        through `DemoControl`. On a freshly dropped store the graph is therefore
        exactly one node and no edges, and ANY edge here means the reset did not
@@ -24,7 +24,7 @@ earlier run is not a working server.
     8. Kill the jac process.
 
 Note (prompt gap, recorded in Audit/AUDIT.md): the audit prompt specified
-"exactly one HasLiability entry — the seed creates only Asset + Liability". That
+"exactly one HasLiability entry - the seed creates only Asset + Liability". That
 expectation is wrong; `SeedAsset` creates no edges at all. Verified by reading
 jac/walkers/seed_asset.jac and by this script's own run. The assertion below is
 the corrected one, and it is strictly stronger: zero edges catches everything the
@@ -46,7 +46,7 @@ FAIL = "FAIL"
 
 def main() -> int:
     print("=" * 72)
-    print("PHASE 1.6 — FRESH-BOOT ISOLATION")
+    print("PHASE 1.6 - FRESH-BOOT ISOLATION")
     print("=" * 72)
 
     # --- 1 & 2: stop everything, then drop the store ------------------------
@@ -59,7 +59,7 @@ def main() -> int:
     print(f"  {PASS}: store reset (dropped database {dropped})")
 
     # The drop is only real if the database is gone. `jac db list` reporting no
-    # databases here is the confirmation — without it, a cwd mistake would look
+    # databases here is the confirmation - without it, a cwd mistake would look
     # exactly like a successful reset.
     print("\n[2/8] Confirming the store is actually empty...")
     try:
@@ -111,12 +111,12 @@ def main() -> int:
     if total_edges > 0:
         print(f"  {FAIL}: expected no edges on a fresh boot, found {counts}")
         print("  A freshly dropped store contains the seeded Asset and nothing "
-              "else. Any edge means the reset did not clear the graph — which is "
+              "else. Any edge means the reset did not clear the graph - which is "
               "exactly the failure `rm -rf .jac/data` would produce, since that "
               "resets nothing.")
         rt.stop_server(proc)
         return 1
-    print(f"  {PASS}: zero edges — the store held only the seeded Asset")
+    print(f"  {PASS}: zero edges - the store held only the seeded Asset")
 
     # --- 8: stop -------------------------------------------------------------
     print("\n[8/8] Stopping the server...")
@@ -124,7 +124,7 @@ def main() -> int:
     print(f"  {PASS}: stopped")
 
     print("\n" + "=" * 72)
-    print("RESULT: PASS — the server boots correctly from an empty store.")
+    print("RESULT: PASS - the server boots correctly from an empty store.")
     print("=" * 72)
     return 0
 

@@ -14,7 +14,7 @@ export function AuditorPanel({ reasons }: AuditorPanelProps) {
         <ul className="space-y-1">
           {reasons.map((r, i) => (
             <li key={i} className="text-neutral-200">
-              — {r}
+              - {r}
             </li>
           ))}
         </ul>

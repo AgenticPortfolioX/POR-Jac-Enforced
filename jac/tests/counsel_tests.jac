@@ -24,7 +24,7 @@ test "test_counsel_is_silent_without_stamps" {
     );
     root ++> asset;
 
-    # No stamps — Counsel returns spoken=False.
+    # No stamps - Counsel returns spoken=False.
     reports = [];
     asset spawn Counsel();
     # Counsel reports spoken=False when missing stamps; no assertion on the
@@ -111,7 +111,7 @@ test "test_counsel_narrates_unknown_path" {
 
 
 test "test_counsel_requires_all_three_walker_stamps" {
-    # Only Freshness and Cover stamps — Auditor is absent.
+    # Only Freshness and Cover stamps - Auditor is absent.
     # Counsel must return spoken=False and report the missing walker name.
     now = now_unix();
     asset = Asset(
@@ -130,7 +130,7 @@ test "test_counsel_requires_all_three_walker_stamps" {
     asset +>: StampedBy() :+> f_stamp;
     asset +>: StampedBy() :+> c_stamp;
 
-    # Two stamps — Auditor is absent. Counsel must report incomplete.
+    # Two stamps - Auditor is absent. Counsel must report incomplete.
     stamps = [asset ->:StampedBy:-> ];
     assert len(stamps) == 2;
 }

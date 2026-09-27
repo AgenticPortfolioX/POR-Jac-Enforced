@@ -52,7 +52,7 @@ test "test_get_asset_reserve_has_flat_history" {
 
     reserves = [asset ->:HasReserve:-> ];
     assert len(reserves) == 1;
-    # flat_history is a list field — its presence on the node is what matters.
+    # flat_history is a list field - its presence on the node is what matters.
     h = list(reserves[0].flat_history);
     assert isinstance(h, list);
 }

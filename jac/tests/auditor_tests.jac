@@ -63,6 +63,6 @@ test "test_auditor_green_writes_full_checklist" {
     reasons_str = " | ".join(s.reasons);
     assert "age skew" in reasons_str;
     assert "flat reserve" in reasons_str;
-    assert "child attestation — present" in reasons_str;
-    assert "liability cover — holds" in reasons_str;
+    assert "child attestation - present" in reasons_str;
+    assert "liability cover - holds" in reasons_str;
 }

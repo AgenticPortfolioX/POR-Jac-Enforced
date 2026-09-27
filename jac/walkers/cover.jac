@@ -85,7 +85,7 @@ walker:pub Cover {
             reasons.append("justified amount: " + str(justified));
         }
 
-        # Upsert this walker's stamp — exactly one Cover stamp per asset.
+        # Upsert this walker's stamp - exactly one Cover stamp per asset.
         # See jac/walkers/freshness.jac for why this mutates in place instead of
         # deleting the prior stamp: sibling spawns from one parent ability restore
         # each other's deleted edges, so deletion does not survive.

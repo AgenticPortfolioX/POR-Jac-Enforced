@@ -92,7 +92,7 @@ test "test_re_ingest_does_not_accumulate_edges" {
     asset spawn DemoControl(path="happy");
     asset spawn DemoControl(path="happy");
 
-    # Exactly one observation of each type survives — upsert, not append.
+    # Exactly one observation of each type survives - upsert, not append.
     assert len([asset ->:HasPrice:->]) == 1;
     assert len([asset ->:HasReserve:->]) == 1;
     assert len([asset ->:HasLiability:->]) == 1;
@@ -109,8 +109,8 @@ test "test_re_ingest_does_not_accumulate_edges" {
     }
 }
 
-# The UI walks a path one walker at a time — Ingest, then Freshness, Cover and
-# Auditor as separate requests — so the traversal is visible on screen instead
+# The UI walks a path one walker at a time - Ingest, then Freshness, Cover and
+# Auditor as separate requests - so the traversal is visible on screen instead
 # of happening inside a single DemoControl frame. That only works if the
 # stepwise walk produces the same verdicts as the one-call path; if the two
 # ever diverge, the demo would show a result the CLI cannot reproduce.

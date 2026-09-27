@@ -76,7 +76,7 @@ def main():
     print(f"PoRAttestation deployed: {att_address}")
     print(f"  Etherscan: https://sepolia.etherscan.io/address/{att_address}")
 
-    # setActWalker(deployer) — for demo purposes; replace with Jac Cloud wallet in prod
+    # setActWalker(deployer) - for demo purposes; replace with Jac Cloud wallet in prod
     token_contract = w3.eth.contract(address=token_address, abi=token_artifact["abi"])
     send(token_contract.functions.setActWalker(deployer).build_transaction({"from": deployer}))
     print(f"setActWalker({deployer}) done")
@@ -86,7 +86,7 @@ def main():
     # Do NOT append. dotenv resolves duplicate keys last-wins, so appending wrote a
     # second POR_TOKEN_ADDRESS / POR_ATTESTATION_ADDRESS pair every time this script
     # ran, and any later blank pair (a freshly restored template, for instance) would
-    # silently clobber the real addresses — leaving evm_py with an empty string and
+    # silently clobber the real addresses - leaving evm_py with an empty string and
     # Act failing closed with "Unknown format '', attempted to normalize to '0x'".
     # Rewriting each key on its existing line keeps exactly one definition per key.
     env_path = Path(__file__).parent.parent / ".env"

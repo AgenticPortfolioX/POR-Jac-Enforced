@@ -12,7 +12,7 @@ walker:pub Ingest {
     has use_fixture: bool = True;
     has fixture_name: str = "por_live";
     # Lets the caller simulate a missing child attestation in one call, so the
-    # "unknown" demo path is expressible as a single Ingest — which is what lets
+    # "unknown" demo path is expressible as a single Ingest - which is what lets
     # the UI walk Ingest -> Freshness -> Cover -> Auditor as visible steps.
     has child_present: bool = True;
 

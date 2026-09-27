@@ -27,7 +27,7 @@ HEALTH_POLL_SECONDS = 0.5
 
 
 def jac(*args: str, timeout: int = 120) -> subprocess.CompletedProcess:
-    """Run the jac CLI from the project root. CWD matters — see the module docstring."""
+    """Run the jac CLI from the project root. CWD matters - see the module docstring."""
     return subprocess.run(
         [JAC_BIN, *args],
         cwd=PROJECT_ROOT,
@@ -64,7 +64,7 @@ def project_database() -> str:
         jac_por_jac_enforced_xxxx   8.0 MB  project  live   ...        /path
 
     When multiple databases are present, the function filters rows by the OWNER
-    column — returning the first row whose owner path contains the project root
+    column - returning the first row whose owner path contains the project root
     basename. This prevents a stale second database from being returned ahead of
     the live one. Falls back to taking the first non-empty row when no owner
     column is found or no row matches. Raises if no database is listed.
@@ -150,7 +150,7 @@ def start_server(
     """
     Start `jac run jac/main.jac --no-client` in the background.
 
-    `--no-client` skips the client build, which the demo does not need — the UI
+    `--no-client` skips the client build, which the demo does not need - the UI
     runs separately. `jac start` no longer exists.
 
     Pass `log_path` to capture the server's stdout, which is the ONLY way to see
@@ -207,7 +207,7 @@ def post_walker(walker: str, body: dict | None = None, node_id: str = "") -> dic
     """
     POST a walker and return the parsed envelope.
 
-    `Asset`-entry walkers only run at `/walker/{Name}/{node_id}` — they are
+    `Asset`-entry walkers only run at `/walker/{Name}/{node_id}` - they are
     declared `with Asset entry`, so without the node path the ability never fires
     and the response carries an empty `reports` list, which looks like success.
     """
@@ -260,7 +260,7 @@ def edges_of_type(payload: dict, edge_type: str) -> list:
 
 
 def main() -> int:
-    """`python scripts/_runtime.py` — print the facts this module derives."""
+    """`python scripts/_runtime.py` - print the facts this module derives."""
     print(f"project root : {PROJECT_ROOT}")
     print(f"jac binary   : {JAC_BIN}")
     print(f"jac url      : {JAC_URL}")

@@ -2,7 +2,7 @@ import './globals.css';
 import type { ReactNode } from 'react';
 
 export const metadata = {
-  title: 'PoRJE — Proof of Reserve, Jac Enforced',
+  title: 'PoRJE - Proof of Reserve, Jac Enforced',
   description:
     'Proof of Reserve attests. Jac enforces. The printer is the proof.',
 };

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Phase 3.6 — Chainlink proof-of-reserve feeds into the graph.
+Phase 3.6 - Chainlink proof-of-reserve feeds into the graph.
 
 The claim under test is that a reserve attestation *enters the graph as a node
 with provenance*, rather than being read at the moment someone asks a question.
@@ -13,7 +13,7 @@ value, and then asserts the shape of what it found:
 
     1. Server reachable (started here if not already running).
     2. Fixture mode, one fresh asset per fixture: por_live, por_stale, por_flat.
-    3. Live mode — only if the two feed addresses are configured. If they are
+    3. Live mode - only if the two feed addresses are configured. If they are
        not, the script runs the NEGATIVE case instead (empty addresses must
        write nothing and report an error) rather than skipping silently.
     4. Wiring: `HasPrice` and `HasReserve` run Asset -> observation, and
@@ -153,7 +153,7 @@ def print_nodes(label: str, payload: dict) -> None:
               f"vault={t['vault_shares']!r}")
 
     stamps = grouped.get("StampedBy", [])
-    print(f"    (StampedBy: {len(stamps)} — expected 0, Ingest stamps nothing)")
+    print(f"    (StampedBy: {len(stamps)} - expected 0, Ingest stamps nothing)")
 
 
 def check_fixture_case(fixture_name: str) -> list:
@@ -216,7 +216,7 @@ def check_fixture_case(fixture_name: str) -> list:
         if abs(age - abs(offset)) > 5:
             failures.append(
                 f"{fixture_name}: {name} age {age}s does not match fixture offset "
-                f"{offset}s (tolerance 5s) — the timestamp was overwritten at ingest")
+                f"{offset}s (tolerance 5s) - the timestamp was overwritten at ingest")
 
     # --- child present matches the fixture -----------------------------------
     if bool(child["present"]) != expect["child_present"]:
@@ -232,14 +232,14 @@ def check_fixture_case(fixture_name: str) -> list:
     if depends.get("source") != reserve["id"]:
         failures.append(
             f"{fixture_name}: DependsOn source {depends.get('source')!r} is not the "
-            f"reserve id {reserve['id']!r} — the child is hanging off the wrong node")
+            f"reserve id {reserve['id']!r} - the child is hanging off the wrong node")
 
     return failures
 
 
 def main() -> int:
     print("=" * 72)
-    print("PHASE 3.6 — CHAINLINK PROOF-OF-RESERVE FEEDS INTO THE GRAPH")
+    print("PHASE 3.6 - CHAINLINK PROOF-OF-RESERVE FEEDS INTO THE GRAPH")
     print("=" * 72)
 
     # --- 1: server -----------------------------------------------------------
@@ -273,7 +273,7 @@ def main() -> int:
         price_feed = os.environ.get("PRICE_FEED_ADDRESS", "")
         reserve_feed = os.environ.get("RESERVE_FEED_ADDRESS", "")
         if price_feed and reserve_feed:
-            print("  feeds are configured — running a real live ingest")
+            print("  feeds are configured - running a real live ingest")
             try:
                 node_id = rt.seed_asset(asset_id="feeds-live", name="Feeds Live", symbol="LIVE")
                 report = ingest(node_id, use_fixture=False)
@@ -285,7 +285,7 @@ def main() -> int:
                     failures.append("live: expected one price and one reserve node")
                 elif grouped["HasPrice"][0]["target"]["source"] != "live":
                     failures.append(
-                        "live: price source is not 'live' — a fetch did not happen")
+                        "live: price source is not 'live' - a fetch did not happen")
             except Exception as exc:
                 failures.append(f"live ingest raised {type(exc).__name__}: {exc}")
         else:
@@ -313,7 +313,7 @@ def main() -> int:
                         f"got {report.get('error')!r}")
                 if counts:
                     failures.append(
-                        f"live-negative: a refused ingest wrote nodes {counts} — this is "
+                        f"live-negative: a refused ingest wrote nodes {counts} - this is "
                         f"the manufactured-fact failure this system must never have")
                 else:
                     print(f"  {PASS}: refused with 'feed_addresses_missing' and wrote nothing")

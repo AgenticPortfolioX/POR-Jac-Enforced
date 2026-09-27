@@ -35,7 +35,7 @@ def _w3() -> Web3:
 def latest_round(feed_address: str) -> dict:
     """
     Fetch the latest round data from a Chainlink price feed.
-    Returns a dict with all primitives — no web3 types.
+    Returns a dict with all primitives - no web3 types.
     """
     w3 = _w3()
     abi = _load_abi()

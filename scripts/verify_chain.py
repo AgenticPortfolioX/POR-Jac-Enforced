@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Phase 7 — the on-chain transaction.
+Phase 7 - the on-chain transaction.
 
 This is the only script that broadcasts real transactions, and it is the phase
 most likely to be reported dishonestly. So it reads the chain identity FIRST and
@@ -64,7 +64,7 @@ def wei_exact(amount: float) -> int:
     """
     The exact base-unit value of `amount`, per §24 D2.
 
-    Deliberately NOT `int(float(amount) * 10**18)` — that expression is the
+    Deliberately NOT `int(float(amount) * 10**18)` - that expression is the
     defect this script exists to detect, and comparing the chain against it would
     prove nothing.
     """
@@ -75,7 +75,7 @@ def wei_exact(amount: float) -> int:
 def load_artifact(name: str) -> tuple[list, str]:
     path = os.path.join(rt.PROJECT_ROOT, "artifacts", f"{name}.json")
     if not os.path.exists(path):
-        raise RuntimeError(f"artifact {path} is missing — run the contract build first")
+        raise RuntimeError(f"artifact {path} is missing - run the contract build first")
     with open(path, "r", encoding="utf-8") as handle:
         data = json.load(handle)
     return data["abi"], data["bytecode"]
@@ -117,14 +117,14 @@ def deploy_local(rpc: str):
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Phase 7 — the on-chain transaction")
+    parser = argparse.ArgumentParser(description="Phase 7 - the on-chain transaction")
     parser.add_argument("--local-dev-chain", action="store_true",
                         help="deploy fresh contracts to a local dev chain (31337)")
     parser.add_argument("--rpc", default="", help="override the RPC endpoint")
     args = parser.parse_args()
 
     print("=" * 74)
-    print("PHASE 7 — THE ON-CHAIN TRANSACTION")
+    print("PHASE 7 - THE ON-CHAIN TRANSACTION")
     print("=" * 74)
 
     findings: list = []
@@ -149,7 +149,7 @@ def main() -> int:
             print("  Re-run with --local-dev-chain to exercise the same code path on a")
             print("  local chain, or supply the keys above.")
             print("\n" + "=" * 74)
-            print(f"RESULT: {DEFERRED} — preconditions unmet (missing: {', '.join(missing)})")
+            print(f"RESULT: {DEFERRED} - preconditions unmet (missing: {', '.join(missing)})")
             print("=" * 74)
             return 2
         print(f"  {PASS}: all four required keys are present (values not printed)")
@@ -236,7 +236,7 @@ def main() -> int:
     except Exception as exc:
         print(f"  (could not read AttestationMinted history: {exc})")
     print(f"  recipient token bal.  : {bal_before} wei   "
-          f"[PoRToken.balanceOf(recipient) — NOT the deployer's native balance]")
+          f"[PoRToken.balanceOf(recipient) - NOT the deployer's native balance]")
     print(f"  PoRToken totalSupply  : {supply_before} wei")
     print(f"  last attestation id   : {next_id_before}")
 
@@ -312,7 +312,7 @@ def main() -> int:
         failures.append(f"Act minted {minted_amount}, expected {expected_amount}")
     if not (len(tx_hash) == 66 and tx_hash.startswith("0x")):
         findings.append(
-            f"D1 CONFIRMED — Act reported tx {tx_hash!r}: length {len(tx_hash)}, "
+            f"D1 CONFIRMED - Act reported tx {tx_hash!r}: length {len(tx_hash)}, "
             f"0x-prefixed={tx_hash.startswith('0x')}. The documented form is a "
             f"0x-prefixed 66-character hash. Cause: `receipt.transactionHash.hex()` "
             f"in jac/lib/evm_py.py returns without the prefix under web3 >= 6 "
@@ -336,12 +336,12 @@ def main() -> int:
     print(f"  Decimal-exact     : {expected_wei} wei   "
           f"[Decimal(str({minted_amount})) * 10**18]")
     print(f"  int(float(...))   : {int(float(minted_amount) * 10 ** 18)} wei   "
-          f"[what D2's expression would give — NOT what this code does]")
+          f"[what D2's expression would give - NOT what this code does]")
 
     if delta_bal != expected_wei or delta_supply != expected_wei:
         shortfall = expected_wei - delta_bal
         findings.append(
-            f"D2 CONFIRMED — the minted base-unit amount is not the exact value. "
+            f"D2 CONFIRMED - the minted base-unit amount is not the exact value. "
             f"Expected {expected_wei} wei from Decimal(str({minted_amount})); the "
             f"chain shows a balance delta of {delta_bal} and a totalSupply delta of "
             f"{delta_supply}. Difference: {shortfall} wei. Cause: "
@@ -428,7 +428,7 @@ def main() -> int:
         print(f"  {explorer}/token/{token_addr}")
         print(f"  {explorer}/token/{att_addr}?a={nft_id}")
     else:
-        print(f"  no explorer on this chain (chain {chain_id}) — the hash is the record")
+        print(f"  no explorer on this chain (chain {chain_id}) - the hash is the record")
         print(f"  tx hash : {tx_hash}")
         print(f"  token   : {token_addr}")
         print(f"  attest. : {att_addr}")
@@ -455,10 +455,10 @@ def main() -> int:
         print(f"  {label:<28} minted={minted} reason={refusal.get('reason')!r} "
               f"blocks {block_before}->{block_after}")
         if minted:
-            failures.append(f"{path}: Act minted on a non-green path — invariant I7 broken")
+            failures.append(f"{path}: Act minted on a non-green path - invariant I7 broken")
         if block_after != block_before:
             failures.append(
-                f"{path}: a block was produced ({block_before}->{block_after}) — "
+                f"{path}: a block was produced ({block_before}->{block_after}) - "
                 f"something was broadcast on a refusal path")
         if refusal.get("tx"):
             failures.append(f"{path}: Act returned a tx hash {refusal.get('tx')!r} on refusal")
@@ -509,9 +509,9 @@ def _summary(chain_label, failures, findings, verdict, block) -> None:
     print("\n" + "=" * 74)
     if failures or findings:
         verdict = FAIL
-        print(f"RESULT: {FAIL} on {chain_label} — see the defects above.")
+        print(f"RESULT: {FAIL} on {chain_label} - see the defects above.")
     else:
-        print(f"RESULT: {PASS} on {chain_label} — every assertion held.")
+        print(f"RESULT: {PASS} on {chain_label} - every assertion held.")
     print("=" * 74)
 
 

@@ -55,7 +55,7 @@ walker:pub Freshness {
             }
         }
 
-        # Upsert this walker's stamp — exactly one Freshness stamp per asset.
+        # Upsert this walker's stamp - exactly one Freshness stamp per asset.
         # NOTE: do NOT delete-then-recreate here. When several walkers are spawned
         # from a single parent ability (DemoControl spawns Freshness, Cover and
         # Auditor in one run), each child's commit re-writes the asset's edge set

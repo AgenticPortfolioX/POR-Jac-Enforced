@@ -20,7 +20,7 @@ interface JacEnvelope {
  *
  * `nodeId` is a PATH parameter, not a body field: every walker declared
  * `with Asset entry` only runs when it is spawned ON the asset node, i.e.
- * POST /walker/{Name}/{nodeId}. Omitting it spawns on root — correct only for
+ * POST /walker/{Name}/{nodeId}. Omitting it spawns on root - correct only for
  * SeedAsset, whose entry is `Root`. See scripts/run_demo_path.py for the same
  * rule on the CLI side.
  */
@@ -71,7 +71,7 @@ export async function runWalker<T = unknown>(
  * Create the root Asset if absent and return its graph node id.
  *
  * SeedAsset is the only walker with a `Root` entry, so it is the only one that
- * may be POSTed without a node id — and the only way to discover the asset's
+ * may be POSTed without a node id - and the only way to discover the asset's
  * node id, which every other walker needs.
  */
 export async function seedAsset(

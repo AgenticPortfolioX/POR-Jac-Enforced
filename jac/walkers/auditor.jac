@@ -18,10 +18,10 @@ walker:pub Auditor {
 
         if len(prices) == 0 or len(reserves) == 0 {
             color = COLOR_UNKNOWN;
-            findings.append("age skew — unknown (missing price or reserve)");
-            findings.append("flat reserve — unknown");
-            findings.append("child attestation — unknown");
-            findings.append("liability cover — unknown");
+            findings.append("age skew - unknown (missing price or reserve)");
+            findings.append("flat reserve - unknown");
+            findings.append("child attestation - unknown");
+            findings.append("liability cover - unknown");
         } else {
             price = prices[0];
             reserve = reserves[0];
@@ -37,9 +37,9 @@ walker:pub Auditor {
             skew = abs_diff(float(price.timestamp), float(reserve.timestamp));
             if skew > float(max_price_age) {
                 color = min_color(color, COLOR_RED);
-                findings.append("age skew — " + str(int(skew)) + "s exceeds " + str(max_price_age) + "s");
+                findings.append("age skew - " + str(int(skew)) + "s exceeds " + str(max_price_age) + "s");
             } else {
-                findings.append("age skew — none");
+                findings.append("age skew - none");
             }
 
             # 2. Flat reserve
@@ -48,33 +48,33 @@ walker:pub Auditor {
                 delta = abs_diff(float(hist[0]), float(hist[-1]));
                 if delta / float(hist[0]) < flat_eps {
                     color = min_color(color, COLOR_YELLOW);
-                    findings.append("flat reserve — unchanged across " + str(flat_windows) + " windows while price moved");
+                    findings.append("flat reserve - unchanged across " + str(flat_windows) + " windows while price moved");
                 } else {
-                    findings.append("flat reserve — none");
+                    findings.append("flat reserve - none");
                 }
             } else {
-                findings.append("flat reserve — none");
+                findings.append("flat reserve - none");
             }
 
             # 3. Child attestation
             children = [reserve ->:DependsOn:->];
             if len(children) == 0 {
                 color = min_color(color, COLOR_RED);
-                findings.append("child attestation — missing");
+                findings.append("child attestation - missing");
             } elif bool(children[0].present) == False {
                 color = min_color(color, COLOR_RED);
-                findings.append("child attestation — missing");
+                findings.append("child attestation - missing");
             } elif (now - int(children[0].timestamp)) > child_max_age {
                 color = min_color(color, COLOR_RED);
-                findings.append("child attestation — stale");
+                findings.append("child attestation - stale");
             } else {
-                findings.append("child attestation — present");
+                findings.append("child attestation - present");
             }
 
             # 4. Liability cover
             if len(liabs) == 0 {
                 color = min_color(color, COLOR_UNKNOWN);
-                findings.append("liability cover — unknown");
+                findings.append("liability cover - unknown");
             } else {
                 liab = liabs[0];
                 coverage_value = float(reserve.amount) * float(price.value);
@@ -86,17 +86,17 @@ walker:pub Auditor {
                 }
                 if ratio < floor_cov {
                     color = min_color(color, COLOR_RED);
-                    findings.append("liability cover — fails");
+                    findings.append("liability cover - fails");
                 } elif ratio < min_cov {
                     color = min_color(color, COLOR_YELLOW);
-                    findings.append("liability cover — thin");
+                    findings.append("liability cover - thin");
                 } else {
-                    findings.append("liability cover — holds");
+                    findings.append("liability cover - holds");
                 }
             }
         }
 
-        # Upsert this walker's stamp — exactly one Auditor stamp per asset.
+        # Upsert this walker's stamp - exactly one Auditor stamp per asset.
         # See jac/walkers/freshness.jac for why this mutates in place instead of
         # deleting the prior stamp: sibling spawns from one parent ability restore
         # each other's deleted edges, so deletion does not survive.

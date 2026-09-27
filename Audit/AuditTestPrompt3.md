@@ -1,6 +1,6 @@
 # PoRJE Audit Prompt 3
 
-Copy the block below and feed it to an LLM evaluator to perform a comprehensive audit of the PoRJE codebase.
+Copy the block below and feed it to a Senior Engineering evaluator to perform a comprehensive audit of the PoRJE codebase.
 
 ```text
 TASK: Perform a comprehensive audit of the Proof of Reserve Jac Enforced (PoRJE) architecture, evaluating its execution invariants, fail-closed mechanics, and orchestration logic.
