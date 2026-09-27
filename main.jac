@@ -12,6 +12,8 @@ import from jac.walkers.demo_control { DemoControl }
 import from jac.walkers.get_asset { GetAsset }
 import from jac.walkers.get_stamps { GetStamps }
 import from jac.walkers.seed_asset { SeedAsset }
+import from jac.walkers.health_check { HealthCheck }
+import from jac.walkers.demo_orchestrator { DemoOrchestrator }
 
 with entry {
     print("PoRJE service initialized");

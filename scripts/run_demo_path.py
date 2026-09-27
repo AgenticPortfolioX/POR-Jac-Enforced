@@ -58,26 +58,15 @@ def main():
     path = sys.argv[1]
     print(f"\n=== Verification Path: {path.upper()} ===")
 
-    node_id = seed()
-
-    # DemoControl orchestrates Ingest (live or fixture) and triggers Freshness -> Cover -> Auditor
-    post("DemoControl", {"path": path}, node_id)
-
-    # Inspect the updated graph structure and stamps
-    post("GetAsset", {"asset_id": ASSET_ID}, node_id)
-
-    # Act verifies the three green stamps and coverage payload before authorizing minting
-    post("Act", {
+    # DemoOrchestrator handles SeedAsset -> DemoControl -> GetAsset -> Act -> Counsel
+    post("DemoOrchestrator", {
+        "path": path,
         "asset_id": ASSET_ID,
         "requested_amount": REQUESTED_AMOUNT,
         "recipient": RECIPIENT,
         "token_address": os.environ.get("POR_TOKEN_ADDRESS", ""),
-        "attestation_address": os.environ.get("POR_ATTESTATION_ADDRESS", ""),
-    }, node_id)
-
-    # Counsel generates an explainability summary based exclusively on stamp nodes
-    post("Counsel", {"asset_id": ASSET_ID}, node_id)
-
+        "attestation_address": os.environ.get("POR_ATTESTATION_ADDRESS", "")
+    })
 
 if __name__ == "__main__":
     main()

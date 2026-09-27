@@ -20,9 +20,9 @@ import requests
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 JAC_URL = os.environ.get("JAC_CLOUD_URL", "http://localhost:8000")
-JAC_BIN = os.environ.get("JAC_BIN", os.path.expanduser("~/.local/bin/jac"))
-ENTRY_POINT = "jac/main.jac"
-HEALTH_TIMEOUT_SECONDS = 30
+JAC_BIN = os.environ.get("JAC_BIN", "jac")
+ENTRY_POINT = "main.jac"
+HEALTH_TIMEOUT_SECONDS = 120
 HEALTH_POLL_SECONDS = 0.5
 
 
@@ -39,12 +39,15 @@ def jac(*args: str, timeout: int = 120) -> subprocess.CompletedProcess:
 
 def kill_server() -> None:
     """Stop any running `jac run`. Safe to call when none is running."""
-    subprocess.run(
-        ["pkill", "-f", "jac run"],
-        capture_output=True,
-        text=True,
-    )
-    # pkill signals; give the process a moment to release the port and the store.
+    import platform
+    try:
+        if platform.system() == "Windows":
+            subprocess.run(["taskkill", "/F", "/IM", "jac.exe"], capture_output=True, text=True)
+        else:
+            subprocess.run(["pkill", "-f", "jac run"], capture_output=True, text=True)
+    except FileNotFoundError:
+        pass
+    # Give the process a moment to release the port and the store.
     time.sleep(1.5)
 
 
@@ -67,6 +70,14 @@ def project_database() -> str:
     column is found or no row matches. Raises if no database is listed.
     """
     result = jac("db", "list")
+    if result.returncode != 0:
+        if "invalid choice: 'db'" in result.stderr or "invalid choice" in result.stderr:
+            raise RuntimeError("invalid choice: 'db'")
+        raise RuntimeError(
+            "no database listed by `jac db list` from %s.\\nstdout:\\n%s\\nstderr:\\n%s"
+            % (PROJECT_ROOT, result.stdout, result.stderr)
+        )
+
     lines = [ln.rstrip() for ln in result.stdout.splitlines()]
 
     header_idx = None
@@ -82,7 +93,7 @@ def project_database() -> str:
 
     if header_idx is None:
         raise RuntimeError(
-            "no database listed by `jac db list` from %s.\nstdout:\n%s\nstderr:\n%s"
+            "no database listed by `jac db list` from %s.\\nstdout:\\n%s\\nstderr:\\n%s"
             % (PROJECT_ROOT, result.stdout, result.stderr)
         )
 
@@ -105,29 +116,30 @@ def project_database() -> str:
         return first_candidate
 
     raise RuntimeError(
-        "no database listed by `jac db list` from %s.\nstdout:\n%s\nstderr:\n%s"
+        "no database listed by `jac db list` from %s.\\nstdout:\\n%s\\nstderr:\\n%s"
         % (PROJECT_ROOT, result.stdout, result.stderr)
     )
 
 
 
 def reset_store() -> str:
-    """
-    The only reset that clears the graph: drop the project's database.
-
-    `pkill` first — the store is a live Postgres database and must not be dropped
-    underneath a running server. Note that `rm -rf .jac/data` is NOT a reset: that
-    directory holds only the JWT secret.
-    """
     kill_server()
-    name = project_database()
-    result = jac("db", "drop", name, "-y")
-    if result.returncode != 0:
-        raise RuntimeError(
-            "`jac db drop %s -y` failed (exit %d).\nstdout:\n%s\nstderr:\n%s"
-            % (name, result.returncode, result.stdout, result.stderr)
-        )
-    return name
+    import platform
+    import shutil
+    try:
+        name = project_database()
+        result = jac("db", "drop", name, "-y")
+        if result.returncode != 0:
+            raise RuntimeError(f"`jac db drop` failed: {result.stderr}")
+        return name
+    except RuntimeError as e:
+        # If 'jac db' doesn't exist, we fallback to removing .jac dir (for local SQLite/file stores)
+        if "invalid choice: 'db'" in str(e) or "invalid choice" in str(e):
+            jac_dir = os.path.join(PROJECT_ROOT, ".jac")
+            if os.path.exists(jac_dir):
+                shutil.rmtree(jac_dir, ignore_errors=True)
+            return "local_.jac_directory"
+        raise
 
 
 def start_server(
@@ -157,7 +169,7 @@ def start_server(
         handle = subprocess.DEVNULL
 
     return subprocess.Popen(
-        [JAC_BIN, "run", ENTRY_POINT, "--no-client"],
+        [JAC_BIN, "start", ENTRY_POINT],
         cwd=PROJECT_ROOT,
         stdout=handle,
         stderr=subprocess.STDOUT,

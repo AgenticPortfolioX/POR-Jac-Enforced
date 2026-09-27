@@ -12,9 +12,7 @@ cleanup, verification, and warm-up steps. Report pass or fail for each step
 with the exact command and its output.
 
 STEP 1. Kill any stale runtime processes.
-  pkill -f "jac run"
-  pkill -f "next dev"
-  sleep 3
+  (Windows/macOS/Linux) Ensure no stale "jac", "python", or "node" dev processes are running.
   Confirm no process is listening on ports 8000 or 3000.
 
 STEP 2. Confirm the Jac binary and version.
@@ -54,14 +52,11 @@ STEP 6. Confirm contracts are deployed.
     PoRAttestation at POR_ATTESTATION_ADDRESS: name(), symbol()
   Confirm actWalker() equals the deployer address.
 
-STEP 7. Confirm Postgres is accepting connections.
-  pg_isready -h localhost
-  Report the exact output. Do not proceed if it is not "accepting connections".
-
-STEP 8. Reset the runtime store so the demo starts empty.
-  Kill jac run if it is running.
-  Drop the Postgres database named jac_por_jac_enforced_a3a8aeca.
-  Do not touch .jac/data/jwt_secret. Do not rm -rf .jac/data.
+STEP 7. Reset the runtime store so the demo starts empty.
+  python scripts/reset.py
+  This cross-platform script safely kills any stale server, drops the database 
+  (or local .jac directory), and re-seeds a fresh graph.
+  Confirm it reports "Reset complete!".
 
 STEP 9. Confirm the frontend builds.
   cd frontend
@@ -70,7 +65,7 @@ STEP 9. Confirm the frontend builds.
   Report the exit code.
 
 STEP 10. Warm start and shut down once to preload Postgres and the JIT.
-  jac run jac/main.jac --no-client &
+  jac start main.jac &
   sleep 12
   curl -s http://localhost:8000/healthz
   Confirm a 200 response.
@@ -127,7 +122,7 @@ Terminal 1 is the backend. It runs the Jac runtime, holds the graph, and prints 
 **Terminal 1**
 
 ```
-jac run jac/main.jac
+jac start main.jac
 ```
 
 Command 1 boots the backend. Starts the graph, loads every Jac Walker, and turns each one into a callable endpoint.

@@ -32,6 +32,9 @@ import json
 import os
 import sys
 import time
+from dotenv import load_dotenv
+
+load_dotenv()
 
 import _runtime as rt
 

@@ -95,22 +95,20 @@ def main() -> int:
     print(f"  {PASS}: asset node id = {node_id}")
 
     # --- 6 & 7: read back, and assert the graph is exactly what the seed made -
-    print(f"\n[6/8] POST /walker/GetAsset/{node_id}...")
+    print(f"\n[6/8] POST /walker/HealthCheck/{node_id}...")
     try:
-        payload = rt.get_asset(node_id)
+        report = rt.require_ok(rt.post_walker("HealthCheck", {}, node_id), "HealthCheck")[0]
     except Exception as exc:
-        print(f"  {FAIL}: GetAsset failed: {exc}")
+        print(f"  {FAIL}: HealthCheck failed: {exc}")
         rt.stop_server(proc)
         return 1
-    print(f"  {PASS}: response is well-formed (id={payload.get('id')!r}, "
-          f"node_id={payload.get('node_id')!r})")
+    print(f"  {PASS}: response is well-formed (asset_id={report.get('asset_id')!r})")
 
     print("\n[7/8] Asserting the graph contains zero edges (Asset only)...")
-    counts = {}
-    for edge in payload.get("edges", []):
-        counts[edge.get("type")] = counts.get(edge.get("type"), 0) + 1
+    counts = report.get("counts", {})
+    total_edges = sum(counts.values())
     print(f"  edge counts: {counts or '{}'}")
-    if counts:
+    if total_edges > 0:
         print(f"  {FAIL}: expected no edges on a fresh boot, found {counts}")
         print("  A freshly dropped store contains the seeded Asset and nothing "
               "else. Any edge means the reset did not clear the graph — which is "
