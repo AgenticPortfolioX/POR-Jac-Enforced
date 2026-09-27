@@ -301,7 +301,7 @@ export default function HomePage() {
 
             {/* Walk State - one wheel slice per walker */}
             <section className="rounded-[12px] border border-cl-gray/10 bg-cl-surface1 p-4 shadow-sm">
-              <WalkWheel log={walkLog} activeWalker={activeStep?.walker ?? null} />
+              <WalkWheel log={walkLog} activeWalker={activeStep?.walker ?? null} isApproved={allGreen} />
             </section>
 
             {/* Policy Card */}
