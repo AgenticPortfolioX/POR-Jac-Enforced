@@ -157,9 +157,9 @@ export default function HomePage() {
           asset_id: ASSET_ID,
           requested_amount: requested,
           recipient: '0x748ABdeF0775132E8F941e1513152D5eb02D3a4B',
-          token_address: process.env.NEXT_PUBLIC_POR_TOKEN_ADDRESS ?? '',
+          token_address: process.env.NEXT_PUBLIC_POR_TOKEN_ADDRESS || '0x77a3A9fCe83c715AB8020fe72e94669C3298b321',
           attestation_address:
-            process.env.NEXT_PUBLIC_POR_ATTESTATION_ADDRESS ?? '',
+            process.env.NEXT_PUBLIC_POR_ATTESTATION_ADDRESS || '0x455DF022Fe8A69D59616F4Ee58eE1B23D4fE9116',
         },
         nd
       );
