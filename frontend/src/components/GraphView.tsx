@@ -39,14 +39,14 @@ const nodeTypes = {
         ...props.data,
         label: (
           <div className="flex items-center justify-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="16" height="16" className="shrink-0">
-              <path fill="#2A5ADA" d="M50 0L93.3013 25V75L50 100L6.69873 75V25L50 0Z" />
-              <path fill="#0E33A3" d="M50 100L93.3013 75V25L50 50V100Z"/>
-              <path fill="#3B82F6" d="M50 50L6.69873 25L50 0L93.3013 25L50 50Z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="14" height="14" className="shrink-0">
+              <path fill="#2A5ADA" fillRule="evenodd" clipRule="evenodd" d="M16 2L30 10.08v11.84L16 30L2 21.92V10.08L16 2zm0 6.6l-8.28 4.77v9.26L16 27.4l8.28-4.77v-9.26L16 8.6z" />
             </svg>
-            <span className="truncate">Chainlink PoR (pUSD)</span>
+            <span className="truncate">Proof of Reserve PUSD</span>
           </div>
-        )
+        ),
+        detail: "Chainlink Secured",
+        source: undefined
       }}
     />
   ),

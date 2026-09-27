@@ -27,8 +27,8 @@ export function StampBadge({ walker, color, findings = [], narration = null }: S
     : (color ? 'border border-cl-gray/20' : 'border border-cl-gray/10 opacity-70');
 
   return (
-    <div className={`relative flex flex-col justify-start rounded-[12px] bg-cl-surface1 px-5 py-4 overflow-hidden min-w-[220px] transition-all duration-500 ${borderClass}`}>
-      <div className="absolute left-0 top-0 bottom-0 w-[10px]" style={{ backgroundColor: brandColor }} />
+    <div className={`relative flex flex-col justify-start rounded-[12px] bg-cl-surface1 pr-5 pl-7 py-4 overflow-hidden min-w-[220px] transition-all duration-500 ${borderClass}`}>
+      <div className="absolute left-0 top-0 bottom-0 w-[14px]" style={{ backgroundColor: brandColor }} />
       
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs uppercase tracking-wider text-cl-primary font-semibold">
