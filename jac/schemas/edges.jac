@@ -1,8 +1,3 @@
-# jac/schemas/edges.jac
-# Purpose: Graph edge archetypes connecting PoR nodes
-# Owner walker/module: shared
-# Spec: see PRD §3.2
-# Status: MIGRATED — Jac 0.37
 #
 # Jac 0.37 requires every edge to declare its endpoints. A bare `edge E {}` is
 # E2086, and declaring `any --> any` (the 0.13.5-compatible widening) makes every

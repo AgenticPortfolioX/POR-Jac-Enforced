@@ -1,8 +1,3 @@
-# jac/walkers/auditor.jac
-# Purpose: Adversarial auditor that writes findings even on green; never narrates
-# Owner walker/module: Auditor
-# Spec: see PRD §6.5
-# Status: IMPLEMENTED — Prompt 6
 
 import from jac.schemas.nodes { Asset, Stamp }
 import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, StampedBy }

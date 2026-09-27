@@ -1,12 +1,10 @@
-// contracts/interfaces/AggregatorV3Interface.sol
-// Purpose: Chainlink AggregatorV3Interface standard
-// Owner walker/module: shared
-// Spec: see PRD §6.3
-// Status: IMPLEMENTED — Prompt 4
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+/**
+ * @title AggregatorV3Interface
+ * @notice Standard interface for Chainlink Price and Proof of Reserve feeds.
+ */
 interface AggregatorV3Interface {
     function decimals() external view returns (uint8);
     function description() external view returns (string memory);

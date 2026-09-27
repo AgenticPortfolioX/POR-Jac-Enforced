@@ -1,9 +1,3 @@
-# jac/lib/utils.jac
-# Purpose: General mathematical and timestamp utility functions
-# Owner walker/module: shared
-# Spec: see PRD §3
-# Status: IMPLEMENTED — Prompt 3
-
 import time;
 
 def now_unix() -> int {

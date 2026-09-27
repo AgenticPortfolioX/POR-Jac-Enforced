@@ -1,8 +1,3 @@
-# jac/lib/policy.jac
-# Purpose: Global policy knobs and threshold configuration dictionary
-# Owner walker/module: shared
-# Spec: see PRD §5
-# Status: MIGRATED — Jac 0.37
 #
 # `dict[str, any]` is required, not optional. The values here are genuinely
 # heterogeneous (int seconds, float ratios, and a nested dict of colour meanings),

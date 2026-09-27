@@ -1,7 +1,10 @@
 {
   "name": "porje-frontend",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "Proof of Reserve - Jac Enforced (PoRJE) Frontend for JacHacks 2026",
+  "author": "Justin Gramke & Felix Berinde",
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

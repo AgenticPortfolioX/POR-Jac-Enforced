@@ -1,9 +1,3 @@
-// frontend/src/components/AuditorPanel.tsx
-// Purpose: Display Auditor findings verbatim
-// Owner walker/module: frontend
-// Spec: see PRD §12
-// Status: IMPLEMENTED — Prompt 12
-
 interface AuditorPanelProps {
   reasons: string[];
 }

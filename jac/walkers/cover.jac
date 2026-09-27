@@ -1,8 +1,3 @@
-# jac/walkers/cover.jac
-# Purpose: Compute coverage ratio and justified mint amount; write color Stamp
-# Owner walker/module: Cover
-# Spec: see PRD §6.4
-# Status: IMPLEMENTED — Prompt 6
 
 import from jac.schemas.nodes { Asset, Stamp }
 import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, StampedBy }

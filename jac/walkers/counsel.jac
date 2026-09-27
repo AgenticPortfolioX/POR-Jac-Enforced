@@ -1,8 +1,3 @@
-# jac/walkers/counsel.jac
-# Purpose: Narrate findings after stamps exist; blind until all three written
-# Owner walker/module: Counsel
-# Spec: see PRD §6.6
-# Status: IMPLEMENTED — Prompt 8
 
 import from jac.schemas.nodes { Asset, Stamp }
 import from jac.schemas.edges { StampedBy }

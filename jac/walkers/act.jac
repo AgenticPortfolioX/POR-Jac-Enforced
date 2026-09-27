@@ -1,8 +1,3 @@
-# jac/walkers/act.jac
-# Purpose: The only walker permitted to mint tokens; checks all three green stamps
-# Owner walker/module: Act
-# Spec: see PRD §7
-# Status: IMPLEMENTED — Prompt 7
 
 import from jac.lib { evm_py }
 import json;

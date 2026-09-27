@@ -1,9 +1,3 @@
-// frontend/src/lib/types.ts
-// Purpose: TypeScript interfaces mirroring Jac node archetypes
-// Owner walker/module: frontend
-// Spec: see PRD §11
-// Status: IMPLEMENTED — Prompt 11
-
 import type { Node, Edge } from 'reactflow';
 
 export interface JacAsset {

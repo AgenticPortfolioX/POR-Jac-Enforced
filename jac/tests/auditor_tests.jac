@@ -1,8 +1,3 @@
-# jac/tests/auditor_tests.jac
-# Purpose: Unit tests for Auditor walker
-# Owner walker/module: Auditor
-# Spec: see PRD §10
-# Status: IMPLEMENTED — Prompt 10
 
 import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, ChildClaim, Liability, Stamp }
 import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, StampedBy }

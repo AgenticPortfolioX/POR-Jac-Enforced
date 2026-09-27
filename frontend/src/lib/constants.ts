@@ -1,9 +1,3 @@
-// frontend/src/lib/constants.ts
-// Purpose: Shared constants for the PoRJE frontend
-// Owner walker/module: frontend
-// Spec: see PRD §11
-// Status: IMPLEMENTED — Prompt 11
-
 export const JAC_CLOUD_URL =
   process.env.NEXT_PUBLIC_JAC_URL ?? 'http://localhost:8000';
 

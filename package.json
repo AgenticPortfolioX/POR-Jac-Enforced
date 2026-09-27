@@ -1,12 +1,17 @@
 {
   "name": "por-jac-enforced",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "Proof of Reserve - Jac Enforced scaffolding",
+  "description": "Proof of Reserve - Jac Enforced (PoRJE) for JacHacks 2026",
+  "authors": [
+    "Justin Gramke",
+    "Felix Berinde"
+  ],
+  "license": "MIT",
   "scripts": {
     "deploy": "python scripts/deploy_contracts.py",
     "seed": "python scripts/seed_graph.py",
-    "jac:serve": "jac serve jac/main.jac",
+    "jac:serve": "jac run main.jac --no-client",
     "frontend:dev": "cd frontend && npm run dev",
     "contracts:build": "forge build && python scripts/build_artifacts.py"
   },

@@ -1,9 +1,3 @@
-# jac/lib/colors.jac
-# Purpose: Color constants and ranking helpers for stamp evaluation
-# Owner walker/module: shared
-# Spec: see PRD §4, §5
-# Status: IMPLEMENTED — Prompt 2
-
 glob COLOR_GREEN = "green";
 glob COLOR_YELLOW = "yellow";
 glob COLOR_RED = "red";

@@ -1,8 +1,3 @@
-# jac/walkers/seed_asset.jac
-# Purpose: Idempotent walker that creates the root Asset node if not yet seeded
-# Owner walker/module: shared
-# Spec: see PRD §9
-# Status: IMPLEMENTED — Prompt 9
 
 import from jac.schemas.nodes { Asset }
 

@@ -1,9 +1,3 @@
-# jac/lib/fixtures.jac
-# Purpose: Load JSON fixture files for reproducible simulation paths
-# Owner walker/module: shared
-# Spec: see PRD §7.4
-# Status: IMPLEMENTED — Prompt 3
-
 import json;
 import os;
 import from jac.lib.utils { now_unix }

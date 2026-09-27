@@ -1,9 +1,3 @@
-// frontend/src/components/ExplorerLink.tsx
-// Purpose: Etherscan link after successful mint — renders only when txHash present
-// Owner walker/module: frontend
-// Spec: see PRD §12
-// Status: IMPLEMENTED — Prompt 12
-
 interface ExplorerLinkProps {
   txHash: string | null;
 }

@@ -1,15 +1,13 @@
-// contracts/PoRAttestation.sol
-// Purpose: ERC-721 NFT recording each PoR-enforced mint event on-chain
-// Owner walker/module: Act
-// Spec: see PRD §8.3
-// Status: IMPLEMENTED — Prompt 4
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+/**
+ * @title PoRAttestation
+ * @notice ERC-721 token representing an immutable on-chain record for each PoR-enforced mint event.
+ */
 contract PoRAttestation is ERC721, Ownable {
     uint256 private _nextId;
 

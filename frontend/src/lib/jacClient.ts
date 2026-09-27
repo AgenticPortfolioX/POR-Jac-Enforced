@@ -1,9 +1,3 @@
-// frontend/src/lib/jacClient.ts
-// Purpose: HTTP client for Jac Cloud, React Flow graph transformer
-// Owner walker/module: frontend
-// Spec: see PRD §11
-// Status: IMPLEMENTED — Prompt 11
-
 import type { Node, Edge } from 'reactflow';
 import type {
   JacAsset,

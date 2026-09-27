@@ -1,9 +1,3 @@
-# jac/lib/chainlink_py.py
-# Purpose: Python bridge to Chainlink AggregatorV3Interface feeds via web3.py
-# Owner walker/module: shared
-# Spec: see PRD §6.3
-# Status: IMPLEMENTED — Prompt 3
-
 from web3 import Web3
 import os
 import json

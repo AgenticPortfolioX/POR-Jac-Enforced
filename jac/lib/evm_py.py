@@ -1,9 +1,3 @@
-# jac/lib/evm_py.py
-# Purpose: Python bridge to EVM — mint tokens and attestation NFTs via web3.py
-# Owner walker/module: Act (exclusive)
-# Spec: see PRD §8
-# Status: IMPLEMENTED — Prompt 7
-
 import os
 import json
 from pathlib import Path

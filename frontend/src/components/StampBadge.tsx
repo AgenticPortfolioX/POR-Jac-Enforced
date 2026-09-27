@@ -1,9 +1,3 @@
-// frontend/src/components/StampBadge.tsx
-// Purpose: Color-coded badge for each walker's stamp result
-// Owner walker/module: frontend
-// Spec: see PRD §12
-// Status: IMPLEMENTED — Prompt 12
-
 type Color = 'green' | 'yellow' | 'red' | 'unknown';
 
 const colorMap: Record<Color, string> = {

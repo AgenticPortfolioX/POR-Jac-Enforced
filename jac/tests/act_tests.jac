@@ -1,8 +1,3 @@
-# jac/tests/act_tests.jac
-# Purpose: Unit tests for Act walker with evm_spy enforcement
-# Owner walker/module: Act
-# Spec: see PRD §10
-# Status: IMPLEMENTED — Prompt 10
 
 import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, Stamp, Liability }
 import from jac.schemas.edges { HasPrice, HasReserve, HasLiability, StampedBy, MintedAs }

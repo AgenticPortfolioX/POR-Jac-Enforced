@@ -1,9 +1,3 @@
-// frontend/src/components/PolicyCard.tsx
-// Purpose: Display active policy configuration values
-// Owner walker/module: frontend
-// Spec: see PRD §12
-// Status: IMPLEMENTED — Prompt 12
-
 const POLICY = {
   max_price_age_seconds: 300,
   max_reserve_age_seconds: 3600,

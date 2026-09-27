@@ -1,8 +1,3 @@
-# jac/tests/freshness_tests.jac
-# Purpose: Unit tests for Freshness walker
-# Owner walker/module: Freshness
-# Spec: see PRD §10
-# Status: IMPLEMENTED — Prompt 10
 
 import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, Stamp }
 import from jac.schemas.edges { HasPrice, HasReserve, StampedBy }

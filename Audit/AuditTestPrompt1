@@ -1,0 +1,810 @@
+TASK: Build a comprehensive testing package for the PoRJE repository and use it to
+audit the project top to bottom. This is a build-and-verify task, not a fix task.
+The deliverable is (a) a test suite that proves every claim the project makes,
+and (b) a written audit report with evidence for each claim.
+
+You will not implement new features. You will not refactor production code except
+where a test proves it broken. You will not weaken any existing test. When a test
+exposes a bug, you will report it, then fix it only if the fix is a straightforward
+correction of behavior the code already claims to have.
+
+============================================================
+GROUND RULES
+============================================================
+
+1. Every test file you create goes in jac/tests/ with a *_tests.jac suffix
+   (the 0.37-compatible naming). Do not use test_*.jac — it collides with
+   Python's test-module import machinery.
+
+2. Copy the spawn idiom verbatim from an existing passing test in the repo.
+   Do not invent spawn syntax. If you are unsure how a walker runs in tests,
+   open one of the 15 existing tests and mirror it exactly.
+
+3. Every new test must be runnable via `jac test -d jac/tests` and must pass.
+   If a test fails because the code is wrong, fix the code (with a minimal
+   change) and re-run. If a test fails because the test is wrong, fix the test.
+
+4. Every test that touches the on-chain path must use the evm_spy — never
+   broadcast a real transaction during the test suite. Real transactions are
+   reserved for the manual e2e run in Phase 7.
+
+5. Do not modify fixtures to make a test pass. If a fixture is wrong, fix the
+   fixture and adjust every test that depended on the wrong value.
+
+6. Report findings as you go. At the end, produce a single AUDIT.md at the repo
+   root with the evidence table specified in Phase 12.
+
+============================================================
+PHASE 0 — INVENTORY (do this first)
+============================================================
+
+Before writing any test, produce a short INVENTORY.md that answers:
+
+  0.1  How many walkers exist? List each by name and file.
+  0.2  How many node types exist? List each by name and file.
+  0.3  How many edge types exist? List each by name and file. For each, name
+       the exact source and target node types.
+  0.4  How many tests currently pass? Run `jac test -d jac/tests` and paste the
+       full output.
+  0.5  What is the exact report shape of each walker? Read each walker file and
+       list the keys it returns in `report`.
+  0.6  What is the exact formula for `justified_amount` in Cover? Copy the three
+       lines that compute it, verbatim, from cover.jac.
+  0.7  What is the exact rule Act uses to decide whether to mint? Copy the block,
+       verbatim, from act.jac.
+  0.8  Where does the frontend send requests? Name the base URL, the path
+       template, and the envelope shape it expects.
+  0.9  What environment variables does the runtime require to boot? List every
+       one it reads.
+  0.10 What does `GET /healthz` return? Start `jac run` in the background and
+       curl it. Paste the response.
+
+Do not proceed to Phase 1 until INVENTORY.md is written and complete.
+
+============================================================
+PHASE 1 — ENVIRONMENT & LOCALHOST HEALTH
+============================================================
+
+Create jac/tests/health_tests.jac and scripts/health_check.py.
+
+1.1 — Backend is up
+  Test: curl http://localhost:8000/healthz returns 200 with a JSON body that
+  parses. Assert status code and content-type. Do not require a specific body
+  shape beyond "parses as JSON".
+
+1.2 — All walkers are reachable
+  For each walker name in [SeedAsset, Ingest, Freshness, Cover, Auditor, Act,
+  Counsel, DemoControl, GetAsset, GetStamps]:
+    POST /walker/{Name} with an empty body and with an invalid node path.
+    Assert the endpoint exists: response is 200, 400, or 404 — not 405 and not
+    connection-refused. A 500 is a failure; capture the body and report it.
+
+1.3 — Env vars present
+  Test script: read .env, assert every key listed in Phase 0.9 is present and
+  non-empty. Do not print secret values; print only the key names.
+
+1.4 — Postgres is running
+  Script: run `pg_isready -h localhost` (or the equivalent for the runtime's
+  Postgres instance). Assert it returns "accepting connections". Report the
+  exact command you used and its output.
+
+1.5 — Frontend is up (if npm is available)
+  If the frontend dev server is running, curl http://localhost:3000 and assert
+  200. If npm is not available in the current shell, skip and mark as deferred
+  in AUDIT.md with the reason.
+
+1.6 — Fresh-boot isolation
+  Script `scripts/health_check.py`:
+    1. Kill any running jac process.
+    2. Reset the runtime store (use the reset procedure documented in
+       docs/demo-runbook.md — the corrected one from the last session).
+    3. Start `jac run jac/main.jac &`.
+    4. Wait up to 30 seconds for /healthz to return 200.
+    5. Run `python scripts/seed_graph.py`.
+    6. POST /walker/GetAsset with the returned node_id.
+    7. Assert the response is well-formed and the edges array contains exactly
+       one HasLiability entry (the seed creates only Asset + Liability).
+    8. Kill the jac process.
+
+  This script is the "is the localhost working correctly" confirmation. Its
+  output is the evidence for Phase 1.
+
+============================================================
+PHASE 2 — GRAPH SCHEMA INTEGRITY
+============================================================
+
+Create jac/tests/schema_tests.jac.
+
+2.1 — Every node type is constructible
+  For each of Asset, PriceObservation, ReserveAttestation, ChildClaim, Liability,
+  Stamp, MintRecord:
+    Create an instance with all required fields.
+    Assert every field round-trips with the same value.
+    Assert the instance has the fields named in Phase 0.2.
+
+2.2 — Every edge declares its endpoints
+  Read jac/schemas/edges.jac. For each edge, assert the declared source and
+  target node types match what Phase 0.3 recorded. If any edge is bare
+  `edge E {}` with no endpoints, report it as a violation of PRD §17.2.
+
+2.3 — Every traversal used in production resolves
+  Search the walker files for every `[here ->:X:->]`, `[node ->:X:->]`, etc.
+  For each traversal, create a minimal graph in a test that has the expected
+  edge and assert the traversal returns the expected node. This proves no
+  walker is using a traversal that will silently return empty.
+
+2.4 — jid stability across deserialization
+  Test: create an Asset, call jid(asset), make an HTTP call to GetAsset, extract
+  the asset's `node_id`, make a second HTTP call, extract again. Assert the two
+  node_id values are identical. This is the regression guard for the GetAsset
+  fix from the previous session.
+
+2.5 — SeedAsset is idempotent
+  Test: POST SeedAsset twice with the same id. Assert:
+    - Second call returns `existing: true`.
+    - Second call returns the same node_id as the first.
+    - After both calls, [root -->](`?Asset) contains exactly one Asset with
+      that id.
+
+2.6 — Fixture loading is deterministic
+  For each fixture file, call load_fixture twice and assert the two results are
+  identical except for `timestamp` (which is computed from now_unix). Assert
+  every fixture has `label == "fixture"` and the returned dict has
+  `source == "fixture"`.
+
+============================================================
+PHASE 3 — CHAINLINK PROOF OF RESERVE FEEDS INTO THE GRAPH
+============================================================
+
+Create jac/tests/ingest_tests.jac and scripts/verify_por_feeds.py.
+
+3.1 — Fixture-based ingest produces the correct graph
+  For each of por_live, por_stale, por_flat:
+    Reset the asset.
+    Run Ingest(use_fixture=True, fixture_name="por_{stem}").
+    Assert exactly one PriceObservation, one ReserveAttestation, one ChildClaim,
+    and one Liability are attached.
+    Assert every ingested node has `source == "fixture"`.
+    Assert the reserve's timestamp equals the offset from the fixture.
+    Assert the reserve's amount equals the fixture amount.
+    Assert the child's `present` matches the fixture.
+    Assert por_flat produces `flat_history` with the expected length.
+
+3.2 — Live feed ingest (conditional)
+  If SEPOLIA_RPC_URL, PRICE_FEED_ADDRESS, and RESERVE_FEED_ADDRESS are all set
+  in .env:
+    Run Ingest(use_fixture=False).
+    Assert the returned price_source == "live" and reserve_source == "live".
+    Assert every ingested node has `source == "live"`.
+    Assert the price timestamp is within max_price_age_seconds of now.
+    Assert the reserve timestamp is within max_reserve_age_seconds of now.
+    Assert the price value is positive and finite.
+    Assert the reserve amount is positive and finite.
+    Print the actual values with their timestamps.
+  Else:
+    Skip and mark as "live feed not configured" in AUDIT.md.
+
+3.3 — No fixture can masquerade as live
+  Read every file in fixtures/. Assert every file contains `"label": "fixture"`.
+  Then, in a test: run Ingest with every fixture name; assert no node created
+  has `source == "live"`. This is the "fixtures never costume as live" invariant.
+
+3.4 — Re-ingest does not accumulate
+  Run Ingest(por_live) three times in a row on the same asset.
+  Assert after each run:
+    len([asset ->:HasPrice:->]) == 1
+    len([asset ->:HasReserve:->]) == 1
+    len([asset ->:HasLiability:->]) == 1
+    len([reserves[0] ->:DependsOn:->]) == 1
+  This is the regression guard for the upsert fix.
+
+3.5 — Feed timestamps are honored, not overwritten
+  Test: load por_stale (offset -7200). Run Ingest. Assert
+  `now - reserve.timestamp >= 7200 - 5` (5-second tolerance for test runtime).
+  This proves the fixture's `timestamp_offset_seconds` is applied, not ignored.
+
+3.6 — PoR data actually lands on the graph
+  Script `scripts/verify_por_feeds.py`:
+    1. Runs Ingest in both fixture and live modes (live if configured).
+    2. Calls GetAsset.
+    3. Prints each ingested node with its source, timestamp, and value.
+    4. Asserts the graph contains exactly the nodes Ingest claims to create.
+    5. Asserts the price and reserve nodes are wired to the Asset via the
+       correct edges.
+  This script is the "PoR feeds are coming into the graph" confirmation.
+
+============================================================
+PHASE 4 — WALKER TRAVERSAL & CONFIRMATIONS
+============================================================
+
+Create jac/tests/traversal_tests.jac and a tracing mechanism.
+
+The goal of this phase is to make the walkers' traversal visible and provable.
+Each walker must be shown reading the correct nodes via the correct edges,
+writing its stamp, and returning a well-formed report.
+
+4.1 — Add optional tracing to walkers (minimal, gated)
+  Add a module-level constant in jac/lib/utils.jac:
+    glob PORJE_TRACE = os.environ.get("PORJE_TRACE", "0") == "1";
+  In each of Freshness, Cover, Auditor, Counsel, and Act, add a single line
+  after each graph read:
+    if PORJE_TRACE { print(f"[TRACE] {self.name}: <description>"); }
+  Examples:
+    Freshness: `[TRACE] Freshness: Asset(asset-1) -> HasPrice -> PriceObservation(ts=..., val=...)`
+    Cover: `[TRACE] Cover: ReserveAttestation(amt=...) -> DependsOn -> ChildClaim(present=...)`
+  Keep these lines minimal. They must not alter control flow.
+  When PORJE_TRACE is not set, behavior is identical to today.
+
+4.2 — Freshness traversal test
+  Build the happy fixture graph. Set PORJE_TRACE=1.
+  Spawn Freshness. Assert:
+    - The trace shows a read from [here ->:HasPrice:->] returning one node.
+    - The trace shows a read from [here ->:HasReserve:->] returning one node.
+    - Exactly one Stamp(walker_name="Freshness") exists on the asset.
+    - The stamp's `reasons` array contains a line starting with "price age".
+    - The stamp's `reasons` array contains a line starting with "reserve age".
+    - The report contains keys: walker, color, reasons.
+
+4.3 — Cover traversal test
+  Same setup. Spawn Cover. Assert:
+    - The trace shows reads from HasPrice, HasReserve, HasLiability.
+    - The trace shows a read from [reserve ->:DependsOn:->].
+    - Exactly one Stamp(walker_name="Cover") exists.
+    - The stamp's payload contains keys: justified_amount, coverage_ratio.
+    - The report contains keys: walker, color, reasons, justified_amount,
+      coverage_ratio.
+
+4.4 — Auditor traversal test
+  Same setup. Spawn Auditor. Assert:
+    - The trace shows reads from HasPrice, HasReserve, HasLiability, and
+      DependsOn.
+    - Exactly one Stamp(walker_name="Auditor") exists.
+    - The stamp's reasons contains the four checklist lines on green.
+    - The report contains keys: walker, color, reasons.
+
+4.5 — Counsel blind-until-stamps test
+  Setup: asset with zero stamps. Spawn Counsel.
+  Assert the report contains `spoken: false` and a `missing` array listing all
+  three walker names.
+  Then add three stamps. Spawn Counsel.
+  Assert the report contains `spoken: true` and a `narration` string that
+  mentions each walker's color.
+
+4.6 — Act traversal test (spy-gated)
+  Setup: three green stamps + justified_amount = 500000. Install evm_spy.
+  Spawn Act with requested_amount=900000.
+  Assert:
+    - The trace shows Act read all three stamps.
+    - spy_mint_call_count() == 1.
+    - The spy's arguments are all primitives (re-check from prior prompt).
+    - A MintRecord exists on the asset with minted_amount == 500000.
+    - The report contains keys: minted (True), amount, justified, tx, nft_id.
+  Uninstall spy.
+
+4.7 — Walker traversal does not cross authority boundaries
+  For each of Freshness, Cover, Auditor, Counsel:
+    Search the file. Assert the string "evm_py" does not appear.
+  For Counsel:
+    Search the file. Assert it does not write any Stamp node — the only
+    assignment target is `report`.
+  For Act:
+    Assert it does not read any node type other than Asset, PriceObservation,
+    ReserveAttestation, Stamp, MintRecord.
+
+============================================================
+PHASE 5 — THE SIZING CALCULATION (CRITICAL)
+============================================================
+
+Create jac/tests/sizing_tests.jac.
+
+This phase proves the Cover walker's justified_amount calculation is correct.
+This is the Jac-native sizing step that determines how much Act is allowed to
+mint. Every demo claim about "how much is justified" reduces to this formula.
+
+5.1 — State the formula explicitly
+  In a comment at the top of the file, write the exact formula:
+    coverage_value   = reserve.amount * price.value
+    liability_value  = (liab.minted_units + liab.demo_position) * price.value
+    ratio            = coverage_value / liability_value
+    max_mintable     = (coverage_value / price.value) - liab.minted_units - liab.demo_position
+    justified        = max(0.0, max_mintable)
+
+  Assert this matches the code in cover.jac line-for-line. If the code differs,
+  report and fix.
+
+5.2 — Exact-fit case
+  Setup: reserve.amount = 1_000_000, price.value = 1.0,
+         liab.minted_units = 1_000_000, liab.demo_position = 0.
+  Spawn Cover.
+  Assert color == "green" (ratio 1.0 meets min_coverage_ratio 1.00).
+  Assert justified_amount == 0.0 (no room to mint more).
+
+5.3 — Surplus case
+  Setup: reserve.amount = 1_500_000, price.value = 1.0,
+         liab.minted_units = 1_000_000, liab.demo_position = 0.
+  Spawn Cover.
+  Assert color == "green".
+  Assert justified_amount == 500_000.0 (exactly the surplus).
+  Assert coverage_ratio == 1.5.
+
+5.4 — Thin case (yellow)
+  Setup: reserve.amount = 970_000, price.value = 1.0,
+         liab.minted_units = 1_000_000, liab.demo_position = 0.
+  Spawn Cover.
+  Assert color == "yellow" (0.97 is between floor 0.95 and min 1.00).
+  Assert justified_amount == 0.0 (nothing above 1.00 means no surplus).
+
+5.5 — Underfloor case (red)
+  Setup: reserve.amount = 900_000, price.value = 1.0,
+         liab.minted_units = 1_000_000, liab.demo_position = 0.
+  Spawn Cover.
+  Assert color == "red" (0.90 < floor 0.95).
+
+5.6 — Price is applied correctly
+  Setup: reserve.amount = 1_500_000, price.value = 2.0,
+         liab.minted_units = 1_000_000, liab.demo_position = 0.
+  Spawn Cover.
+  Coverage_value = 3_000_000; liability_value = 2_000_000; ratio = 1.5.
+  max_mintable = (3_000_000 / 2.0) - 1_000_000 - 0 = 1_500_000 - 1_000_000 = 500_000.
+  Assert justified_amount == 500_000.0.
+  Assert coverage_ratio == 1.5.
+  This proves the price cancels correctly in the numerator and is applied
+  correctly in the ratio.
+
+5.7 — demo_position is included in liability
+  Setup: reserve.amount = 1_500_000, price.value = 1.0,
+         liab.minted_units = 1_000_000, liab.demo_position = 500_000.
+  Spawn Cover.
+  Assert liability is treated as 1_500_000 (minted + demo).
+  ratio = 1_000_000 / 1_500_000 = 0.6667.
+  Assert color == "red" (below floor).
+  This proves demo_position is not silently ignored.
+
+5.8 — Zero liability is guarded
+  Setup: reserve.amount = 1_000_000, price.value = 1.0,
+         liab.minted_units = 0, liab.demo_position = 0.
+  Spawn Cover.
+  The code has a guard: `ratio = coverage_value / liability_value if liability_value > 0.0 else 0.0`.
+  Assert color is NOT green (ratio 0.0 < min_coverage_ratio).
+  Assert no exception is raised.
+  Assert justified_amount == 1_000_000.0 (the full reserve is mintable because
+  there is no liability to subtract).
+
+5.9 — Zero reserve is handled
+  Setup: reserve.amount = 0, price.value = 1.0,
+         liab.minted_units = 1_000_000, liab.demo_position = 0.
+  Spawn Cover.
+  Assert color == "red".
+  Assert justified_amount == 0.0.
+
+5.10 — Act mints exactly min(requested, justified)
+  For each pair (requested, justified, expected_mint):
+    (100,       500_000, 100)
+    (500_000,   500_000, 500_000)
+    (900_000,   500_000, 500_000)
+    (1_000_000, 0,       refuse)
+    (0,         500_000, refuse — requested is zero)
+    (-100,      500_000, refuse — negative requested)
+  Use the evm_spy. Assert spy_mint_call_count() is 1 for the first three,
+  0 for the last three. Assert the spy's amount argument equals expected_mint
+  when the spy is called.
+
+5.11 — Sizing is deterministic across price scaling
+  Run the same logical setup three times with price = 0.5, 1.0, 2.0, and
+  reserve/liability scaled proportionally. Assert justified_amount is identical
+  in all three cases (within float tolerance 1e-6). This proves the pricing
+  cancels and the sizing is in reserve units, not price units.
+
+5.12 — Summary print
+  Script `scripts/verify_sizing.py`:
+    Runs 5.2 through 5.11 against the live backend. Prints a table:
+      case_name | reserve | price | minted | demo | expected_justified | actual_justified | PASS/FAIL
+    Exits nonzero if any case fails.
+  This script is the "isn't there supposed to be a calculation by Jac to size
+  the trade" confirmation. Its output is the evidence.
+
+============================================================
+PHASE 6 — THREE DEMO PATHS END-TO-END
+============================================================
+
+Create jac/tests/paths_e2e_tests.jac.
+
+6.1 — Happy path
+  Fresh asset. Spawn DemoControl(path="happy").
+  Assert:
+    - Exactly three stamps exist: Freshness, Cover, Auditor.
+    - All three are green.
+    - Cover's payload contains justified_amount > 0.
+    - Cover's reasons include "coverage ratio" and "justified amount".
+    - Auditor's reasons include all four checklist lines.
+  Then spawn Act with requested_amount = 1_000_000 using evm_spy.
+  Assert:
+    - spy_mint_call_count() == 1.
+    - Minted amount equals min(1_000_000, justified).
+    - A MintRecord exists with the correct tx_hash from the spy.
+
+6.2 — Yellow path
+  Fresh asset. Spawn DemoControl(path="yellow").
+  Assert:
+    - Cover's stamp is yellow.
+    - Cover's reasons include "flat reserve".
+    - Auditor's stamp is yellow.
+    - Auditor's reasons include "flat reserve — unchanged".
+  Then spawn Act.
+  Assert:
+    - Report says minted: false.
+    - spy_mint_call_count() == 0.
+    - No MintRecord exists.
+
+6.3 — Unknown path
+  Fresh asset. Spawn DemoControl(path="unknown").
+  Assert:
+    - Freshness's stamp is unknown OR Cover's stamp is red.
+    - Cover's reasons include "child attestation: missing".
+    - Auditor's reasons include "child attestation — missing".
+  Then spawn Act.
+  Assert:
+    - Report says minted: false.
+    - spy_mint_call_count() == 0.
+    - No MintRecord exists.
+
+6.4 — Path transitions do not corrupt state
+  Fresh asset. Run happy → yellow → unknown → happy in sequence.
+  After the final happy:
+    - Exactly three stamps exist (not twelve).
+    - All three are green.
+    - Exactly one PriceObservation, one ReserveAttestation, one ChildClaim,
+      one Liability are attached.
+  This is the state-hygiene guard.
+
+6.5 — Stamp upsert semantics
+  Run Freshness three times on a fresh asset without re-ingest.
+  Assert len([asset ->:StampedBy:->]) == 1, and the stamp's timestamp is the
+  latest of the three runs. This proves stamps upsert, not append.
+
+============================================================
+PHASE 7 — THE ON-CHAIN TRANSACTION (IMPRESSIVE MOMENT)
+============================================================
+
+Create scripts/verify_chain.py. This is the only phase that broadcasts real
+transactions. It is a manual script, not a jac test.
+
+7.1 — Preconditions
+  Assert .env has POR_TOKEN_ADDRESS, POR_ATTESTATION_ADDRESS, SEPOLIA_RPC_URL,
+  DEPLOYER_PRIVATE_KEY. If any is missing, exit with a clear message.
+
+7.2 — Read pre-state
+  Connect via web3. Read:
+    - Deployer's PoRToken balance.
+    - Total supply of PoRToken.
+    - The next PoRAttestation token id (query _nextId via a read — if the field
+      is private, infer from the last AttestationMinted event).
+  Print all three.
+
+7.3 — Run the happy path against a fresh asset
+  Reset the store. Seed the asset. Run DemoControl(path="happy"). Query
+  GetAsset. Extract the Cover stamp's justified_amount.
+  Print: "Cover justified amount: <value>".
+
+7.4 — Mint via Act
+  POST /walker/Act/{node_id} with body {requested_amount: 1_000_000,
+  recipient: deployer_address, token_address: ..., attestation_address: ...}.
+  Capture the response. Assert:
+    - minted == true.
+    - amount == min(1_000_000, justified).
+    - tx is a 0x-prefixed 32-byte hex string.
+    - nft_id > 0.
+
+7.5 — Verify the on-chain effects
+  Wait for the tx to confirm (web3.eth.wait_for_transaction_receipt).
+  Read post-state:
+    - Deployer's PoRToken balance increased by exactly the minted amount.
+    - Total supply increased by exactly the minted amount.
+    - The Minted event was emitted with the correct amount and the JSON reason
+      string.
+    - The PoRAttestation token with the reported id exists, is owned by the
+      recipient, and its record struct matches: mintedAmount, coverageUsed,
+      priceTime, reserveTime, stampSummary.
+  Print all values.
+
+7.6 — Explorer links
+  Print:
+    - https://sepolia.etherscan.io/tx/{tx_hash}
+    - https://sepolia.etherscan.io/token/{token_address}
+    - https://sepolia.etherscan.io/token/{attestation_address}?a={nft_id}
+  Manually open each link and confirm they resolve to the correct tx and NFT.
+
+7.7 — Refusal paths do not broadcast
+  Run yellow path. Spawn Act. Assert no tx hash is returned and no new
+  Minted event appears on-chain (compare block number before and after).
+  Run unknown path. Same assertion.
+
+7.8 — Summary print
+  Print a final block:
+    MINTED: <amount> pUSD
+    JUSTIFIED: <justified>
+    REQUESTED: 1_000_000
+    SIZED BECAUSE: min(requested, justified) = <amount>
+    TX: <hash>
+    NFT: <id>
+    EXPLORER: <link>
+  This is the "impressive transaction out" confirmation.
+
+============================================================
+PHASE 8 — INVARIANTS AND NEGATIVE TESTS
+============================================================
+
+Create jac/tests/invariants_tests.jac. These are the "must never happen" tests.
+
+8.1 — Missing stamp is not green
+  For each subset of {Freshness, Cover, Auditor} that is missing at least one
+  member, spawn Act and assert spy_mint_call_count() == 0.
+
+8.2 — Yellow stamp blocks mint
+  Same as 8.1 but with one stamp yellow. Assert spy_mint_call_count() == 0.
+
+8.3 — Red stamp blocks mint
+  Same as 8.1 but with one stamp red. Assert spy_mint_call_count() == 0.
+
+8.4 — Unknown stamp blocks mint
+  Same as 8.1 but with one stamp unknown. Assert spy_mint_call_count() == 0.
+
+8.5 — Counsel cannot speak before three stamps
+  For each subset of size 0, 1, 2, spawn Counsel. Assert spoken == false.
+
+8.6 — Act imports evm_py as a module, not as a symbol
+  Read act.jac. Assert the import line matches `import from jac.lib { evm_py }`.
+  Assert the string "import from jac.lib.evm_py" (symbol import) does not
+  appear. Assert the spy patches the same module object that Act calls.
+
+8.7 — Only Act imports evm_py
+  Grep the jac/ tree. Assert only act.jac references evm_py.
+  Grep the frontend/ tree. Assert no TypeScript file references evm_py.
+
+8.8 — No fixture produces source == "live"
+  For each fixture file, run Ingest with use_fixture=True. Assert every created
+  node has source == "fixture".
+
+8.9 — No public mint on PoRToken
+  Read PoRToken.sol. Assert the mint function has the onlyAct modifier. Assert
+  there is no other function named mint. Assert setActWalker is onlyOwner.
+
+8.10 — PoRAttestation is onlyOwner
+  Read PoRAttestation.sol. Assert mintAttestation has onlyOwner.
+
+8.11 — No cross-chain logic
+  Grep contracts/, jac/, scripts/, frontend/ for "ccip", "crossChain",
+  "cross-chain", "bridge", "LayerZero", "Wormhole". Assert zero matches (case-
+  insensitive). This is the scope guard.
+
+8.12 — One child hop only
+  Read cover.jac and auditor.jac. Assert the DependsOn traversal is only one
+  level deep — no nested `[child ->:DependsOn:->]`. This is the "one child hop
+  ships" scope guard.
+
+8.13 — No fourth approval walker
+  Assert the set of walkers whose names suggest approval is exactly
+  {Freshness, Cover, Auditor}. Assert Act, Counsel, Ingest, DemoControl,
+  GetAsset, GetStamps, SeedAsset are not approval walkers.
+
+8.14 — Fixture timestamps are honored
+  For each fixture, load it and assert the returned timestamp equals
+  now_unix() + offset ± 2 seconds.
+
+============================================================
+PHASE 9 — SCOPE VERIFICATION
+============================================================
+
+Create docs/SCOPE_AUDIT.md. This is a written document, not a test.
+
+For each item in PRD §15 (Out of Scope), produce a line:
+  <item> | not present | evidence: <grep command and result>
+
+Items:
+  - CCIP or cross-chain send
+  - Destination-chain policy
+  - Recursive child-walker engine
+  - Live custom graph UI beyond GraphView
+  - Replacement for Chainlink cryptographic attestation
+  - Any path producing source="live" from a fixture
+  - Public mint on PoRToken
+  - Fourth approval walker
+
+For each item in PRD §14 (Hackathon Alignment), produce a line:
+  <criterion> | satisfied | evidence: <file and line, or command and output>
+
+============================================================
+PHASE 10 — FRONTEND END-TO-END
+============================================================
+
+Create docs/FRONTEND_AUDIT.md. This phase is manual if npm is not available.
+
+10.1 — Build succeeds
+  cd frontend && npm install && npm run build
+  Assert exit code 0. Paste the output.
+
+10.2 — Dev server serves the page
+  npm run dev
+  curl http://localhost:3000 and assert 200.
+
+10.3 — Manual UI checklist (open in browser)
+  Click Happy. Confirm:
+    - GraphView shows: Asset at top, then PriceObservation, ReserveAttestation,
+      Liability in a row, ChildClaim under the reserve, three Stamp nodes at
+      the bottom.
+    - The three StampBadge pills are green, green, green.
+    - AuditorPanel lists all four checklist lines.
+    - CounselPanel shows narration.
+    - MintButton is enabled and shows the justified amount.
+  Click Yellow. Confirm:
+    - Cover pill yellow.
+    - MintButton disabled.
+  Click Unknown. Confirm:
+    - Freshness pill unknown, Cover pill red, Auditor pill red.
+    - MintButton disabled.
+  Click Happy again. Confirm state transitions cleanly.
+
+10.4 — Refresh stability
+  With the graph rendered, press F5. Assert every node keeps the same position.
+  This is the jid() fix confirmation from the previous session.
+
+10.5 — Mint from the UI
+  Click Happy, then Mint. Confirm:
+    - The button enters the pending state.
+    - On success, ExplorerLink appears with the correct tx hash.
+    - The link opens Etherscan.
+
+10.6 — Envelope handling
+  Open browser dev tools. Run a walker call from the UI. Inspect the response
+  in the Network tab. Assert it is `{ok: true, data: {reports: [...]}}` and
+  that the frontend extracts `reports` correctly.
+
+10.7 — No hardcoded addresses
+  Grep frontend/src for "0x". Assert every occurrence is either a placeholder
+  (0x0000...) or comes from process.env. No deployed addresses committed.
+
+============================================================
+PHASE 11 — DOCUMENTATION AUDIT
+============================================================
+
+Create docs/DOCS_AUDIT.md.
+
+11.1 — README.md
+  Assert the thesis sentence appears verbatim. Assert the six sections named in
+  PRD §10 are present. Report any missing section.
+
+11.2 — demo.md
+  Assert the three paths are documented. Assert the pre-demo checklist is
+  present. Assert the "why this is impressive" section is present.
+
+11.3 — docs/architecture.md
+  Assert the spawned-sibling commit semantics subsection exists. Assert the
+  runtime is described as jac run, not jac start. Assert no stale mention of
+  E1032 on act.jac. Assert the diagram matches the current set of walkers.
+
+11.4 — docs/policy.md
+  For each of the eight POLICY keys, assert the value in the doc matches the
+  value in policy.jac. Report mismatches.
+
+11.5 — docs/walkers.md
+  Assert all ten walkers are documented. Assert the Ingest section names the
+  upsert pattern.
+
+11.6 — docs/demo-runbook.md
+  Assert the runtime store is correctly described (Postgres, not the old
+  anchor_store.db). Assert the reset procedure is the corrected one. Assert no
+  "jac start" appears. Assert no claim that DemoControl clears stamps.
+
+11.7 — docs/DEMO_RUNBOOK errors
+  If any stale references remain, report them with file, line, and the exact
+  text to replace.
+
+============================================================
+PHASE 12 — FINAL AUDIT REPORT
+============================================================
+
+Create AUDIT.md at the repo root. It must contain:
+
+12.1 — Executive summary
+  One paragraph: what was tested, what passed, what failed, what is deferred.
+
+12.2 — Test suite inventory
+  Table: file | test count | pass | fail | skipped
+  Total tests, total passes, total failures.
+
+12.3 — Phase-by-phase evidence table
+  For each phase 1 through 11:
+    Phase | Deliverable | Status (PASS/FAIL/PARTIAL/DEFERRED) | Evidence (command + output snippet)
+
+12.4 — The sizing calculation evidence
+  Paste the output of scripts/verify_sizing.py. This is the load-bearing proof
+  that Jac computes how much to mint before the transaction.
+
+12.5 — The on-chain transaction evidence
+  Paste the output of scripts/verify_chain.py:
+    - justified amount
+    - requested amount
+    - minted amount
+    - tx hash
+    - NFT id
+    - explorer link
+  Include the transaction receipt from web3.
+
+12.6 — The PoR feed evidence
+  Paste the output of scripts/verify_por_feeds.py in both fixture and live
+  (if configured) modes.
+
+12.7 — The walker traversal evidence
+  Paste the PORJE_TRACE=1 output for a full happy-path run. Each line shows a
+  walker reading a node.
+
+12.8 — The localhost health evidence
+  Paste the output of scripts/health_check.py.
+
+12.9 — Scope audit summary
+  Reference docs/SCOPE_AUDIT.md. Report each out-of-scope item as confirmed
+  absent.
+
+12.10 — Outstanding issues
+  List every FAIL, every DEFERRED, and every known bug. For each, name the
+  file, the symptom, the impact, and the recommended fix. Do not hide failures.
+
+12.11 — Sign-off
+  One line: "AUDIT COMPLETE — <date> — <total pass>/<total tests> tests passing.
+  Frontend build: <PASS/FAIL/DEFERRED>. Live feeds: <CONNECTED/NOT CONFIGURED>.
+  On-chain verification: <PASS/FAIL/DEFERRED>."
+
+============================================================
+DELIVERABLES (final list)
+============================================================
+
+Committed to the repo:
+
+  jac/tests/health_tests.jac
+  jac/tests/schema_tests.jac
+  jac/tests/ingest_tests.jac
+  jac/tests/traversal_tests.jac
+  jac/tests/sizing_tests.jac
+  jac/tests/paths_e2e_tests.jac
+  jac/tests/invariants_tests.jac
+
+  scripts/health_check.py
+  scripts/verify_por_feeds.py
+  scripts/verify_sizing.py
+  scripts/verify_chain.py
+
+  docs/SCOPE_AUDIT.md
+  docs/FRONTEND_AUDIT.md
+  docs/DOCS_AUDIT.md
+  INVENTORY.md
+  AUDIT.md
+
+  Modified: jac/lib/utils.jac (PORJE_TRACE constant)
+  Modified: jac/walkers/{freshness,cover,auditor,counsel,act}.jac
+            (gated trace lines only, no logic change)
+  Modified (only if a test proves them wrong): any production file.
+
+============================================================
+CONSTRAINTS
+============================================================
+
+Do NOT broadcast real transactions from jac test. Real txs only in
+scripts/verify_chain.py, run manually.
+
+Do NOT weaken the existing 15 tests to make room for new ones. New tests are
+additive.
+
+Do NOT modify fixtures to make a test pass. If the fixture is wrong, the test
+that catches it is doing its job — fix the fixture and audit the code that
+depended on the old value.
+
+Do NOT add trace lines that change control flow. The gated prints must be
+no-ops when PORJE_TRACE is unset.
+
+Do NOT hide failures in AUDIT.md. The value of this audit is that it tells the
+truth. A failing test is a finding, not a problem to be papered over.
+
+Do NOT proceed to the next phase until the current phase's tests pass or its
+failures are documented in AUDIT.md with a clear reason.
+
+Begin with Phase 0. Report the inventory before writing any test.

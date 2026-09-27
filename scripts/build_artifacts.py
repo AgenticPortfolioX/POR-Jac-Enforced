@@ -1,8 +1,3 @@
-# scripts/build_artifacts.py
-# Purpose: Flatten forge output into the artifacts/{Name}.json shape the runtime reads
-# Owner walker/module: shared
-# Spec: see PRD §10
-# Status: IMPLEMENTED — Prompt 4
 #
 # `forge build` writes out/{File}.sol/{Name}.json. Both scripts/deploy_contracts.py
 # and jac/lib/evm_py.py read a flat artifacts/{Name}.json holding the ABI (and, for

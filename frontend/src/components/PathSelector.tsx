@@ -1,15 +1,10 @@
-// frontend/src/components/PathSelector.tsx
-// Purpose: Select the demo path (happy / yellow / unknown)
-// Owner walker/module: frontend
-// Spec: see PRD §12
-// Status: IMPLEMENTED — Prompt 12
-
 interface PathSelectorProps {
   onSelect: (path: string) => void;
   disabled?: boolean;
 }
 
 const PATHS = [
+  { key: 'live', label: '⚡ Live Feed', desc: 'Chainlink Sepolia' },
   { key: 'happy', label: '✅ Happy Path', desc: 'All green' },
   { key: 'yellow', label: '⚠️ Yellow Path', desc: 'Flat reserve' },
   { key: 'unknown', label: '❌ Unknown Path', desc: 'Missing child' },

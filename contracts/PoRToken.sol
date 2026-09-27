@@ -1,15 +1,13 @@
-// contracts/PoRToken.sol
-// Purpose: ERC-20 token whose mint is callable only by the Act walker address
-// Owner walker/module: Act
-// Spec: see PRD §8.2
-// Status: IMPLEMENTED — Prompt 4
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+/**
+ * @title PoRToken
+ * @notice ERC-20 token whose mint function is restricted exclusively to the authorized Act walker address.
+ */
 contract PoRToken is ERC20, Ownable {
     address public actWalker;
 

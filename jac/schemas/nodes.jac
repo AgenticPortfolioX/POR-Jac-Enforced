@@ -1,8 +1,3 @@
-# jac/schemas/nodes.jac
-# Purpose: Graph node archetypes for Proof of Reserve, Jac Enforced
-# Owner walker/module: shared
-# Spec: see PRD §3.1
-# Status: IMPLEMENTED — Prompt 2
 
 node Asset {
     has :pub id: str;

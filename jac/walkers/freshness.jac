@@ -1,8 +1,3 @@
-# jac/walkers/freshness.jac
-# Purpose: Check timestamp freshness of price and reserve observations
-# Owner walker/module: Freshness
-# Spec: see PRD §6.2
-# Status: IMPLEMENTED — Prompt 5
 
 import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, Stamp }
 import from jac.schemas.edges { HasPrice, HasReserve, StampedBy }

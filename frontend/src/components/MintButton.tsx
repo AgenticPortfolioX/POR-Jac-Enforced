@@ -1,9 +1,3 @@
-// frontend/src/components/MintButton.tsx
-// Purpose: Mint button — disabled unless all three stamps are green
-// Owner walker/module: frontend
-// Spec: see PRD §12
-// Status: IMPLEMENTED — Prompt 12
-
 interface MintButtonProps {
   enabled: boolean;
   justified: number;

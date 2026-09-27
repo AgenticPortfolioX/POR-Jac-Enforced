@@ -1,9 +1,3 @@
-// frontend/src/app/page.tsx
-// Purpose: Main PoRJE demo page — all nine UI elements wired to Jac Cloud
-// Owner walker/module: frontend
-// Spec: see PRD §12
-// Status: IMPLEMENTED — Prompt 12
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';

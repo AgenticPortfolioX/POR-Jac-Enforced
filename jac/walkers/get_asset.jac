@@ -1,8 +1,3 @@
-# jac/walkers/get_asset.jac
-# Purpose: Read-only walker that returns full Asset graph as JSON
-# Owner walker/module: shared
-# Spec: see PRD §9
-# Status: IMPLEMENTED — Prompt 9
 
 import from jac.schemas.nodes { Asset }
 import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, StampedBy, MintedAs }

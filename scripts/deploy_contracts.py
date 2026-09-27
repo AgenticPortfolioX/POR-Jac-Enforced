@@ -1,9 +1,3 @@
-# scripts/deploy_contracts.py
-# Purpose: Deploy PoRToken and PoRAttestation to Sepolia, set actWalker, write .env
-# Owner walker/module: shared
-# Spec: see PRD §10
-# Status: IMPLEMENTED — Prompt 4
-
 import os
 import json
 import sys

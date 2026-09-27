@@ -1,9 +1,3 @@
-// frontend/src/components/GraphView.tsx
-// Purpose: React Flow graph visualization of the PoR claim graph
-// Owner walker/module: frontend
-// Spec: see PRD §12
-// Status: IMPLEMENTED — Prompt 12
-
 'use client';
 
 import ReactFlow, {

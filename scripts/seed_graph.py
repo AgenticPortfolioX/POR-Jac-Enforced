@@ -1,9 +1,3 @@
-# scripts/seed_graph.py
-# Purpose: Seed the root Asset node via the SeedAsset walker
-# Owner walker/module: shared
-# Spec: see PRD §9
-# Status: IMPLEMENTED — Prompt 9
-
 import os
 import json
 import requests

@@ -1,16 +1,3 @@
-# foundry.toml
-# Purpose: Foundry build config for the PoR contracts
-# Owner walker/module: shared
-# Spec: see PRD §10
-# Status: IMPLEMENTED — Prompt 4
-#
-# `forge build` is the supported path. Hardhat was tried and removed: Hardhat 3
-# with hardhat-toolbox@7 silently no-ops here (exit 0, no artifacts), so the repo
-# carries no hardhat dependency at all. `@openzeppelin/contracts` stays in
-# package.json purely so the remapping below resolves out of node_modules.
-# scripts/deploy_contracts.py only needs artifacts/{Name}.json to exist, shaped
-# {"abi": [...], "bytecode": "0x..."}, which scripts/build_artifacts.py writes.
-
 [profile.default]
 src = "contracts"
 out = "out"

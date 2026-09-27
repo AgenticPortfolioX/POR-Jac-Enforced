@@ -318,6 +318,10 @@ Known issues and their fixes are tracked in [docs/demo-runbook.md](docs/demo-run
 
 > Proof of Reserve attests that backing was reported. Proof of Reserve, Jac Enforced puts that attestation on a graph, requires three green stamps from walkers that are allowed to attack the claim, and only then mints — only as much as current coverage justifies — so "backed" is a permit with a quantity, not a text output you can quote.
 
+## Authors & Hackathon
+
+Built for **JacHacks 2026** by **Justin Gramke** and **Felix Berinde**.
+
 ## License
 
-MIT.
+MIT License — Copyright (c) 2026 Justin Gramke and Felix Berinde.

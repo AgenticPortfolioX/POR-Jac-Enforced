@@ -1,9 +1,3 @@
-// frontend/src/components/CounselPanel.tsx
-// Purpose: Narrate post-stamp verdict; blind placeholder until three stamps exist
-// Owner walker/module: frontend
-// Spec: see PRD §12
-// Status: IMPLEMENTED — Prompt 12
-
 interface CounselPanelProps {
   narration: string | null;
   enabled: boolean;

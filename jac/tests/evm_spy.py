@@ -1,9 +1,3 @@
-# jac/tests/evm_spy.py
-# Purpose: Monkey-patch evm_py module for Act walker test isolation
-# Owner walker/module: Act (test support)
-# Spec: see PRD §10
-# Status: IMPLEMENTED — Prompt 10
-
 import sys
 import os
 

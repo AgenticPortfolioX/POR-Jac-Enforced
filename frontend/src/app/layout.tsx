@@ -1,9 +1,3 @@
-// frontend/src/app/layout.tsx
-// Purpose: Root layout wrapping all PoRJE pages
-// Owner walker/module: frontend
-// Spec: see PRD §12
-// Status: IMPLEMENTED — Prompt 12
-
 import './globals.css';
 import type { ReactNode } from 'react';
 

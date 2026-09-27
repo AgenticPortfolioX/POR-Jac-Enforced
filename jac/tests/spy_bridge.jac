@@ -1,8 +1,3 @@
-# jac/tests/spy_bridge.jac
-# Purpose: Thin Jac bridge exposing evm_spy functions to Jac test suite
-# Owner walker/module: Act (test support)
-# Spec: see PRD §10
-# Status: IMPLEMENTED — Prompt 10
 
 import from jac.tests.evm_spy { install, uninstall, reset, mint_call_count, attestation_call_count, last_mint_args }
 

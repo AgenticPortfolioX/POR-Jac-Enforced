@@ -1,8 +1,3 @@
-# jac/tests/cover_tests.jac
-# Purpose: Unit tests for Cover walker
-# Owner walker/module: Cover
-# Spec: see PRD §10
-# Status: IMPLEMENTED — Prompt 10
 
 import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, ChildClaim, Liability, Stamp }
 import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, StampedBy }
