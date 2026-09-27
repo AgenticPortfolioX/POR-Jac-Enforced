@@ -4,16 +4,14 @@ import { useMemo } from 'react';
 import ReactFlow, {
   Background,
   Controls,
+  Handle,
+  Position,
   type Node,
   type Edge,
   type NodeProps,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-
-const HOT_STROKE = '#0847F7';
-const HOT_RING = '0 0 0 2px #0847F7';
-
-import { Handle, Position } from 'reactflow';
+import { WALKER_BRAND_COLORS } from '@/lib/constants';
 
 function NodeShell({ data, className = '' }: NodeProps & { className?: string }) {
   return (
@@ -35,7 +33,7 @@ const nodeTypes = {
   asset: (props: NodeProps) => (
     <NodeShell
       {...props}
-      className="bg-cl-blue border-transparent"
+      className="bg-cl-surface2 border-transparent"
     />
   ),
   priceobservation: (props: NodeProps) => (
@@ -82,8 +80,6 @@ const nodeTypes = {
     />
   ),
   stamp: (props: NodeProps) => {
-    // The Cover stamp is the one that carries the number the whole system
-    // exists to produce, so put it on the node rather than behind a click.
     const justified = props.data?.payload?.justified_amount;
     const showAmount =
       props.data?.walker_name === 'Cover' && justified != null;
@@ -139,6 +135,8 @@ export function GraphView({
   traverses = [],
   activeWalker = null,
 }: GraphViewProps) {
+  const activeColor = activeWalker ? (WALKER_BRAND_COLORS[activeWalker] || '#0847F7') : '#0847F7';
+
   const decoratedEdges = useMemo(
     () =>
       edges.map((e) => {
@@ -153,12 +151,12 @@ export function GraphView({
         return {
           ...e,
           animated: isVisiting,
-          style: { stroke: HOT_STROKE, strokeWidth: 2.5, opacity: 1 },
-          labelStyle: { fill: '#DCEBFF', fontWeight: 600, fontSize: 11 },
-          labelBgStyle: { fill: '#0847F7', fillOpacity: 0.9, rx: 4, ry: 4 },
+          style: { stroke: activeColor, strokeWidth: 2.5, opacity: 1 },
+          labelStyle: { fill: '#141824', fontWeight: 600, fontSize: 11 },
+          labelBgStyle: { fill: activeColor, fillOpacity: 0.9, rx: 4, ry: 4 },
         };
       }),
-    [edges, traverses, activeWalker]
+    [edges, traverses, activeWalker, activeColor]
   );
 
   const decoratedNodes = useMemo(() => {
@@ -167,9 +165,9 @@ export function GraphView({
       const isActiveStamp =
         n.type === 'stamp' && n.data?.walker_name === activeWalker;
       if (!isActiveStamp) return n;
-      return { ...n, className: 'animate-pulse-ring', style: { ...n.style, boxShadow: HOT_RING } };
+      return { ...n, className: 'animate-pulse-ring', style: { ...n.style, boxShadow: `0 0 0 2px ${activeColor}` } };
     });
-  }, [nodes, activeWalker]);
+  }, [nodes, activeWalker, activeColor]);
 
   return (
     <div className="h-[520px] rounded-[12px] border border-cl-gray/10 bg-cl-bg overflow-hidden relative">
@@ -187,7 +185,14 @@ export function GraphView({
       {/* Walker Scanning Animation */}
       {activeWalker && (
         <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[12px]">
-          <div className="h-[2px] w-full bg-cl-blue shadow-[0_0_15px_rgba(8,71,247,0.8)] animate-[scan_2s_ease-in-out_infinite]" />
+          <div
+            className="h-[2px] w-full animate-[scan_2.5s_ease-in-out_infinite]"
+            style={{
+              backgroundColor: activeColor,
+              boxShadow: `0 0 15px ${activeColor}`,
+              opacity: 0.8,
+            }}
+          />
         </div>
       )}
     </div>

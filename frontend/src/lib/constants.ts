@@ -58,4 +58,12 @@ export const PATH_CONFIG = {
 export type PathName = keyof typeof PATH_CONFIG;
 
 /** How long each walker stays highlighted, in ms. */
-export const WALK_STEP_MS = 900;
+export const WALK_STEP_MS = 2500;
+
+export const WALKER_BRAND_COLORS: Record<string, string> = {
+  Freshness: '#05C46B', // green
+  Cover: '#0847F7', // blue
+  Auditor: '#FFDD59', // caution
+  Act: '#F5F7FA', // primary
+  Counsel: '#F5F7FA',
+};

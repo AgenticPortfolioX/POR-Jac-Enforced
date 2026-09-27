@@ -15,8 +15,6 @@ import {
 import type { Stamp } from '@/lib/types';
 import { GraphView } from '@/components/GraphView';
 import { StampBadge } from '@/components/StampBadge';
-import { AuditorPanel } from '@/components/AuditorPanel';
-import { CounselPanel } from '@/components/CounselPanel';
 import { PathSelector } from '@/components/PathSelector';
 import { MintButton } from '@/components/MintButton';
 import { ExplorerLink } from '@/components/ExplorerLink';
@@ -328,16 +326,17 @@ export default function HomePage() {
                   key={w}
                   walker={w}
                   color={(stamps[w]?.color as 'green' | 'caution' | 'red' | 'unknown') ?? null}
+                  findings={w === 'Auditor' ? auditorReasons : []}
                 />
               ))}
-            </div>
-
-            <div className="mt-6">
-              <AuditorPanel reasons={auditorReasons} />
-            </div>
-
-            <div className="mt-4">
-              <CounselPanel narration={narration} enabled={stampsReady} />
+              
+              {/* Counsel Walker (Only visible if spoken or pending after others) */}
+              <StampBadge
+                key="Counsel"
+                walker="Counsel"
+                color={narration ? (stamps['Auditor']?.color === 'red' || stamps['Cover']?.color === 'red' ? 'red' : 'caution') : (stampsReady ? 'green' : null)}
+                narration={narration}
+              />
             </div>
           </div>
 
