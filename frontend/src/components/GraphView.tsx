@@ -45,7 +45,7 @@ const nodeTypes = {
             <span className="truncate">Proof of Reserve PUSD</span>
           </div>
         ),
-        detail: "Chainlink Secured",
+        detail: <div className="text-center w-full">Chainlink Secured</div>,
         source: undefined
       }}
     />
