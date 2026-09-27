@@ -1,34 +1,34 @@
-# Proof of Reserve, Jac Enforced
+# Proof of Reserves, Jac Enforced
 
 <p align="center">
   <a href="https://youtu.be/hxnEmkkocPc">
-    <img src="docs/assets/jac_link_2.png" alt="Proof of Reserve, Jac Enforced - watch the demo" width="600" />
+    <img src="docs/assets/jac_link_2.png" alt="Proof of Reserves, Jac Enforced - watch the demo" width="600" />
   </a>
   <br/>
   <sub>▶ Click the image to watch the demo</sub>
 </p>
 
-**PoR attests. Jac enforces. The printer is the proof.**
+**Proof of Reserves attests. Jac enforces. The printer is the proof.**
 
-> Proof of Reserve attests that backing was reported. Proof of Reserve, Jac Enforced puts that attestation on a graph, requires three green stamps from walkers that are allowed to attack the claim, and only then mints - only as much as current coverage justifies - so "backed" is a permit with a quantity, not a text output you can quote.
+> Proof of Reserves attests that backing was reported. Proof of Reserves, Jac Enforced puts that attestation on a graph, requires three green stamps from walkers that are allowed to attack the claim, and only then mints - only as much as current coverage justifies - so "backed" is a permit with a quantity, not a text output you can quote.
 
-A Chainlink Proof of Reserve attestation arrives. Most systems read the number and display it. **PoRJE walks it** - through three independent approvers, one of which exists to attack the claim - and only then decides whether value may be printed, and how much.
+A Chainlink Proof of Reserves attestation arrives. Most systems read the number and display it. **PoRJE walks it** - through three independent approvers, one of which exists to attack the claim - and only then decides whether value may be printed, and how much.
 
-This is not an oracle project. It does not replace Chainlink Proof of Reserve. PoR remains the sensor. This is the runtime that decides whether the attestation is still **actionable**.
+This is not an oracle project. It does not replace Chainlink Proof of Reserves. Proof of Reserves remains the sensor. This is the runtime that decides whether the attestation is still **actionable**.
 
 ---
 
 ## The gap: an attestation with no door
 
-Chainlink Proof of Reserve already does the hard job. It publishes that, at a given time, an attested reserve amount existed. That output is a **fact**. The problem is what happens next - nothing has to.
+Chainlink Proof of Reserves already does the hard job. It publishes that, at a given time, an attested reserve amount existed. That output is a **fact**. The problem is what happens next - nothing has to.
 
 A reserve figure gets read and shown. A badge. Nothing is permitted or refused because of it.
 
 ```mermaid
 flowchart LR
-    subgraph TODAY["PoR as it is usually consumed"]
+    subgraph TODAY["Proof of Reserves as it is usually consumed"]
         direction LR
-        F1["PoR feed<br/>1,250,000 attested"] --> B1["badge<br/>✅ backed"]
+        F1["Proof of Reserves feed<br/>1,250,000 attested"] --> B1["badge<br/>✅ backed"]
         B1 --> M1["mint<br/>any amount, any time"]
     end
     style B1 fill:#2d3748,stroke:#4a5568,color:#fff
@@ -44,7 +44,7 @@ Four ways that is unsafe, and all four look fine on a dashboard:
 | **Stale child** | Parent asset reads "backed" | The claim *underneath* it expired |
 | **Missing attestation** | An empty field | Treated as absence of data, not a hard stop |
 
-Vaults, mints, collateral listings and basket legs **inherit** "backed" without ever walking what sits underneath. So PoR today is strong as an attestation and weak as a protocol primitive: text you can point at, not a door you have to pass through - and it never decides how much may be printed.
+Vaults, mints, collateral listings and basket legs **inherit** "backed" without ever walking what sits underneath. So Proof of Reserves today is strong as an attestation and weak as a protocol primitive: text you can point at, not a door you have to pass through - and it never decides how much may be printed.
 
 ---
 
@@ -55,7 +55,7 @@ Keep Chainlink's attestation as the sensor. Put a Jac workflow in front of the p
 ```mermaid
 flowchart TB
     subgraph SENSORS["Sensors"]
-        POR["Chainlink PoR feed<br/><i>AggregatorV3Interface</i>"]
+        POR["Chainlink Proof of Reserves feed<br/><i>AggregatorV3Interface</i>"]
         PX["Price feed"]
     end
 
@@ -352,7 +352,7 @@ Known issues and their fixes are tracked in [docs/demo-runbook.md](docs/demo-run
 
 ## The one sentence
 
-> Proof of Reserve attests that backing was reported. Proof of Reserve, Jac Enforced puts that attestation on a graph, requires three green stamps from walkers that are allowed to attack the claim, and only then mints - only as much as current coverage justifies - so "backed" is a permit with a quantity, not a text output you can quote.
+> Proof of Reserves attests that backing was reported. Proof of Reserves, Jac Enforced puts that attestation on a graph, requires three green stamps from walkers that are allowed to attack the claim, and only then mints - only as much as current coverage justifies - so "backed" is a permit with a quantity, not a text output you can quote.
 
 ## Authors & Hackathon
 
