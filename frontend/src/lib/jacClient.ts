@@ -98,14 +98,14 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
   // Fixed layout coordinates
   const positions: Record<string, { x: number; y: number }> = {
     Asset: { x: 400, y: 0 },
-    PriceObservation: { x: 200, y: 150 },
-    ReserveAttestation: { x: 600, y: 150 },
-    ChildClaim: { x: 600, y: 300 },
-    Liability: { x: 200, y: 300 },
-    FreshnessStamp: { x: 200, y: 450 },
-    CoverStamp: { x: 600, y: 450 },
-    AuditorStamp: { x: 400, y: 550 },
-    MintRecord: { x: 400, y: 700 },
+    Liability: { x: 50, y: 150 },
+    PriceObservation: { x: 260, y: 150 },
+    ReserveAttestation: { x: 540, y: 150 },
+    ChildClaim: { x: 750, y: 150 },
+    FreshnessStamp: { x: 260, y: 300 },
+    CoverStamp: { x: 540, y: 300 },
+    AuditorStamp: { x: 400, y: 400 },
+    MintRecord: { x: 400, y: 520 },
   };
 
   nodes.push({
