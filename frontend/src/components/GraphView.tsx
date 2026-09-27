@@ -236,9 +236,8 @@ export function GraphView({
     }
   }), [edges, liveEdgeId, completedEdgeIds, activeColor]);
 
-  const hasMint = nodes.some(n => n.type === 'mintrecord');
-  const isCounseling = activeWalker === 'Act' || activeWalker === 'Counsel';
-  const showGold = hasMint || isCounseling;
+  const isActing = activeWalker === 'Act';
+  const showGold = isActing;
 
   const decoratedNodes = useMemo(() => {
     const renderNodes = nodes.map(n => {
