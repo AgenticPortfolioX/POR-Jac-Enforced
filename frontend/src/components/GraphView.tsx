@@ -17,7 +17,9 @@ import { WALKER_BRAND_COLORS } from '@/lib/constants';
 function NodeShell({ data, className = '', style }: NodeProps & { className?: string; style?: React.CSSProperties }) {
   return (
     <div style={style} className={`hex-cut p-4 text-xs text-cl-primary shadow-lg max-w-[200px] bg-cl-surface1 border border-cl-gray/10 ${className}`}>
-      <Handle type="target" position={Position.Top} className="invisible" />
+      <Handle type="target" position={Position.Top} id="top" className="invisible" />
+      <Handle type="target" position={Position.Left} id="left" className="invisible" />
+      <Handle type="target" position={Position.Right} id="target-right" className="invisible" />
       <div className="font-semibold text-white tracking-tight truncate leading-snug">{data.label}</div>
       {data.source && (
         <div className="text-cl-muted mt-1 text-[10px] uppercase tracking-wider">src: {data.source}</div>
@@ -25,7 +27,9 @@ function NodeShell({ data, className = '', style }: NodeProps & { className?: st
       {data.detail && (
         <div className="text-cl-muted mt-1 leading-tight">{data.detail}</div>
       )}
-      <Handle type="source" position={Position.Bottom} className="invisible" />
+      <Handle type="source" position={Position.Bottom} id="bottom" className="invisible" />
+      <Handle type="source" position={Position.Right} id="right" className="invisible" />
+      <Handle type="source" position={Position.Left} id="source-left" className="invisible" />
     </div>
   );
 }

@@ -97,15 +97,15 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
 
   // Fixed layout coordinates
   const positions: Record<string, { x: number; y: number }> = {
-    Asset: { x: 425, y: 0 },
-    Liability: { x: 70, y: 110 },
-    PriceObservation: { x: 260, y: 110 },
-    ReserveAttestation: { x: 590, y: 110 },
-    ChildClaim: { x: 840, y: 175 },
-    FreshnessStamp: { x: 260, y: 245 },
-    CoverStamp: { x: 590, y: 245 },
-    AuditorStamp: { x: 425, y: 345 },
-    MintRecord: { x: 425, y: 440 },
+    Asset: { x: 380, y: 0 },
+    Liability: { x: 40, y: 95 },
+    PriceObservation: { x: 210, y: 95 },
+    ReserveAttestation: { x: 550, y: 95 },
+    ChildClaim: { x: 740, y: 180 },
+    FreshnessStamp: { x: 210, y: 275 },
+    CoverStamp: { x: 550, y: 275 },
+    AuditorStamp: { x: 380, y: 365 },
+    MintRecord: { x: 380, y: 450 },
   };
 
   nodes.push({
@@ -168,8 +168,14 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
       id: `e-${reserveNode.id}-${childClaimNode.id}`,
       source: reserveNode.id,
       target: childClaimNode.id,
+      sourceHandle: 'right',
+      targetHandle: 'left',
       label: 'DependsOn',
       type: 'smoothstep',
+      labelStyle: { fill: '#F5F7FA', fontSize: 10, fontWeight: 600 },
+      labelBgStyle: { fill: '#141824', fillOpacity: 0.95, stroke: '#374151', strokeWidth: 1 },
+      labelBgPadding: [6, 3],
+      labelBgBorderRadius: 4,
       style: { stroke: '#4B5563', strokeWidth: 1.5 },
     });
   }
@@ -179,6 +185,8 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
       id: `e-${childClaimNode.id}-${coverNode.id}`,
       source: childClaimNode.id,
       target: coverNode.id,
+      sourceHandle: 'source-left',
+      targetHandle: 'target-right',
       type: 'smoothstep',
       style: { stroke: '#4B5563', strokeWidth: 1.5 },
     });
