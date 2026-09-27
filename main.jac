@@ -1,7 +1,7 @@
 import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, ChildClaim, Liability, Stamp, MintRecord }
 import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, StampedBy, MintedAs }
 import from jac.lib.policy { POLICY }
-import from jac.lib.colors { COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_UNKNOWN, color_rank, min_color }
+import from jac.lib.colors { COLOR_GREEN, COLOR_CAUTION, COLOR_RED, COLOR_UNKNOWN, color_rank, min_color }
 import from jac.walkers.ingest { Ingest }
 import from jac.walkers.freshness { Freshness }
 import from jac.walkers.cover { Cover }

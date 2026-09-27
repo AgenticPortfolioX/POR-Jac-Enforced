@@ -66,7 +66,7 @@ No missing-section finding can be reported against a list that does not exist.
 ## 11.2 `demo.md` - **PASS**
 
 - **Three paths documented:** `## Path 1 - Happy (all green)` (line 15),
-  `## Path 2 - Yellow (stale or stuck reserve)` (line 18),
+  `## Path 2 - Caution (stale or stuck reserve)` (line 18),
   `## Path 3 - Unknown / red (missing PoR or missing child)` (line 21). ✓
 - **Pre-demo checklist present:** `## Pre-demo checklist (run 10 minutes before)`
   (line 7), with six numbered preconditions at line 8 - backend up with

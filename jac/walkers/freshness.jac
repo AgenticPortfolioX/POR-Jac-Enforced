@@ -2,7 +2,7 @@
 import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, Stamp }
 import from jac.schemas.edges { HasPrice, HasReserve, StampedBy }
 import from jac.lib.policy { POLICY }
-import from jac.lib.colors { COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_UNKNOWN, min_color }
+import from jac.lib.colors { COLOR_GREEN, COLOR_CAUTION, COLOR_RED, COLOR_UNKNOWN, min_color }
 import from jac.lib.utils { now_unix, abs_diff, PORJE_TRACE }
 
 walker:pub Freshness {
@@ -44,7 +44,7 @@ walker:pub Freshness {
                 color = min_color(color, COLOR_RED);
                 reasons.append("reserve age " + str(int(r_age)) + "s exceeds max " + str(max_r) + "s");
             } elif r_age > float(max_r) * 0.5 {
-                color = min_color(color, COLOR_YELLOW);
+                color = min_color(color, COLOR_CAUTION);
                 reasons.append("reserve age " + str(int(r_age)) + "s exceeds 50% of max " + str(max_r) + "s");
             } else {
                 reasons.append("reserve age " + str(int(r_age)) + "s <= max " + str(max_r) + "s");

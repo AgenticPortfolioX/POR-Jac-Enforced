@@ -82,7 +82,7 @@ Verified against the live server (the response envelope is
   `{ "id", "node_id", "name", "symbol", "chain", "token_address", "created_at", "overall_status", "edges": list }`
   - there is **no `nodes` key**; the frontend derives nodes from the edge targets, which are
   inlined in the `edges` array. `ReserveAttestation` targets now include `flat_history: list[float]`
-  for yellow-verdict evidence display.
+  for caution-verdict evidence display.
 
 ## 0.6 Cover Justified Amount Formula
 ```jac

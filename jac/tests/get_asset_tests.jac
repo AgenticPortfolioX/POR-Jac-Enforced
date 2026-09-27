@@ -35,7 +35,7 @@ test "test_get_asset_returns_correct_edge_types" {
 
 test "test_get_asset_reserve_has_flat_history" {
     # GetAsset must include the flat_history field on the HasReserve target.
-    # This is the data the frontend uses to show yellow-verdict evidence
+    # This is the data the frontend uses to show caution-verdict evidence
     # in the Cover and Auditor panels.
     asset = Asset(
         id="test-ga-flat",

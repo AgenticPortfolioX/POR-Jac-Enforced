@@ -435,7 +435,7 @@ def main() -> int:
 
     # --- 7.8 refusal paths ---------------------------------------------------
     print("\n[8/9] Refusal paths do not broadcast")
-    for path, label in (("yellow", "yellow (flat reserve)"),
+    for path, label in (("caution", "caution (flat reserve)"),
                         ("unknown", "unknown (child missing)")):
         block_before = w3.eth.block_number
         try:

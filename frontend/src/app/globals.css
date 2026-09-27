@@ -5,7 +5,7 @@
 /* Custom PoRJE dark theme enhancements */
 :root {
   --color-green: #05C46B;
-  --color-yellow: #FFDD59;
+  --color-caution: #FFDD59;
   --color-red: #FF5E57;
   --color-unknown: #6D7380;
 }
@@ -23,4 +23,11 @@
 
 .animate-pulse-ring {
   animation: pulse-ring 1s cubic-bezier(0.24, 0, 0.38, 1) forwards;
+}
+
+@keyframes scan {
+  0% { transform: translateY(-10px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(530px); opacity: 0; }
 }

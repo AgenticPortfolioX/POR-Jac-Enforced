@@ -14,14 +14,14 @@ walker:pub HealthCheck {
         }
 
         green_stamps = 0;
-        yellow_stamps = 0;
+        caution_stamps = 0;
         red_stamps = 0;
 
         for s in stamps {
             if str(s.color) == "green" {
                 green_stamps += 1;
-            } elif str(s.color) == "yellow" {
-                yellow_stamps += 1;
+            } elif str(s.color) == "caution" {
+                caution_stamps += 1;
             } elif str(s.color) == "red" {
                 red_stamps += 1;
             }
@@ -39,7 +39,7 @@ walker:pub HealthCheck {
             },
             "stamp_colors": {
                 "green": green_stamps,
-                "yellow": yellow_stamps,
+                "caution": caution_stamps,
                 "red": red_stamps
             }
         };

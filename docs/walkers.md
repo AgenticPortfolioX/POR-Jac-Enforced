@@ -16,8 +16,8 @@ POST /walker/{Name}/{node_id}
 - **Inputs.** `price_feed_address`, `reserve_feed_address`, `child_asset_id` (default `"USDC"`), `use_fixture` (default `True`), `fixture_name` (default `"por_live"`), `child_present` (default `True`). The fixture stem is derived from the name (`por_live` → `live`), which selects `price_{stem}`, `child_{stem}`, and the named reserve fixture.
 - **`child_present`.** ANDs into the child claim's `present` flag, so `Ingest(..., child_present=False)` marks the backing layer absent in one call. This exists so the `unknown` demo path is a single `Ingest` rather than an ingest plus a follow-up traversal that reaches into the reserve and flips the child - which is what lets the UI walk the path as four uniform steps (see `DemoControl`).
 - **Writes.** **Upserts** `PriceObservation`, `ReserveAttestation`, `ChildClaim`, and `Liability` in place: it attaches a node only when none exists, otherwise it mutates the existing node's fields, so a re-ingest refreshes the facts and exactly one observation of each type survives any number of runs. Edges are `HasPrice`, `HasReserve`, `HasLiability` from the Asset and `DependsOn` from reserve to child. It must **not** delete-then-recreate - `Ingest` runs as a spawned sibling, and a sibling's `del [edge …]` is silently lost under 0.37 commit semantics, which is what let observations accumulate one per run. See **Spawned-sibling commit semantics** in `docs/architecture.md`.
-- **`flat_history`.** Carried onto the reserve node when the fixture supplies it, and **cleared to `[]` when it does not**. The clear is load-bearing rather than defensive: the reserve node now persists across runs, so a `por_flat` ingest followed by a `por_live` one would otherwise leave the flat windows attached and `Cover` would keep reading yellow on a healthy reserve. Only `por_flat.json` carries the key.
-- **Forbidden.** Minting, stamping, EVM calls, and inventing a fixture that does not exist. There is no `price_flat.json` (the fixture set is fixed at seven files), so the yellow path loads `por_flat` with `price_live` - the scenario is "flat reserve **while price moved**" and the price must come from somewhere. A missing `child_{stem}` fixture falls back to an inline present child rather than crashing.
+- **`flat_history`.** Carried onto the reserve node when the fixture supplies it, and **cleared to `[]` when it does not**. The clear is load-bearing rather than defensive: the reserve node now persists across runs, so a `por_flat` ingest followed by a `por_live` one would otherwise leave the flat windows attached and `Cover` would keep reading caution on a healthy reserve. Only `por_flat.json` carries the key.
+- **Forbidden.** Minting, stamping, EVM calls, and inventing a fixture that does not exist. There is no `price_flat.json` (the fixture set is fixed at seven files), so the caution path loads `por_flat` with `price_live` - the scenario is "flat reserve **while price moved**" and the price must come from somewhere. A missing `child_{stem}` fixture falls back to an inline present child rather than crashing.
 - **Report shape.**
   ```json
   {"asset_id": "asset-1", "price_source": "fixture", "reserve_source": "fixture"}
@@ -37,7 +37,7 @@ POST /walker/{Name}/{node_id}
   {"walker": "Freshness", "color": "green",
    "reasons": ["price age 12s <= max 300s", "reserve age 30s <= max 3600s", "source is fixture (labeled)"]}
   ```
-  Reserve age above half of `max_reserve_age_seconds` is yellow; above the max is red. A fixture source appends `"source is fixture (labeled)"` so provenance is visible in the reasons.
+  Reserve age above half of `max_reserve_age_seconds` is caution; above the max is red. A fixture source appends `"source is fixture (labeled)"` so provenance is visible in the reasons.
 
 ---
 
@@ -55,7 +55,7 @@ POST /walker/{Name}/{node_id}
                "justified amount: 250000.0"],
    "justified_amount": 250000.0, "coverage_ratio": 1.25}
   ```
-  Verdicts: a missing or stale child is **red**; a flat reserve series is **yellow** (`"flat reserve while price moved (punctual but no pulse)"`); ratio below `coverage_floor_ratio` is **red**, below `min_coverage_ratio` is **yellow**. `justified = coverage_value/price − minted_units − demo_position`, floored at `0.0`.
+  Verdicts: a missing or stale child is **red**; a flat reserve series is **caution** (`"flat reserve while price moved (punctual but no pulse)"`); ratio below `coverage_floor_ratio` is **red**, below `min_coverage_ratio` is **caution**. `justified = coverage_value/price − minted_units − demo_position`, floored at `0.0`.
 
 ---
 
@@ -85,7 +85,7 @@ POST /walker/{Name}/{node_id}
 - **Forbidden.** Everything that is not minting. It has no opinion about freshness, coverage, or children - it reads only the stamps and the Cover payload. It may not mint when any of the three stamps is missing or non-green, and it may not mint more than `min(requested, justified)`. On refusal it writes **nothing**: no MintRecord, no status change.
 - **Report shape.** Refusals:
   ```json
-  {"minted": false, "reason": "Cover stamp is yellow"}
+  {"minted": false, "reason": "Cover stamp is caution"}
   {"minted": false, "reason": "Freshness stamp missing"}
   {"minted": false, "reason": "justified amount is zero"}
   ```
@@ -117,7 +117,7 @@ POST /walker/{Name}/{node_id}
 ## DemoControl
 
 - **Purpose.** Drive one of the three demo paths in a single call: seed fixtures, then run the three approval walkers.
-- **Inputs.** `path` - one of `"happy"`, `"yellow"`, `"unknown"`.
+- **Inputs.** `path` - one of `"happy"`, `"caution"`, `"unknown"`.
 - **Writes.** Delegates all writes to the walkers it spawns: `Ingest`, then `Freshness`, `Cover`, `Auditor`. For `unknown` it passes `child_present=False` to `Ingest`, which marks the child claim absent, simulating a missing backing layer.
 - **Not used by the UI.** It runs all four walkers inside one frame, which is right for the CLI and the tests and invisible on screen. The frontend instead sends the four walkers as separate requests so the traversal can be watched; `test_stepwise_walk_matches_demo_control` asserts the two routes agree.
 - **Forbidden.** Minting and narrating. DemoControl spawns only the four walkers above - **never Act, never Counsel**. The demo operator clicks the printer separately, on purpose, so the refusal is a visible act rather than a side effect of seeding.

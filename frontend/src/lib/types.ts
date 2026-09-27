@@ -61,7 +61,7 @@ export interface Liability {
 export interface Stamp {
   id: string;
   walker_name: string;
-  color: 'green' | 'yellow' | 'red' | 'unknown';
+  color: 'green' | 'caution' | 'red' | 'unknown';
   reasons: string[];
   timestamp: number;
   payload: Record<string, unknown>;

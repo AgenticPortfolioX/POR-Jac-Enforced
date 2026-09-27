@@ -108,7 +108,7 @@ test "test_ingest_flat_fixture_writes_flat_history" {
 
     reserves = [asset ->:HasReserve:-> ];
     assert len(reserves) == 1;
-    # The flat fixture provides a non-empty flat_history to trigger yellow path.
+    # The flat fixture provides a non-empty flat_history to trigger caution path.
     assert len(list(reserves[0].flat_history)) >= 0;
 }
 

@@ -4,7 +4,7 @@ export const JAC_CLOUD_URL =
 export const ASSET_ID = 'asset-1';
 
 export const COLOR_GREEN = 'green';
-export const COLOR_YELLOW = 'yellow';
+export const COLOR_CAUTION = 'caution';
 export const COLOR_RED = 'red';
 export const COLOR_UNKNOWN = 'unknown';
 
@@ -51,7 +51,7 @@ export const WALK_STEPS: readonly WalkStep[] = [
 /** The fixture and child state that define each demo path. */
 export const PATH_CONFIG = {
   happy: { fixture: 'por_live', childPresent: true },
-  yellow: { fixture: 'por_flat', childPresent: true },
+  caution: { fixture: 'por_flat', childPresent: true },
   unknown: { fixture: 'por_live', childPresent: false },
 } as const;
 

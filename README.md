@@ -80,7 +80,7 @@ flowchart TB
     ASSET --> FRE
     ASSET --> COV
     ASSET --> AUD
-    FRE -->|"Stamp: green/yellow/red/unknown"| ASSET
+    FRE -->|"Stamp: green/caution/red/unknown"| ASSET
     COV -->|"Stamp + justified_amount"| ASSET
     AUD -->|"Stamp + 4 findings, always"| ASSET
 
@@ -128,7 +128,7 @@ flowchart TD
     START(["Act is spawned on the asset"]) --> Q1{"all three stamps<br/>present?"}
     Q1 -->|no| R1["🚫 'Freshness stamp missing'"]
     Q1 -->|yes| Q2{"all three<br/>green?"}
-    Q2 -->|no| R2["🚫 'Cover stamp is yellow'"]
+    Q2 -->|no| R2["🚫 'Cover stamp is caution'"]
     Q2 -->|yes| Q3{"justified<br/>amount > 0?"}
     Q3 -->|no| R3["🚫 'justified amount is zero'"]
     Q3 -->|yes| GO["✅ mint min(requested, justified)"]
@@ -148,14 +148,14 @@ The colour ladder, from `jac/lib/colors.jac`, combined with `min_color` - which 
 | Colour | Rank | Meaning | Printer |
 |---|---|---|---|
 | 🟢 `green` | 0 | pass | open, if all three are green |
-| 🟡 `yellow` | 1 | `caution_blocks_printer` | **blocked** |
+| 🟡 `caution` | 1 | `caution_blocks_printer` | **blocked** |
 | 🔴 `red` | 2 | fail | blocked |
 | ⚪ `unknown` | 3 | `missing_fact_halt` | blocked |
 
 Two consequences worth stating plainly:
 
 - **Unknown outranks red.** A missing fact is worse than a known failure - a failure at least tells you what is wrong.
-- **There is no override.** No knob, no walker, no API parameter lets a yellow stamp mint. The requested amount is a **ceiling**, never a licence to skip a stamp.
+- **There is no override.** No knob, no walker, no API parameter lets a caution stamp mint. The requested amount is a **ceiling**, never a licence to skip a stamp.
 
 ---
 
@@ -192,7 +192,7 @@ sequenceDiagram
 
     UI->>G: Cover
     Note over G: coverage maths
-    G-->>UI: Stamp · green/yellow/red + justified_amount
+    G-->>UI: Stamp · green/caution/red + justified_amount
 
     UI->>G: Auditor
     Note over G: attacks the claim
@@ -202,13 +202,13 @@ sequenceDiagram
     G-->>UI: mint min(requested, justified) - or refuse, writing nothing
 ```
 
-| | **Happy** | **Yellow** | **Unknown** |
+| | **Happy** | **Caution** | **Unknown** |
 |---|---|---|---|
 | Fixture | `por_live` | `por_flat` + `price_live` | `child_missing` |
 | Scenario | healthy reserve | flat reserve **while price moved** | the layer beneath is gone |
 | Freshness | 🟢 green | 🟢 green | 🟢 green |
-| Cover | 🟢 green | 🟡 yellow | 🔴 red |
-| Auditor | 🟢 green | 🟡 yellow | 🔴 red |
+| Cover | 🟢 green | 🟡 caution | 🔴 red |
+| Auditor | 🟢 green | 🟡 caution | 🔴 red |
 | Act | ✅ mints | 🚫 refuses | 🚫 refuses |
 | The point | coverage sizes the mint | punctual but no pulse | missing ≠ fine |
 
@@ -274,7 +274,7 @@ The regression guard is `test_re_ingest_does_not_accumulate_edges` - three happy
 |---|---|---|---|---|---|---|
 | happy #1 | 1 | 1 | 1 | 1 | 3 | 🟢🟢🟢 |
 | **happy #2** *(same asset)* | **1** | **1** | **1** | **1** | **3** | 🟢🟢🟢 |
-| yellow | 1 | 1 | 1 | 1 | 3 | 🟢🟡🟡 |
+| caution | 1 | 1 | 1 | 1 | 3 | 🟢🟡🟡 |
 | unknown | 1 | 1 | 1 | 1 | 3 | 🟢🔴🔴 |
 | happy #3 | 1 | 1 | 1 | 1 | 3 | 🟢🟢🟢 |
 
@@ -303,7 +303,7 @@ Then seed the graph and walk a path:
 jac install                                    # runtime deps into .jac/venv
 .jac/venv/bin/python scripts/seed_graph.py     # prints the asset node_id
 .jac/venv/bin/python scripts/run_demo_path.py happy
-.jac/venv/bin/python scripts/run_demo_path.py yellow
+.jac/venv/bin/python scripts/run_demo_path.py caution
 .jac/venv/bin/python scripts/run_demo_path.py unknown
 ```
 

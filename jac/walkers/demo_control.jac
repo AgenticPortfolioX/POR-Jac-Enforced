@@ -12,7 +12,7 @@ walker:pub DemoControl {
         # and preserving graph invariants across concurrent sibling frames.
         if self.path == "happy" {
             here spawn Ingest(use_fixture=True, fixture_name="por_live");
-        } elif self.path == "yellow" {
+        } elif self.path == "caution" {
             here spawn Ingest(use_fixture=True, fixture_name="por_flat");
         } elif self.path == "unknown" {
             here spawn Ingest(use_fixture=True, fixture_name="por_live", child_present=False);

@@ -4,7 +4,7 @@
 
 > Proof of Reserve attests that backing was reported. Proof of Reserve, Jac Enforced puts that attestation on a graph, requires three green stamps from walkers that are allowed to attack the claim, and only then mints - only as much as current coverage justifies - so "backed" is a permit with a quantity, not a text output you can quote.
 
-A Chainlink Proof of Reserve attestation and a price observation arrive as facts. PoRJE places them as typed nodes on a Jac graph beside the asset whose printer we control, the child claim the reserve itself depends on, and the protocol liability that inherits "backed". Three approval walkers traverse that graph - Freshness reads clocks, Cover computes coverage, Auditor attacks the claim - and each writes a `Stamp` node carrying a color (green / yellow / red / unknown) and its reasons, linked to the asset by a `StampedBy` edge. `Act` is the only walker permitted to touch the EVM bridge, and it refuses unless all three stamps are green; when it does mint it mints `min(requested, justified_by_current_coverage)` and writes a `MintRecord` node holding the tx hash, the NFT id, and the stamp summary that authorized it. `Counsel` narrates the verdicts but is blind until the stamps exist, because it reads them off the graph rather than being handed them. Nothing in this system is held in a chat, a session, or a response body: the graph is the state, the stamps are the verdicts, and the mint is a walker that reads the verdicts.
+A Chainlink Proof of Reserve attestation and a price observation arrive as facts. PoRJE places them as typed nodes on a Jac graph beside the asset whose printer we control, the child claim the reserve itself depends on, and the protocol liability that inherits "backed". Three approval walkers traverse that graph - Freshness reads clocks, Cover computes coverage, Auditor attacks the claim - and each writes a `Stamp` node carrying a color (green / caution / red / unknown) and its reasons, linked to the asset by a `StampedBy` edge. `Act` is the only walker permitted to touch the EVM bridge, and it refuses unless all three stamps are green; when it does mint it mints `min(requested, justified_by_current_coverage)` and writes a `MintRecord` node holding the tx hash, the NFT id, and the stamp summary that authorized it. `Counsel` narrates the verdicts but is blind until the stamps exist, because it reads them off the graph rather than being handed them. Nothing in this system is held in a chat, a session, or a response body: the graph is the state, the stamps are the verdicts, and the mint is a walker that reads the verdicts.
 
 ## Component Diagram
 
@@ -21,7 +21,7 @@ Ingest ──> Freshness ──> Cover ──> Auditor ──> Act ──> Couns
   │            │            │          │         └─ reads the three Stamps + Cover.payload.justified_amount
   │            │            │          └─ writes findings even when green (adversarial visibility)
   │            │            └─ computes coverage ratio + justified amount, writes them into its Stamp payload
-  │            └─ checks price/reserve ages against POLICY, writes green|yellow|red|unknown
+  │            └─ checks price/reserve ages against POLICY, writes green|caution|red|unknown
   └─ upserts PriceObservation, ReserveAttestation, ChildClaim, Liability nodes + edges
 ```
 
@@ -74,7 +74,7 @@ The chain boundary is the one thing a demo cannot rely on: a Sepolia RPC endpoin
 def spy_last_mint_args() -> list { return list(last_mint_args()); }
 ```
 
-This lets a Jac test assert the exact arguments `Act` passed across the boundary - token address, recipient, amount, and the JSON reason string - and assert that `Act` reported `'tx': '0xspy', 'nft_id': 999`. The negative tests assert the spy was **never** called when a stamp is missing, yellow, or red: refusing is verified as a fact about the boundary, not merely as a returned string.
+This lets a Jac test assert the exact arguments `Act` passed across the boundary - token address, recipient, amount, and the JSON reason string - and assert that `Act` reported `'tx': '0xspy', 'nft_id': 999`. The negative tests assert the spy was **never** called when a stamp is missing, caution, or red: refusing is verified as a fact about the boundary, not merely as a returned string.
 
 **Why `Act` imports `evm_py` as a module.** `jac/walkers/act.jac` must write:
 

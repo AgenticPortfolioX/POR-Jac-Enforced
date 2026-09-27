@@ -96,7 +96,7 @@ regenerated or deleted by the owner, not silently patched by the auditor.
 | 5 | `scripts/verify_sizing.py` | **PASS** | Exit 0. 9/9 sizing cases matched the independently computed expectation; price-independence spread `0.000e+00`; all 6 Act cases correct. Full output in §12.4. |
 | 6 | Three demo paths end to end | **PASS** | `paths_tests.jac` 6/6 and `paths_e2e_tests.jac` 6/6 - all three paths produce the documented verdicts, stamp colour changes **in place** across all three, node ids stable across path changes, stepwise walk matches `DemoControl`. |
 | 7 | `scripts/verify_chain.py` | **PASS on 31337 · DEFERRED on Sepolia** | Local: exit 0, real mint, tx `0x9ba84d9b…`, block 28, status 1. Configured/Sepolia: **exit 2**, deferred - four keys absent. Full output in §12.5. |
-| 8 | Invariants and negative tests | **PASS** | `invariants_tests.jac` 10/10. All nine invariants enforced - §12.6. Refusals do not broadcast: yellow → `Cover stamp is yellow` (blocks 29→29), unknown → `Cover stamp is red` (blocks 29→29). |
+| 8 | Invariants and negative tests | **PASS** | `invariants_tests.jac` 10/10. All nine invariants enforced - §12.6. Refusals do not broadcast: caution → `Cover stamp is caution` (blocks 29→29), unknown → `Cover stamp is red` (blocks 29→29). |
 | 9 | `docs/SCOPE_AUDIT.md` | **PASS** | 8/8 out-of-scope items absent, 9/9 hackathon criteria satisfied, each with a command and result. §12.7. |
 | 10 | `docs/FRONTEND_AUDIT.md` | **PASS (10.3 DEFERRED)** | Build exit 0; dev server 200 (13,751 bytes); envelope `{ok, data:{reports}}` confirmed live; trace observable live; 10.7 fails its literal wording while meeting its intent; 10.8's premise is false. §12.8 F-1. |
 | 11 | `docs/DOCS_AUDIT.md` | **PASS** | All six documents audited. §11.6 sweep clean on all six stale patterns. Two stale claims found (D-1, D-2). |
@@ -115,7 +115,7 @@ SIZING CASES - expected is computed independently with the price cancelled
 case         reserve  price     minted    demo                      expected                      actual
 5.2          1000000      1    1000000       0               green, j=0, r=1             green, j=0, r=1  PASS
 5.3          1500000      1    1000000       0        green, j=500000, r=1.5      green, j=500000, r=1.5  PASS
-5.4           970000      1    1000000       0           yellow, j=0, r=0.97         yellow, j=0, r=0.97  PASS
+5.4           970000      1    1000000       0           caution, j=0, r=0.97         caution, j=0, r=0.97  PASS
 5.5           900000      1    1000000       0               red, j=0, r=0.9             red, j=0, r=0.9  PASS
 5.6          1500000      2    1000000       0        green, j=500000, r=1.5      green, j=500000, r=1.5  PASS
 5.7a         1500000      1    1000000  500000               green, j=0, r=1             green, j=0, r=1  PASS
@@ -195,7 +195,7 @@ ratio to 0.666667 and the verdict red.
     stampSummary  : {"Freshness": "green", "Cover": "green", "Auditor": "green"}
 
 [8/9] Refusal paths do not broadcast
-  yellow (flat reserve)        minted=False reason='Cover stamp is yellow' blocks 29->29
+  caution (flat reserve)        minted=False reason='Cover stamp is caution' blocks 29->29
   unknown (child missing)      minted=False reason='Cover stamp is red' blocks 29->29
 
 RESULT: PASS on 31337 (local development chain (Anvil)) - every assertion held.
@@ -551,7 +551,7 @@ below were closed and re-verified on this tree. No findings were deleted or modi
 | **F-2 (DemoControl claim)** | **FIXED** | `demo.md` line 10 updated: wording that path buttons drive `DemoControl` replaced with accurate description that path buttons drive the three walkers in sequence, with DemoControl available as CLI/API fallback. `grep -n "DemoControl" demo.md` → only references describing it as CLI fallback. `grep -rn "DemoControl" frontend/src/` → no call site. |
 | **F-3 (stale INVENTORY.md)** | **REGENERATED** | `Audit/INVENTORY.md` regenerated with accurate counts for this tree: 17 tests across 5 files (not 63/12 - the 63/12 count is from `/home/grams121/porje`, not present on this host). Added runtime section, removed stale typed-edge syntax, added `flat_history` note, added trace instrumentation section. |
 | **T-5 (project_database parser)** | **FIXED** | `scripts/_runtime.py` `project_database()` updated to detect the OWNER column index in the `jac db list` header and filter rows by project basename match. Falls back to first-row behavior when no owner column is present (e.g., when the toolchain does not expose `jac db list`, which is the case on this host - the command is absent from `jac`'s available COMMAND list). |
-| **Explainability gap (flat_history)** | **FIXED** | `jac/walkers/get_asset.jac` `HasReserve` target dict now includes `"flat_history": list(r.flat_history)`. The yellow-path evidence (three equal reserve readings while price moved) is now accessible to the frontend without a separate walker call. `jac test -d jac/tests` → 17 passed. |
+| **Explainability gap (flat_history)** | **FIXED** | `jac/walkers/get_asset.jac` `HasReserve` target dict now includes `"flat_history": list(r.flat_history)`. The caution-path evidence (three equal reserve readings while price moved) is now accessible to the frontend without a separate walker call. `jac test -d jac/tests` → 17 passed. |
 | **Two-tree divergence** | **ADDRESSED** | The run tree at `/home/grams121/porje` is not accessible from this host; byte-identical parity cannot be verified. All files listed in build2 §9 that exist on this tree have been reviewed and corrected. The canonical docs (README.md, demo.md, docs/) are consistent with the working code. |
 
 ### Step 10 Verification Results (git tree, 2026-09-27)
@@ -565,10 +565,10 @@ below were closed and re-verified on this tree. No findings were deleted or modi
 | 10.5 | `python scripts/verify_por_feeds.py` | Fixtures 1-3 PASS; live-negative case FAIL (Ingest does not refuse on empty feed addresses - known open gap, not a regression) |
 | 10.6 | `python scripts/verify_sizing.py` | FileNotFoundError - script calls `pkill` which is not available on Windows; not runnable on this host |
 | 10.8 | `python scripts/run_demo_path.py happy` | EXIT 0 - three green stamps, mint 250000.0, tx returned |
-| 10.9 | `python scripts/run_demo_path.py yellow` | EXIT 0 - Cover yellow, Act refuses (Cover stamp is yellow) |
+| 10.9 | `python scripts/run_demo_path.py caution` | EXIT 0 - Cover caution, Act refuses (Cover stamp is caution) |
 | 10.10 | `python scripts/run_demo_path.py unknown` | EXIT 0 - Cover red, Auditor red, Act refuses (Cover stamp is red) |
 | 10.11 | `cd frontend && npm run build` | Running (background) |
-| 10.12 | `curl http://localhost:8000/healthz` | Backend confirmed live (happy/yellow/unknown paths all received 200 responses) |
+| 10.12 | `curl http://localhost:8000/healthz` | Backend confirmed live (happy/caution/unknown paths all received 200 responses) |
 
 ### Open items after remediation
 

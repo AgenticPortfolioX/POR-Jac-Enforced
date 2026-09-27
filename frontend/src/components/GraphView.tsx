@@ -13,9 +13,12 @@ import 'reactflow/dist/style.css';
 const HOT_STROKE = '#0847F7';
 const HOT_RING = '0 0 0 2px #0847F7';
 
+import { Handle, Position } from 'reactflow';
+
 function NodeShell({ data, className = '' }: NodeProps & { className?: string }) {
   return (
     <div className={`hex-cut p-4 text-xs text-cl-primary shadow-lg max-w-[200px] bg-cl-surface1 border border-cl-gray/10 ${className}`}>
+      <Handle type="target" position={Position.Top} className="invisible" />
       <div className="font-semibold text-white tracking-tight truncate leading-snug">{data.label}</div>
       {data.source && (
         <div className="text-cl-muted mt-1 text-[10px] uppercase tracking-wider">src: {data.source}</div>
@@ -23,6 +26,7 @@ function NodeShell({ data, className = '' }: NodeProps & { className?: string })
       {data.detail && (
         <div className="text-cl-muted mt-1 leading-tight">{data.detail}</div>
       )}
+      <Handle type="source" position={Position.Bottom} className="invisible" />
     </div>
   );
 }
@@ -94,7 +98,7 @@ const nodeTypes = {
         {...props}
         className={
           props.data.color === 'green' ? 'border-cl-green border-[1.5px]' :
-          props.data.color === 'yellow' ? 'border-cl-yellow border-[1.5px]' :
+          props.data.color === 'caution' ? 'border-cl-caution border-[1.5px]' :
           props.data.color === 'red' ? 'border-cl-red border-[1.5px]' :
           'border-cl-unknown border-[1.5px]'
         }
@@ -179,6 +183,13 @@ export function GraphView({
         <Background color="rgba(245,247,250,0.04)" gap={24} size={1.5} />
         <Controls className="[&>button]:bg-cl-surface2 [&>button]:border-cl-gray/10 [&>button]:text-cl-primary" />
       </ReactFlow>
+
+      {/* Walker Scanning Animation */}
+      {activeWalker && (
+        <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[12px]">
+          <div className="h-[2px] w-full bg-cl-blue shadow-[0_0_15px_rgba(8,71,247,0.8)] animate-[scan_2s_ease-in-out_infinite]" />
+        </div>
+      )}
     </div>
   );
 }

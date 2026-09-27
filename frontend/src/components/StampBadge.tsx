@@ -1,15 +1,15 @@
-type Color = 'green' | 'yellow' | 'red' | 'unknown';
+type Color = 'green' | 'caution' | 'red' | 'unknown';
 
 const colorMap: Record<Color, string> = {
   green: 'border-cl-green text-cl-green bg-cl-green/10',
-  yellow: 'border-cl-yellow text-cl-yellow bg-cl-yellow/10',
+  caution: 'border-cl-caution text-cl-caution bg-cl-caution/10',
   red: 'border-cl-red text-cl-red bg-cl-red/10',
   unknown: 'border-cl-unknown text-cl-unknown bg-cl-unknown/10',
 };
 
 const leftBarMap: Record<Color, string> = {
   green: 'bg-cl-green',
-  yellow: 'bg-cl-yellow',
+  caution: 'bg-cl-caution',
   red: 'bg-cl-red',
   unknown: 'bg-cl-unknown',
 };

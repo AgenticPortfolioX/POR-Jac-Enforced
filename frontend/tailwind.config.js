@@ -14,7 +14,7 @@ module.exports = {
           primary: '#F5F7FA',
           muted: '#9AA3B5',
           green: '#05C46B',
-          yellow: '#FFDD59',
+          caution: '#FFDD59',
           red: '#FF5E57',
           unknown: '#6D7380',
         }

@@ -143,7 +143,7 @@ exactly: 18 passed, 1 failed - `act.jac` alone, with its 2 documented E1032s. Al
 `jac/tests/` pass (`paths_tests.jac` 3 tests, `act_tests.jac` 6, `cover_tests.jac` 2,
 `freshness_tests.jac` 2, `auditor_tests.jac` 1). On a cleared graph the three paths reproduce the
 runbook's evidence, stamps hold at exactly 3 across three consecutive happy runs, and
-`totalSupply()` lands at exactly 3 × 250000 - so the yellow and unknown runs minted nothing.
+`totalSupply()` lands at exactly 3 × 250000 - so the caution and unknown runs minted nothing.
 
 ## Post-merge cleanup
 

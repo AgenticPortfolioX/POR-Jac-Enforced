@@ -2,7 +2,7 @@
 import from jac.schemas.nodes { Asset, Stamp }
 import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, StampedBy }
 import from jac.lib.policy { POLICY }
-import from jac.lib.colors { COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_UNKNOWN, min_color }
+import from jac.lib.colors { COLOR_GREEN, COLOR_CAUTION, COLOR_RED, COLOR_UNKNOWN, min_color }
 import from jac.lib.utils { now_unix, abs_diff, PORJE_TRACE }
 
 walker:pub Cover {
@@ -50,7 +50,7 @@ walker:pub Cover {
                 if len(hist) >= flat_windows {
                     delta = abs_diff(float(hist[0]), float(hist[-1]));
                     if delta / float(hist[0]) < flat_eps {
-                        color = min_color(color, COLOR_YELLOW);
+                        color = min_color(color, COLOR_CAUTION);
                         reasons.append("flat reserve while price moved (punctual but no pulse)");
                     }
                 }
@@ -69,7 +69,7 @@ walker:pub Cover {
                 color = min_color(color, COLOR_RED);
                 reasons.append("coverage ratio " + str(ratio) + " < floor " + str(floor_cov));
             } elif ratio < min_cov {
-                color = min_color(color, COLOR_YELLOW);
+                color = min_color(color, COLOR_CAUTION);
                 reasons.append("coverage ratio " + str(ratio) + " < min " + str(min_cov));
             } else {
                 reasons.append("coverage ratio " + str(ratio) + " >= min " + str(min_cov));

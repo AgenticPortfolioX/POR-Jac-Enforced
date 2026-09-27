@@ -112,9 +112,9 @@ Command 5 is the mint. The Cover Walker already set how much the reserve justifi
 
 ---
 
-## Command 6 - Browser (click Yellow, then click Unknown)
+## Command 6 - Browser (click Caution, then click Unknown)
 
-Command 6 is the refuse. Same asset, same button. Yellow is a flat reserve: the time stamp moved, the amount did not, while price did. Unknown is a missing child: the parent looks attested, the claim under it is gone. The mint sends nothing. The Counsel Walker, silent until the stamps existed, names what broke.
+Command 6 is the refuse. Same asset, same button. Caution is a flat reserve: the time stamp moved, the amount did not, while price did. Unknown is a missing child: the parent looks attested, the claim under it is gone. The mint sends nothing. The Counsel Walker, silent until the stamps existed, names what broke.
 
 ---
 

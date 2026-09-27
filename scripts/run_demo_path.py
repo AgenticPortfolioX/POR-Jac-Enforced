@@ -51,8 +51,8 @@ def seed() -> str:
 
 
 def main():
-    if len(sys.argv) < 2 or sys.argv[1] not in ["happy", "yellow", "unknown", "live"]:
-        print("Usage: python run_demo_path.py <happy|yellow|unknown|live>")
+    if len(sys.argv) < 2 or sys.argv[1] not in ["happy", "caution", "unknown", "live"]:
+        print("Usage: python run_demo_path.py <happy|caution|unknown|live>")
         sys.exit(1)
 
     path = sys.argv[1]

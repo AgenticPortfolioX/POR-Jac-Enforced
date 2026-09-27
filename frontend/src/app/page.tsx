@@ -254,7 +254,7 @@ export default function HomePage() {
                   const verdict = entry ? (entry.color ?? 'done') : null;
                   const tone =
                     verdict === 'green' ? 'border-cl-green text-cl-green' :
-                    verdict === 'yellow' ? 'border-cl-yellow text-cl-yellow' :
+                    verdict === 'caution' ? 'border-cl-caution text-cl-caution' :
                     verdict === 'red' ? 'border-cl-red text-cl-red' :
                     verdict === 'done' ? 'border-cl-muted text-cl-primary' :
                     'border-transparent text-cl-muted';
@@ -299,7 +299,7 @@ export default function HomePage() {
                 <StampBadge
                   key={w}
                   walker={w}
-                  color={(stamps[w]?.color as 'green' | 'yellow' | 'red' | 'unknown') ?? null}
+                  color={(stamps[w]?.color as 'green' | 'caution' | 'red' | 'unknown') ?? null}
                 />
               ))}
             </div>

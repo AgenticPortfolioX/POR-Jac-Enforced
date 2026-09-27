@@ -29,9 +29,9 @@ test "test_happy_path_stamps_are_green" {
     }
 }
 
-test "test_yellow_path_does_not_mint" {
+test "test_caution_path_does_not_mint" {
     asset = Asset(
-        id="test-path-yellow",
+        id="test-path-caution",
         name="PathTest2",
         symbol="PTH2",
         chain="test",
@@ -41,7 +41,7 @@ test "test_yellow_path_does_not_mint" {
     );
     root ++> asset;
 
-    asset spawn DemoControl(path="yellow");
+    asset spawn DemoControl(path="caution");
 
     mints = [asset ->:MintedAs:->];
     assert len(mints) == 0;

@@ -16,7 +16,7 @@ glob POLICY: dict[str, any] = {
     "child_max_age_seconds": 3600,
     "colors": {
         "green": "pass",
-        "yellow": "caution_blocks_printer",
+        "caution": "caution_blocks_printer",
         "red": "fail",
         "unknown": "missing_fact_halt"
     }

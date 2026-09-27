@@ -1,6 +1,6 @@
 # Demo Runbook - Proof of Reserve, Jac Enforced
 
-Operator checklist for the three-path demonstration: pre-flight, happy, yellow, unknown, reset, troubleshooting.
+Operator checklist for the three-path demonstration: pre-flight, happy, caution, unknown, reset, troubleshooting.
 
 **Toolchain.** Every command below was re-verified against **Jac 0.37.23** (`jac --version`). Evidence blocks are labelled with the runtime they came from; the pre-0.37 material is retained under **Historical evidence** for reference only and is not reproducible on this tree.
 
@@ -215,20 +215,20 @@ network.
   "justified_amount": 250000.0, "coverage_ratio": 1.25 }
 ```
 
-## Path 2 - Yellow (stale or stuck reserve)
+## Path 2 - Caution (stale or stuck reserve)
 
 ```bash
-.jac/venv/bin/python scripts/run_demo_path.py yellow
+.jac/venv/bin/python scripts/run_demo_path.py caution
 ```
 
-**In the UI.** Select **⚠️ Yellow Path**. Cover and Auditor render yellow (`Flat reserve`), Freshness stays green. `MintButton` is disabled and reads its justified amount from Cover's payload.
+**In the UI.** Select **⚠️ Caution Path**. Cover and Auditor render caution (`Flat reserve`), Freshness stays green. `MintButton` is disabled and reads its justified amount from Cover's payload.
 
 **Evidence - Jac 0.37.23.**
 
 ```json
-stamps: [("Freshness","green"), ("Cover","yellow"), ("Auditor","yellow")]
+stamps: [("Freshness","green"), ("Cover","caution"), ("Auditor","caution")]
 HasPrice=1  HasReserve=1  DependsOn=1  HasLiability=1  StampedBy=3
-Act:    { "minted": false, "reason": "Cover stamp is yellow" }
+Act:    { "minted": false, "reason": "Cover stamp is caution" }
 MintedAs: 0  ->  no mint record
 ```
 
@@ -251,11 +251,11 @@ Act:    { "minted": false, "reason": "Cover stamp is red" }
 MintedAs: 0  ->  no mint record
 ```
 
-**Returning to happy.** Running `happy` again after `yellow` comes back **green**, not
-stuck yellow. That is the `flat_history` clear in the Ingest upsert doing its work:
+**Returning to happy.** Running `happy` again after `caution` comes back **green**, not
+stuck caution. That is the `flat_history` clear in the Ingest upsert doing its work:
 the reserve node now persists across runs, so without an explicit reset to `[]` the
 flat windows written by `por_flat` would still be attached and Cover would keep
-reading yellow on a healthy reserve. Verified in sequence - happy, yellow, unknown,
+reading caution on a healthy reserve. Verified in sequence - happy, caution, unknown,
 happy - with the final run green.
 
 > **Known deviation - AC 6's first clause.** Prompt 13 asks for `Freshness unknown` on
@@ -322,7 +322,7 @@ npm run dev            # http://localhost:3000, with `jac run main.jac` up on :8
 Then: click **Happy**, confirm three green badges and an enabled
 `Mint (justified: 250000.00)`; click **Mint** and confirm the refusal is displayed
 (hard-coded zero recipient - see above) rather than a silent no-op; refresh and
-confirm the graph nodes do not move; click **Yellow** and **Unknown** and confirm the
+confirm the graph nodes do not move; click **Caution** and **Unknown** and confirm the
 badge colours track.
 
 ## Post-demo pointers

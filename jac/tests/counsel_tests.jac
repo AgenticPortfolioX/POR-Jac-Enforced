@@ -57,12 +57,12 @@ test "test_counsel_narrates_all_green_path" {
 }
 
 
-test "test_counsel_narrates_yellow_path" {
-    # On the yellow path all three stamps exist but Cover is yellow.
+test "test_counsel_narrates_caution_path" {
+    # On the caution path all three stamps exist but Cover is caution.
     # Counsel must still produce spoken=True (it has stamps to read) and
     # must NOT include "The mint was justified" in its narration.
     asset = Asset(
-        id="test-counsel-yellow",
+        id="test-counsel-caution",
         name="CounselTest3",
         symbol="CNS3",
         chain="test",
@@ -72,15 +72,15 @@ test "test_counsel_narrates_yellow_path" {
     );
     root ++> asset;
 
-    asset spawn DemoControl(path="yellow");
+    asset spawn DemoControl(path="caution");
 
     stamps = [asset ->:StampedBy:-> ];
     assert len(stamps) == 3;
 
-    # Cover must be yellow on this path.
+    # Cover must be caution on this path.
     cover = [s for s in stamps if str(s.walker_name) == "Cover"];
     assert len(cover) == 1;
-    assert str(cover[0].color) == "yellow";
+    assert str(cover[0].color) == "caution";
 }
 
 

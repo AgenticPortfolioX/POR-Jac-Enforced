@@ -122,7 +122,7 @@ reserve, then the three stamps - and the mapping is implemented in
 There is no colour transformation between the graph and the screen.
 
 **What remains for a human:** the actual click-through - press **Happy**,
-**Yellow**, **Unknown**, and confirm the rendered graph matches the table above,
+**Caution**, **Unknown**, and confirm the rendered graph matches the table above,
 and press **Mint** on the happy path. This document should not be read as
 claiming that was done.
 

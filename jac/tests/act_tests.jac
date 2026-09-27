@@ -64,10 +64,10 @@ test "test_act_refuses_without_three_greens" {
     spy_reset();
 }
 
-test "test_act_refuses_with_yellow_cover" {
+test "test_act_refuses_with_caution_cover" {
     now = now_unix();
     asset = Asset(
-        id="test-act-yellow",
+        id="test-act-caution",
         name="ActTest2",
         symbol="ACT2",
         chain="test",
@@ -83,7 +83,7 @@ test "test_act_refuses_with_yellow_cover" {
     asset +>: HasReserve() :+> reserve;
 
     f_stamp = Stamp(walker_name="Freshness", color="green", reasons=["ok"], timestamp=now, payload={});
-    c_stamp = Stamp(walker_name="Cover", color="yellow", reasons=["flat"], timestamp=now, payload={"justified_amount": 100.0, "coverage_ratio": 1.0});
+    c_stamp = Stamp(walker_name="Cover", color="caution", reasons=["flat"], timestamp=now, payload={"justified_amount": 100.0, "coverage_ratio": 1.0});
     a_stamp = Stamp(walker_name="Auditor", color="green", reasons=["ok"], timestamp=now, payload={});
     asset +>: StampedBy() :+> f_stamp;
     asset +>: StampedBy() :+> c_stamp;
