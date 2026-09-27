@@ -19,6 +19,13 @@ export interface WalkStep {
   traverses: readonly string[];
 }
 
+/** One completed walker in the current walk. */
+export interface WalkEntry {
+  walker: string;
+  /** Absent for Ingest, which reports sources rather than a verdict. */
+  color?: string;
+}
+
 /**
  * The visible walk. The UI drives these one at a time rather than calling
  * DemoControl, so each walker can be seen arriving, traversing and stamping.

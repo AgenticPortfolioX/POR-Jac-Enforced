@@ -41,3 +41,24 @@
 .animate-sparkle-gold {
   animation: sparkle-gold 2s ease-in-out infinite;
 }
+
+/* Walk State wheel. A slice fills over 350ms at the moment its walker lands a
+   stamp, so the wheel lands with the same beat as the server-side trace. */
+.wheel-slice {
+  transition: opacity 350ms ease-out, stroke 350ms ease-out;
+}
+
+/* The walker currently on screen pulses; finished slices hold a steady glow. */
+@keyframes wheel-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 1; }
+}
+
+.wheel-slice-running {
+  animation: wheel-pulse 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wheel-slice { transition: none; }
+  .wheel-slice-running { animation: none; opacity: 1; }
+}

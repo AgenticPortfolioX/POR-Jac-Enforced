@@ -10,6 +10,7 @@ import {
   WALK_STEP_MS,
   PATH_CONFIG,
   type PathName,
+  type WalkEntry,
   type WalkStep,
 } from '@/lib/constants';
 import type { Stamp } from '@/lib/types';
@@ -19,15 +20,9 @@ import { PathSelector } from '@/components/PathSelector';
 import { MintButton } from '@/components/MintButton';
 import { ExplorerLink } from '@/components/ExplorerLink';
 import { PolicyCard } from '@/components/PolicyCard';
+import { WalkWheel } from '@/components/WalkWheel';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-/** One completed walker in the current walk. */
-interface WalkEntry {
-  walker: string;
-  /** Absent for Ingest, which reports sources rather than a verdict. */
-  color?: string;
-}
 
 export default function HomePage() {
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -304,35 +299,9 @@ export default function HomePage() {
               </div>
             </section>
 
-            {/* Walk Log (Compact) */}
-            <section className="rounded-[12px] border border-cl-gray/10 bg-cl-surface1 p-5 shadow-sm">
-              <div className="mb-3 flex items-baseline justify-between">
-                <h2 className="text-xs uppercase tracking-wider text-cl-muted font-semibold">Walk State</h2>
-                <span className="text-[10px] text-cl-muted">
-                  {activeStep ? activeStep.walker : walkLog.length > 0 ? 'Done' : 'Idle'}
-                </span>
-              </div>
-              <ol className="flex flex-col gap-2">
-                {WALK_STEPS.map((s) => {
-                  const entry = walkLog.find((l) => l.walker === s.walker);
-                  const isActive = activeStep?.walker === s.walker;
-                  const verdict = entry ? (entry.color ?? 'done') : null;
-                  const tone =
-                    verdict === 'green' ? 'border-cl-green text-cl-green' :
-                    verdict === 'caution' ? 'border-cl-caution text-cl-caution' :
-                    verdict === 'red' ? 'border-cl-red text-cl-red' :
-                    verdict === 'done' ? 'border-cl-muted text-cl-primary' :
-                    'border-transparent text-cl-muted';
-                  return (
-                    <li key={s.walker} className={`flex items-center justify-between rounded px-2 py-1.5 text-xs transition-colors border-l-2 ${tone} ${isActive ? 'bg-cl-blue/10 border-l-cl-blue text-cl-blue' : ''} ${!entry && !isActive ? 'opacity-50' : ''}`}>
-                      <div className="font-medium">{s.walker}</div>
-                      <div className="text-[10px] uppercase opacity-80">
-                        {verdict ?? (isActive ? 'working' : 'wait')}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ol>
+            {/* Walk State - one wheel slice per walker */}
+            <section className="rounded-[12px] border border-cl-gray/10 bg-cl-surface1 p-4 shadow-sm">
+              <WalkWheel log={walkLog} activeWalker={activeStep?.walker ?? null} />
             </section>
 
             {/* Policy Card */}

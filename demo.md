@@ -35,14 +35,18 @@ You will need **two separate terminals** split top and bottom in your code edito
 **Terminal 1 (Top / Backend - The Jac Server)**
 Copy and paste these commands into the top terminal:
 ```powershell
+
 cd C:\Users\jmgra\antigravityagents\.agents\workflows\POR_Jac_Enforced
 $env:PORJE_TRACE=1
+
 ```
 
 **Terminal 2 (Bottom / Frontend - The React UI)**
 Click into your bottom terminal, then copy and paste this command:
 ```powershell
+
 cd C:\Users\jmgra\antigravityagents\.agents\workflows\POR_Jac_Enforced\frontend
+
 ```
 
 Nothing runs yet. You will start the two servers as Command 1 and Command 2 once you begin your presentation.
@@ -70,6 +74,7 @@ Terminal 1 is the backend. It runs the Jac runtime, holds the graph, and prints 
 
 ```
 jac start main.jac
+
 ```
 
 Command 1 boots the backend. Starts the graph, loads every Jac Walker, and turns each one into a callable endpoint.
@@ -82,6 +87,7 @@ Command 1 boots the backend. Starts the graph, loads every Jac Walker, and turns
 
 ```
 npm run dev
+
 ```
 
 Command 2 boots the frontend on port 3000. It reads the graph, it does not compute anything. Every verdict it shows comes from Terminal 1.
@@ -94,6 +100,7 @@ Command 2 boots the frontend on port 3000. It reads the graph, it does not compu
 
 ```
 python scripts/seed_graph.py
+
 ```
 
 Command 3 creates the root asset node. Everything the Jac Walkers do from here happens on top of this node.
@@ -108,7 +115,9 @@ Command 4 fills the graph: a price, a proven reserve attestation, and a child cl
 
 ## Command 5 - Browser (click Mint)
 
-Command 5 is the mint. Notice we don't type the amount—the Cover Walker already set how much the reserve justifies. The Act Walker reads the three stamps and mints exactly the justified amount. The transaction lands on Ethereum Sepolia, a public test network, so anyone can inspect it. Open Etherscan for the transaction and the NFT: minted amount, coverage used, price time stamp, reserve time stamp, and the three stamp colors. Anyone can open that record later and see why the mint was allowed.
+Command 5 is the mint. Notice we don't type the amount—the Cover Walker already set how much the reserve justifies. The Act Walker reads the three stamps and mints exactly the justified amount. The transaction lands on Ethereum Sepolia, a public test network, so anyone can inspect it. 
+
+Open Etherscan for the transaction and the NFT: minted amount, coverage used, price time stamp, reserve time stamp, and the three stamp colors. Anyone can open that record later and see why the mint was allowed.
 
 ---
 
