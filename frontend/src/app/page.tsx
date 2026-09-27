@@ -216,18 +216,6 @@ export default function HomePage() {
                 Action
               </h2>
               <div className="space-y-4">
-                <div>
-                  <label htmlFor="requested-amount" className="block text-xs text-cl-muted mb-2 font-medium">
-                    Requested amount
-                  </label>
-                  <input
-                    id="requested-amount"
-                    type="number"
-                    value={requested}
-                    onChange={(e) => setRequested(Number(e.target.value))}
-                    className="w-full rounded-[8px] border border-cl-gray/20 bg-cl-surface2 px-3 py-2 text-sm text-white focus:outline-none focus:border-cl-blue focus:ring-1 focus:ring-cl-blue transition-colors"
-                  />
-                </div>
                 <MintButton
                   enabled={allGreen}
                   justified={justified}

@@ -106,9 +106,9 @@ Command 4 fills the graph: a price, a proven reserve attestation, and a child cl
 
 ---
 
-## Command 5 - Browser (enter 1000000 in the requested amount, then click Mint)
+## Command 5 - Browser (click Mint)
 
-Command 5 is the mint. The Cover Walker already set how much the reserve justifies. The Act Walker reads the three stamps and mints the smaller of the amount you asked for and the amount that is justified. The transaction lands on Ethereum Sepolia, a public test network, so anyone can inspect it. Open Etherscan for the transaction and the NFT: minted amount, coverage used, price time stamp, reserve time stamp, and the three stamp colors. Anyone can open that record later and see why the mint was allowed.
+Command 5 is the mint. The Cover Walker already set how much the reserve justifies. The Act Walker reads the three stamps and mints the smaller of the amount requested and the amount that is justified. The transaction lands on Ethereum Sepolia, a public test network, so anyone can inspect it. Open Etherscan for the transaction and the NFT: minted amount, coverage used, price time stamp, reserve time stamp, and the three stamp colors. Anyone can open that record later and see why the mint was allowed.
 
 ---
 
