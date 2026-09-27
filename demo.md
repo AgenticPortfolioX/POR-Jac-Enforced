@@ -100,21 +100,21 @@ Command 3 creates the root asset node. Everything the Jac Walkers do from here h
 
 ---
 
-## Command 4 - Browser (click Approved in the UI)
+## Command 4 - Browser (click Approved Path)
 
-Command 4 fills the graph: a price, a proven reserve attestation, and a child claim. The Freshness Walker, the Cover Walker, and the Auditor Walker run in sequence. In Terminal 1, watch each Jac Walker visit nodes and cross edges. Three green stamps land. The Auditor Walker still prints four findings. That is the system trying to fail and finding no reason.
+Command 4 fills the graph: a price, a proven reserve attestation, and a child claim. The Freshness Walker, the Cover Walker, and the Auditor Walker run sequentially. In Terminal 1, watch each Jac Walker visit nodes and cross edges. In the UI, the Walker Token hops sequentially node-by-node. Three green stamps land. The Auditor Walker still prints four findings. That is the system trying to fail and finding no reason.
 
 ---
 
 ## Command 5 - Browser (click Mint)
 
-Command 5 is the mint. The Cover Walker already set how much the reserve justifies. The Act Walker reads the three stamps and mints the smaller of the amount requested and the amount that is justified. The transaction lands on Ethereum Sepolia, a public test network, so anyone can inspect it. Open Etherscan for the transaction and the NFT: minted amount, coverage used, price time stamp, reserve time stamp, and the three stamp colors. Anyone can open that record later and see why the mint was allowed.
+Command 5 is the mint. Notice we don't type the amount—the Cover Walker already set how much the reserve justifies. The Act Walker reads the three stamps and mints exactly the justified amount. The transaction lands on Ethereum Sepolia, a public test network, so anyone can inspect it. Open Etherscan for the transaction and the NFT: minted amount, coverage used, price time stamp, reserve time stamp, and the three stamp colors. Anyone can open that record later and see why the mint was allowed.
 
 ---
 
-## Command 6 - Browser (click Caution, then click Unknown)
+## Command 6 - Browser (click Caution Path, then click Unknown Path)
 
-Command 6 is the refuse. Same asset, same button. Caution is a flat reserve: the time stamp moved, the amount did not, while price did. Unknown is a missing child: the parent looks attested, the claim under it is gone. The mint sends nothing. The Counsel Walker, silent until the stamps existed, names what broke.
+Command 6 is the refuse. Same asset, unapproved paths. Caution is a flat reserve: the time stamp moved, the amount did not, while price did. Unknown is a missing child: the parent looks attested, the claim under it is gone. The mint sends nothing. The Counsel Walker, silent until the stamps existed, names what broke.
 
 ---
 

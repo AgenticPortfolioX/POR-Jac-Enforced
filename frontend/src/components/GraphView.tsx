@@ -90,15 +90,20 @@ const nodeTypes = {
     if (props.data?.walker_name === 'Cover') roleDescription = "Calculates overcollateralization";
     if (props.data?.walker_name === 'Auditor') roleDescription = "Final transaction approval";
 
+    const isGreen = props.data.color === 'green';
+    const borderStyle = props.data.customBorderColor ? { borderColor: props.data.customBorderColor } : undefined;
+    const baseClass = props.data.customBorderColor 
+      ? 'border-[1.5px]' 
+      : (isGreen ? 'border-cl-green border-[1.5px]' :
+         props.data.color === 'caution' ? 'border-cl-caution border-[1.5px]' :
+         props.data.color === 'red' ? 'border-cl-red border-[1.5px]' :
+         'border-cl-unknown border-[1.5px]');
+
     return (
       <NodeShell
         {...props}
-        className={
-          props.data.color === 'green' ? 'border-cl-green border-[1.5px]' :
-          props.data.color === 'caution' ? 'border-cl-caution border-[1.5px]' :
-          props.data.color === 'red' ? 'border-cl-red border-[1.5px]' :
-          'border-cl-unknown border-[1.5px]'
-        }
+        className={baseClass}
+        style={borderStyle}
         data={{
           ...props.data,
           label: `${props.data.walker_name ?? '?'} Decision`,
@@ -112,6 +117,8 @@ const nodeTypes = {
   mintrecord: (props: NodeProps) => (
     <NodeShell
       {...props}
+      className="border-[1.5px]"
+      style={{ borderColor: props.data.customBorderColor || '#D4AF37' }}
       data={{
         ...props.data,
         label: `Mint Authorization`,
@@ -120,7 +127,10 @@ const nodeTypes = {
     />
   ),
   walkertoken: (props: NodeProps) => (
-    <div className="hex-cut flex items-center justify-center px-4 py-2 bg-[#0847F7] text-white font-bold text-[11px] uppercase tracking-wider shadow-lg whitespace-nowrap border border-white/20">
+    <div 
+      className="hex-cut flex items-center justify-center px-4 py-2 text-white font-bold text-[11px] uppercase tracking-wider shadow-lg whitespace-nowrap border border-white/20"
+      style={{ backgroundColor: props.data.tokenColor || '#0847F7' }}
+    >
       {props.data.label}
     </div>
   ),
@@ -208,23 +218,27 @@ export function GraphView({
       return {
         ...e,
         animated: false,
-        style: { stroke: '#0847F7', strokeWidth: 2.5, opacity: 1 },
-        markerEnd: { type: MarkerType.ArrowClosed, color: '#DCEBFF' },
+        style: { stroke: activeColor, strokeWidth: 2.5, opacity: 1 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: activeColor },
       };
     } else if (isCompleted) {
       return {
         ...e,
         animated: false,
-        style: { stroke: '#0847F7', strokeWidth: 1.5, opacity: 0.7 }
+        style: { stroke: activeColor, strokeWidth: 1.5, opacity: 0.7 }
       };
     } else {
       return {
         ...e,
         animated: false,
-        style: { stroke: '#0847F7', strokeWidth: 1.5, opacity: 0.4 }
+        style: { stroke: '#6D7380', strokeWidth: 1.5, opacity: 0.3 }
       };
     }
-  }), [edges, liveEdgeId, completedEdgeIds]);
+  }), [edges, liveEdgeId, completedEdgeIds, activeColor]);
+
+  const hasMint = nodes.some(n => n.type === 'mintrecord');
+  const isCounseling = activeWalker === 'Act' || activeWalker === 'Counsel';
+  const showGold = hasMint || isCounseling;
 
   const decoratedNodes = useMemo(() => {
     const renderNodes = nodes.map(n => {
@@ -239,6 +253,13 @@ export function GraphView({
 
       let shadow = undefined;
       let extraClass = '';
+      let customBorderColor = undefined;
+
+      if (n.type === 'stamp' && n.data?.color === 'green') {
+        customBorderColor = showGold ? '#D4AF37' : (WALKER_BRAND_COLORS[n.data.walker_name] || '#10B981');
+      } else if (n.type === 'mintrecord') {
+        customBorderColor = '#D4AF37';
+      }
 
       if (isAnimating && isCurrent) {
         if (isFinalHop && n.type === 'stamp') {
@@ -250,11 +271,15 @@ export function GraphView({
 
       return {
         ...n,
+        data: {
+          ...n.data,
+          customBorderColor
+        },
         style: {
           ...n.style,
           opacity,
           boxShadow: shadow,
-          transition: 'opacity 0.3s ease-in-out, box-shadow 0.2s',
+          transition: 'opacity 0.3s ease-in-out, box-shadow 0.2s, border-color 0.8s ease-in-out',
         },
         className: `${n.className || ''} ${extraClass}`
       };
@@ -270,7 +295,7 @@ export function GraphView({
             x: targetNode.position.x + 40,
             y: targetNode.position.y - 20
           },
-          data: { label: `${activeWalker} Walker` },
+          data: { label: `${activeWalker} Walker`, tokenColor: activeColor },
           style: {
             zIndex: 1000,
             transition: 'transform 450ms cubic-bezier(0.4, 0, 0.2, 1)',
@@ -281,10 +306,10 @@ export function GraphView({
     }
 
     return renderNodes;
-  }, [nodes, isAnimating, currentKey, hopIndex, queue.length, activeColor, activeWalker]);
+  }, [nodes, isAnimating, currentKey, hopIndex, queue.length, activeColor, activeWalker, showGold]);
 
   return (
-    <div className="h-[520px] rounded-[12px] border border-cl-gray/10 bg-cl-bg overflow-hidden relative">
+    <div className="h-[600px] rounded-[12px] border border-cl-gray/10 bg-cl-bg overflow-hidden relative">
       <ReactFlow
         nodes={decoratedNodes}
         edges={decoratedEdges}

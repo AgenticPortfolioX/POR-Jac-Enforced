@@ -61,9 +61,10 @@ export type PathName = keyof typeof PATH_CONFIG;
 export const WALK_STEP_MS = 2500;
 
 export const WALKER_BRAND_COLORS: Record<string, string> = {
-  Freshness: '#05C46B', // green
-  Cover: '#0847F7', // blue
-  Auditor: '#FFDD59', // caution
-  Act: '#F5F7FA', // primary
-  Counsel: '#F5F7FA',
+  Freshness: '#10B981', // green
+  Cover: '#3B82F6', // blue
+  Auditor: '#94A3B8', // silver
+  Act: '#D4AF37', // gold
+  Counsel: '#D4AF37',
 };
+
