@@ -363,9 +363,13 @@ export default function HomePage() {
             <h2 className="text-xs uppercase tracking-wider text-cl-muted font-semibold mb-2 px-1">Verdicts</h2>
             <div className="flex flex-col gap-3">
               {WALKER_ORDER.map((w) => {
-                const isComplete = stamps[w]?.color != null;
+                // Hide old database state. Only show a stamp if it completed in the current run's walkLog.
+                const hasFinishedTurn = walkLog.some((log) => log.walker === w);
+                const stampData = hasFinishedTurn ? stamps[w] : null;
+                const isComplete = stampData?.color != null;
+
                 const findings = w === 'Auditor' 
-                  ? auditorReasons 
+                  ? (hasFinishedTurn ? auditorReasons : [])
                   : isComplete 
                     ? (w === 'Freshness' 
                         ? ['Data age bounds verified', 'Feed liveness confirmed'] 
@@ -376,19 +380,27 @@ export default function HomePage() {
                   <StampBadge
                     key={w}
                     walker={w}
-                    color={(stamps[w]?.color as 'green' | 'caution' | 'red' | 'unknown') ?? null}
+                    color={(stampData?.color as 'green' | 'caution' | 'red' | 'unknown') ?? null}
                     findings={findings}
                   />
                 );
               })}
               
               {/* Counsel Walker (Only visible if spoken or pending after others) */}
-              <StampBadge
-                key="Counsel"
-                walker="Counsel"
-                color={narration ? (stamps['Auditor']?.color === 'red' || stamps['Cover']?.color === 'red' ? 'red' : 'caution') : (stampsReady ? 'green' : null)}
-                narration={narration}
-              />
+              {(() => {
+                const isCounselComplete = walkLog.some((log) => log.walker === 'Act'); // Counsel speaks during/after Act
+                const showCounselRed = narration ? (stamps['Auditor']?.color === 'red' || stamps['Cover']?.color === 'red' ? 'red' : 'caution') : null;
+                const counselColor = narration ? showCounselRed : (isCounselComplete ? 'green' : null);
+                
+                return (
+                  <StampBadge
+                    key="Counsel"
+                    walker="Counsel"
+                    color={counselColor}
+                    narration={narration}
+                  />
+                );
+              })()}
             </div>
           </div>
 
