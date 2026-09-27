@@ -159,7 +159,7 @@ interface GraphViewProps {
 const HOP_QUEUES: Record<string, string[]> = {
   Freshness: ['asset', 'priceobservation', 'reserveattestation', 'FreshnessStamp'],
   Cover: ['asset', 'reserveattestation', 'childclaim', 'liability', 'CoverStamp'],
-  Auditor: ['asset', 'reserveattestation', 'childclaim', 'FreshnessStamp', 'CoverStamp', 'AuditorStamp'],
+  Auditor: ['asset', 'reserveattestation', 'childclaim', 'AuditorStamp', 'FreshnessStamp', 'AuditorStamp', 'CoverStamp', 'AuditorStamp'],
   Act: ['asset', 'FreshnessStamp', 'CoverStamp', 'AuditorStamp', 'mintrecord']
 };
 
@@ -188,6 +188,7 @@ export function GraphView({
     }
     setHopIndex(0);
     
+    const intervalMs = Math.floor(2500 / queue.length);
     let currentHop = 0;
     const interval = setInterval(() => {
       currentHop++;
@@ -196,7 +197,7 @@ export function GraphView({
       } else {
         setHopIndex(currentHop);
       }
-    }, 500);
+    }, intervalMs);
 
     return () => clearInterval(interval);
   }, [activeWalker]);

@@ -103,9 +103,9 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
     ChildClaim: { x: 600, y: 300 },
     Liability: { x: 200, y: 300 },
     FreshnessStamp: { x: 200, y: 450 },
-    CoverStamp: { x: 400, y: 450 },
-    AuditorStamp: { x: 600, y: 450 },
-    MintRecord: { x: 400, y: 600 },
+    CoverStamp: { x: 600, y: 450 },
+    AuditorStamp: { x: 400, y: 550 },
+    MintRecord: { x: 400, y: 700 },
   };
 
   nodes.push({
@@ -141,6 +141,33 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
       type: 'smoothstep',
     });
   });
+
+  // Inject dotted review edges for the Auditor
+  const freshnessNode = nodes.find(n => n.type === 'stamp' && n.data.walker_name === 'Freshness');
+  const coverNode = nodes.find(n => n.type === 'stamp' && n.data.walker_name === 'Cover');
+  const auditorNode = nodes.find(n => n.type === 'stamp' && n.data.walker_name === 'Auditor');
+
+  if (auditorNode && freshnessNode) {
+    edges.push({
+      id: `e-auditor-freshness`,
+      source: auditorNode.id,
+      target: freshnessNode.id,
+      label: 'Reviews',
+      type: 'smoothstep',
+      style: { strokeDasharray: '5,5', stroke: '#94A3B8', strokeWidth: 1.5 },
+    });
+  }
+
+  if (auditorNode && coverNode) {
+    edges.push({
+      id: `e-auditor-cover`,
+      source: auditorNode.id,
+      target: coverNode.id,
+      label: 'Reviews',
+      type: 'smoothstep',
+      style: { strokeDasharray: '5,5', stroke: '#94A3B8', strokeWidth: 1.5 },
+    });
+  }
 
   return { nodes, edges };
 }
