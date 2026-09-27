@@ -360,7 +360,7 @@ export default function HomePage() {
 
           {/* Right: Stamp Column + Panels */}
           <div className="col-span-12 lg:col-span-3 space-y-4">
-            <h2 className="text-xs uppercase tracking-wider text-cl-muted font-semibold mb-2 px-1">Verdicts</h2>
+            <h2 className="text-base uppercase tracking-widest text-white font-bold mb-5 text-center">Verdicts</h2>
             <div className="flex flex-col gap-3">
               {WALKER_ORDER.map((w) => {
                 // Hide old database state. Only show a stamp if it completed in the current run's walkLog.
@@ -389,8 +389,7 @@ export default function HomePage() {
               {/* Counsel Walker (Only visible if spoken or pending after others) */}
               {(() => {
                 const isCounselComplete = walkLog.some((log) => log.walker === 'Act'); // Counsel speaks during/after Act
-                const showCounselRed = narration ? (stamps['Auditor']?.color === 'red' || stamps['Cover']?.color === 'red' ? 'red' : 'caution') : null;
-                const counselColor = narration ? showCounselRed : (isCounselComplete ? 'green' : null);
+                const counselColor = !isCounselComplete ? null : (allGreen ? 'green' : (stamps['Auditor']?.color === 'red' || stamps['Cover']?.color === 'red' ? 'red' : 'caution'));
                 
                 return (
                   <StampBadge
