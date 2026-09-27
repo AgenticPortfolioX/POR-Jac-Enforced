@@ -1,0 +1,20 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {"internalType": "address", "name": "to", "type": "address"},
+        {"internalType": "uint256", "name": "mintedAmount", "type": "uint256"},
+        {"internalType": "uint256", "name": "coverageUsed", "type": "uint256"},
+        {"internalType": "uint256", "name": "priceTime", "type": "uint256"},
+        {"internalType": "uint256", "name": "reserveTime", "type": "uint256"},
+        {"internalType": "string", "name": "stampSummary", "type": "string"}
+      ],
+      "name": "mintAttestation",
+      "outputs": [
+        {"internalType": "uint256", "name": "", "type": "uint256"}
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ]
+}
