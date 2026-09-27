@@ -53,7 +53,7 @@ const nodeTypes = {
   priceobservation: (props: NodeProps) => (
     <NodeShell
       {...props}
-      className="border-cl-wash border-[1.5px] bg-cl-surface2"
+      className="border-cl-blue border-[1.5px] bg-cl-surface2"
       data={{
         ...props.data,
         label: `Price: $${props.data.value ?? '?'}`,
@@ -158,7 +158,7 @@ interface GraphViewProps {
 
 const HOP_QUEUES: Record<string, string[]> = {
   Freshness: ['asset', 'priceobservation', 'reserveattestation', 'FreshnessStamp'],
-  Cover: ['asset', 'reserveattestation', 'childclaim', 'liability', 'CoverStamp'],
+  Cover: ['asset', 'liability', 'asset', 'reserveattestation', 'childclaim', 'CoverStamp'],
   Auditor: ['asset', 'reserveattestation', 'childclaim', 'AuditorStamp', 'FreshnessStamp', 'AuditorStamp', 'CoverStamp', 'AuditorStamp'],
   Act: ['asset', 'FreshnessStamp', 'CoverStamp', 'AuditorStamp', 'mintrecord']
 };

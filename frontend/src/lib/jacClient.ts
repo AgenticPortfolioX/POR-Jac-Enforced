@@ -101,11 +101,11 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
     Liability: { x: 50, y: 150 },
     PriceObservation: { x: 260, y: 150 },
     ReserveAttestation: { x: 540, y: 150 },
-    ChildClaim: { x: 750, y: 225 },
-    FreshnessStamp: { x: 260, y: 300 },
-    CoverStamp: { x: 540, y: 300 },
-    AuditorStamp: { x: 400, y: 400 },
-    MintRecord: { x: 400, y: 520 },
+    ChildClaim: { x: 710, y: 225 },
+    FreshnessStamp: { x: 260, y: 320 },
+    CoverStamp: { x: 540, y: 320 },
+    AuditorStamp: { x: 400, y: 430 },
+    MintRecord: { x: 400, y: 540 },
   };
 
   nodes.push({
@@ -155,7 +155,7 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
 
   if (reserveNode && childClaimNode) {
     edges.push({
-      id: `e-reserve-childclaim`,
+      id: `e-${reserveNode.id}-${childClaimNode.id}`,
       source: reserveNode.id,
       target: childClaimNode.id,
       label: 'DependsOn',
@@ -166,10 +166,9 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
 
   if (childClaimNode && coverNode) {
     edges.push({
-      id: `e-childclaim-cover`,
+      id: `e-${childClaimNode.id}-${coverNode.id}`,
       source: childClaimNode.id,
       target: coverNode.id,
-      label: 'VerifiedBy',
       type: 'smoothstep',
       style: { stroke: '#4B5563', strokeWidth: 1.5 },
     });
@@ -177,12 +176,11 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
 
   // Inject dotted review edges for the Auditor
   const freshnessNode = nodes.find(n => n.type === 'stamp' && n.data.walker_name === 'Freshness');
-  const coverNode = nodes.find(n => n.type === 'stamp' && n.data.walker_name === 'Cover');
   const auditorNode = nodes.find(n => n.type === 'stamp' && n.data.walker_name === 'Auditor');
 
   if (auditorNode && freshnessNode) {
     edges.push({
-      id: `e-auditor-freshness`,
+      id: `e-${auditorNode.id}-${freshnessNode.id}`,
       source: auditorNode.id,
       target: freshnessNode.id,
       label: 'Reviews',
@@ -193,7 +191,7 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
 
   if (auditorNode && coverNode) {
     edges.push({
-      id: `e-auditor-cover`,
+      id: `e-${auditorNode.id}-${coverNode.id}`,
       source: auditorNode.id,
       target: coverNode.id,
       label: 'Reviews',
