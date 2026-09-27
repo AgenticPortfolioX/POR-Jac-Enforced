@@ -49,12 +49,12 @@ walker:pub Counsel {
         if all_green and justified > 0.0 {
             narration = narration + "The mint was justified for " + str(justified) + " units.";
             print("");
-            print(BOLD + BG_GREEN + "  ✅  MINT APPROVED: " + str(justified) + " units authorized  " + RESET);
+            print(BOLD + BG_GREEN + "  [PASS] MINT APPROVED: " + str(justified) + " units authorized  " + RESET);
             print("");
         } else {
             narration = narration + "No mint was justified. A PoR page might still show a number; this printer will not treat that number as a permit.";
             print("");
-            print(BOLD + BG_RED + "  ❌  MINT BLOCKED: Proof of Reserve conditions not met  " + RESET);
+            print(BOLD + BG_RED + "  [FAIL] MINT BLOCKED: Proof of Reserve conditions not met  " + RESET);
             print("");
         }
 

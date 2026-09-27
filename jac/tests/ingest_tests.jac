@@ -1,4 +1,4 @@
-
+import os;
 import from jac.schemas.nodes { Asset, PriceObservation, ReserveAttestation, ChildClaim, Liability }
 import from jac.schemas.edges { HasPrice, HasReserve, DependsOn, HasLiability, StampedBy }
 import from jac.walkers.ingest { Ingest }
@@ -128,6 +128,11 @@ test "test_ingest_live_negative_refuses_on_empty_feed_addresses" {
     );
     root ++> asset;
 
+    old_p = os.environ.get("PRICE_FEED_ADDRESS", "");
+    old_r = os.environ.get("RESERVE_FEED_ADDRESS", "");
+    os.environ["PRICE_FEED_ADDRESS"] = "";
+    os.environ["RESERVE_FEED_ADDRESS"] = "";
+
     # Calling with empty feed addresses and use_fixture=False triggers the guard.
     asset spawn Ingest(
         use_fixture=False,
@@ -139,4 +144,7 @@ test "test_ingest_live_negative_refuses_on_empty_feed_addresses" {
     assert len([asset ->:HasPrice:-> ]) == 0;
     assert len([asset ->:HasReserve:-> ]) == 0;
     assert len([asset ->:HasLiability:-> ]) == 0;
+
+    os.environ["PRICE_FEED_ADDRESS"] = old_p;
+    os.environ["RESERVE_FEED_ADDRESS"] = old_r;
 }

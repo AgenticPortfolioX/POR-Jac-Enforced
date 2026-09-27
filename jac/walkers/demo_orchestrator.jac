@@ -20,19 +20,19 @@ walker:pub DemoOrchestrator {
 
     can run with Root entry {
         path_color: str = FG_GREEN;
-        path_icon: str = "✅";
+        path_icon: str = "[PASS]";
         if self.path == "caution" {
             path_color = FG_YELLOW;
-            path_icon = "⚠️ ";
+            path_icon = "[WARN]";
         } elif self.path == "unknown" {
             path_color = FG_RED;
-            path_icon = "❌";
+            path_icon = "[FAIL]";
         }
 
         print("");
         print(SEP);
         print(BOLD + BG_BLACK + FG_CYAN + "  PoRJE DEMO RUN STARTED" + RESET);
-        print(BOLD + "  PATH: " + path_color + path_icon + "  " + str(self.path).upper() + RESET);
+        print(BOLD + "  PATH: " + path_color + path_icon + " " + str(self.path).upper() + RESET);
         print(SEP);
         print("");
 
@@ -80,7 +80,7 @@ walker:pub DemoOrchestrator {
         print("");
         print(SEP);
         print(BOLD + FG_CYAN + "  PoRJE DEMO RUN COMPLETE" + RESET);
-        print(BOLD + "  PATH: " + path_color + path_icon + "  " + str(self.path).upper() + RESET);
+        print(BOLD + "  PATH: " + path_color + path_icon + " " + str(self.path).upper() + RESET);
         print(SEP);
         print("");
 

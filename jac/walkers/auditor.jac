@@ -124,15 +124,15 @@ walker:pub Auditor {
         }
 
         verdict_color: str = FG_GREEN;
-        verdict_icon: str  = "✅";
+        verdict_icon: str  = "[PASS]";
         if color == COLOR_CAUTION {
             verdict_color = FG_YELLOW;
-            verdict_icon  = "⚠️ ";
+            verdict_icon  = "[WARN]";
         } elif color == COLOR_RED or color == COLOR_UNKNOWN {
             verdict_color = FG_RED;
-            verdict_icon  = "❌";
+            verdict_icon  = "[FAIL]";
         }
-        print(BOLD + FG_WHITE + "  [AUDITOR]   " + verdict_icon + "  " + verdict_color + str(color).upper() + RESET);
+        print(BOLD + FG_WHITE + "  [AUDITOR]   " + verdict_icon + " " + verdict_color + str(color).upper() + RESET);
         for f in findings {
             print(DIM + "    • " + str(f) + RESET);
         }
