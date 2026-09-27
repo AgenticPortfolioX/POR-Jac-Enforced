@@ -1,5 +1,9 @@
 # Proof of Reserve, Jac Enforced
 
+<p align="center">
+  <img src="docs/assets/jac_link_2.png" alt="Proof of Reserve, Jac Enforced - Jac Link 2 Logo" width="600" />
+</p>
+
 **PoR attests. Jac enforces. The printer is the proof.**
 
 > Proof of Reserve attests that backing was reported. Proof of Reserve, Jac Enforced puts that attestation on a graph, requires three green stamps from walkers that are allowed to attack the claim, and only then mints - only as much as current coverage justifies - so "backed" is a permit with a quantity, not a text output you can quote.
