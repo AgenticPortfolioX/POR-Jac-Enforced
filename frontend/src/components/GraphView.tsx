@@ -34,7 +34,7 @@ const nodeTypes = {
   asset: (props: NodeProps) => (
     <NodeShell
       {...props}
-      className="bg-cl-surface2 border-transparent"
+      className="bg-cl-surface2 border-transparent !py-2.5"
       data={{
         ...props.data,
         label: (
@@ -322,7 +322,7 @@ export function GraphView({
   }, [nodes, isAnimating, currentKey, hopIndex, queue.length, activeColor, activeWalker, showGold]);
 
   return (
-    <div className="h-[600px] rounded-[12px] border border-cl-gray/10 bg-cl-bg overflow-hidden relative">
+    <div className="h-[528px] rounded-[12px] border border-cl-gray/10 bg-cl-bg overflow-hidden relative">
       <ReactFlow
         nodes={decoratedNodes}
         edges={decoratedEdges}
