@@ -191,12 +191,63 @@ export default function HomePage() {
       <div className="mx-auto max-w-[1400px] space-y-6">
         
         {/* Header */}
-        <header className="flex flex-col md:flex-row md:items-end justify-between border-b border-cl-gray/10 pb-4">
-          <div>
+        <header className="flex flex-col md:flex-row md:items-start justify-between border-b border-cl-gray/10 pb-4 gap-4">
+          <div className="shrink-0 mt-2">
             <div className="text-[10px] uppercase tracking-[0.2em] text-cl-muted mb-1 font-semibold">Chainlink attestation, Jac enforcement</div>
             <h1 className="text-2xl font-normal tracking-tight text-white">
               Proof of Reserve, Jac Enforced
             </h1>
+          </div>
+          
+          {/* Live Execution Feed */}
+          <div className="flex-1 w-full md:max-w-xl lg:max-w-2xl bg-[#0A0C10] border border-cl-gray/10 rounded-[8px] p-3 shadow-inner flex flex-col justify-center min-h-[72px] font-mono text-[11px] overflow-hidden relative">
+            {activeStep ? (
+              <div className="flex items-start gap-3">
+                <span className="text-cl-blue font-bold mt-0.5 animate-pulse">▶</span>
+                <div className="flex flex-col gap-1 w-full">
+                  <div className="flex justify-between items-center w-full">
+                    <span className="text-white font-bold uppercase">{activeStep.walker} Walker Running...</span>
+                    <span className="text-cl-blue animate-pulse uppercase text-[9px] tracking-widest bg-cl-blue/10 px-2 py-0.5 rounded">Processing</span>
+                  </div>
+                  <span className="text-cl-muted">Action: {activeStep.intent}</span>
+                  <span className="text-cl-muted">Reviewing: {activeStep.traverses.join(' → ')}</span>
+                </div>
+              </div>
+            ) : pending ? (
+              <div className="flex items-start gap-3">
+                <span className="text-cl-primary font-bold mt-0.5 animate-pulse">▶</span>
+                <div className="flex flex-col gap-1">
+                  <span className="text-white font-bold uppercase">Act Walker Running...</span>
+                  <span className="text-cl-muted">Action: Validating 3 prior stamps for minting condition</span>
+                </div>
+              </div>
+            ) : walkLog.length > 0 ? (
+              <div className="flex items-start gap-3">
+                <span className={allGreen ? "text-cl-green font-bold mt-0.5" : "text-cl-red font-bold mt-0.5"}>■</span>
+                <div className="flex flex-col gap-1 w-full">
+                  <div className="flex justify-between items-center w-full">
+                    <span className="text-white font-bold uppercase">Execution Complete</span>
+                    <span className={`uppercase text-[9px] font-bold tracking-widest px-2 py-0.5 rounded ${allGreen ? 'bg-cl-green/10 text-cl-green' : 'bg-cl-red/10 text-cl-red'}`}>
+                      {allGreen ? 'APPROVED' : 'REJECTED'}
+                    </span>
+                  </div>
+                  <span className="text-cl-muted">
+                    Decision: {allGreen ? 'All stamps are GREEN. The graph permits minting.' : 'One or more stamps failed the policy graph.'}
+                  </span>
+                  {!allGreen && auditorReasons.length > 0 && (
+                    <span className="text-cl-caution mt-1">Audit Findings: {auditorReasons.join(', ')}</span>
+                  )}
+                  {narration && (
+                    <span className="text-cl-red italic mt-1 border-l border-cl-red pl-2">Counsel: "{narration}"</span>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 text-cl-muted opacity-50 h-full">
+                <span className="font-bold animate-pulse">_</span>
+                <span className="uppercase tracking-widest">System Idle. Awaiting execution.</span>
+              </div>
+            )}
           </div>
         </header>
 
