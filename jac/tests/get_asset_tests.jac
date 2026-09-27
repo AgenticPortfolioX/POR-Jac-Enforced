@@ -8,7 +8,7 @@ import from jac.walkers.ingest { Ingest }
 
 
 test "test_get_asset_returns_correct_edge_types" {
-    # After a happy ingest, GetAsset must return an edges list containing
+    # After a approved ingest, GetAsset must return an edges list containing
     # exactly one entry for each of the four edge types the attestation
     # graph uses: HasPrice, HasReserve, DependsOn, HasLiability.
     asset = Asset(
@@ -58,8 +58,8 @@ test "test_get_asset_reserve_has_flat_history" {
 }
 
 
-test "test_get_asset_stamps_visible_after_happy_path" {
-    # After a full happy path run, GetAsset must be able to read three
+test "test_get_asset_stamps_visible_after_approved_path" {
+    # After a full approved path run, GetAsset must be able to read three
     # StampedBy edges off the asset. The stamps are what the frontend reads
     # to render the badge row and enable the Mint button.
     asset = Asset(
@@ -73,7 +73,7 @@ test "test_get_asset_stamps_visible_after_happy_path" {
     );
     root ++> asset;
 
-    asset spawn DemoControl(path="happy");
+    asset spawn DemoControl(path="approved");
 
     stamps = [asset ->:StampedBy:-> ];
     assert len(stamps) == 3;

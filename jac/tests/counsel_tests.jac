@@ -33,10 +33,10 @@ test "test_counsel_is_silent_without_stamps" {
 
 
 test "test_counsel_narrates_all_green_path" {
-    # After a full happy path, Counsel must produce spoken=True and a narration
+    # After a full approved path, Counsel must produce spoken=True and a narration
     # that confirms the mint was justified.
     asset = Asset(
-        id="test-counsel-happy",
+        id="test-counsel-approved",
         name="CounselTest2",
         symbol="CNS2",
         chain="test",
@@ -46,7 +46,7 @@ test "test_counsel_narrates_all_green_path" {
     );
     root ++> asset;
 
-    asset spawn DemoControl(path="happy");
+    asset spawn DemoControl(path="approved");
 
     # Three green stamps must be present before Counsel runs.
     stamps = [asset ->:StampedBy:-> ];

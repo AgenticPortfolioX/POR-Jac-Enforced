@@ -114,7 +114,7 @@ export default function HomePage() {
     try {
       // Seed asset first (idempotent) - returns the node id the walkers need.
       const nd = await ensureSeeded();
-      const cfg = PATH_CONFIG[path as PathName] ?? PATH_CONFIG.happy;
+      const cfg = PATH_CONFIG[path as PathName] ?? PATH_CONFIG.approved;
 
       for (const step of WALK_STEPS) {
         setActiveStep(step);
@@ -289,6 +289,34 @@ export default function HomePage() {
                 {error}
               </div>
             )}
+
+            {/* Walker Documentation */}
+            <section className="rounded-[12px] border border-cl-gray/10 bg-cl-surface1 p-6 shadow-sm mt-6">
+              <h2 className="mb-4 text-sm uppercase tracking-widest text-cl-primary font-semibold border-b border-cl-gray/10 pb-3">
+                Jac Walkers: Sequential Execution
+              </h2>
+              <p className="text-xs text-cl-muted mb-5 leading-relaxed">
+                Jac Walkers execute <strong>strictly 1 at a time (sequentially)</strong>. When you click a path, the walkers traverse the graph in order. Each walker reads the graph, leaves a cryptographic stamp, and passes the baton to the next. The final transaction cannot proceed unless all stamps are present and green.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-[8px] bg-cl-surface2 p-3 border border-cl-gray/5">
+                  <div className="text-cl-green font-semibold text-xs mb-1">1. Freshness Walker</div>
+                  <div className="text-[10px] text-cl-muted leading-tight">Checks the age of the Chainlink price feed and the reserve attestation against the active policy.</div>
+                </div>
+                <div className="rounded-[8px] bg-cl-surface2 p-3 border border-cl-gray/5">
+                  <div className="text-cl-blue font-semibold text-xs mb-1">2. Cover Walker</div>
+                  <div className="text-[10px] text-cl-muted leading-tight">Calculates the justified mint amount based on the proven reserves, price, and current liabilities.</div>
+                </div>
+                <div className="rounded-[8px] bg-cl-surface2 p-3 border border-cl-gray/5">
+                  <div className="text-cl-caution font-semibold text-xs mb-1">3. Auditor Walker</div>
+                  <div className="text-[10px] text-cl-muted leading-tight">Verifies structural integrity (like ensuring child claims exist) and flags any flatline reserves.</div>
+                </div>
+                <div className="rounded-[8px] bg-cl-surface2 p-3 border border-cl-gray/5">
+                  <div className="text-cl-primary font-semibold text-xs mb-1">4. Act & Counsel</div>
+                  <div className="text-[10px] text-cl-muted leading-tight">Act Walker mints only if all 3 prior stamps are green. Counsel Walker explains any failures if stamps are yellow or red.</div>
+                </div>
+              </div>
+            </section>
           </div>
 
           {/* Right: Stamp Column + Panels */}

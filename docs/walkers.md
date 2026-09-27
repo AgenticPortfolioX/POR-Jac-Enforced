@@ -117,13 +117,13 @@ POST /walker/{Name}/{node_id}
 ## DemoControl
 
 - **Purpose.** Drive one of the three demo paths in a single call: seed fixtures, then run the three approval walkers.
-- **Inputs.** `path` - one of `"happy"`, `"caution"`, `"unknown"`.
+- **Inputs.** `path` - one of `"approved"`, `"caution"`, `"unknown"`.
 - **Writes.** Delegates all writes to the walkers it spawns: `Ingest`, then `Freshness`, `Cover`, `Auditor`. For `unknown` it passes `child_present=False` to `Ingest`, which marks the child claim absent, simulating a missing backing layer.
 - **Not used by the UI.** It runs all four walkers inside one frame, which is right for the CLI and the tests and invisible on screen. The frontend instead sends the four walkers as separate requests so the traversal can be watched; `test_stepwise_walk_matches_demo_control` asserts the two routes agree.
 - **Forbidden.** Minting and narrating. DemoControl spawns only the four walkers above - **never Act, never Counsel**. The demo operator clicks the printer separately, on purpose, so the refusal is a visible act rather than a side effect of seeding.
 - **Report shape.**
   ```json
-  {"path": "happy", "status": "walkers_run"}
+  {"path": "approved", "status": "walkers_run"}
   ```
   An unrecognised path reports `{"error": "unknown path …"}` and returns without seeding.
 

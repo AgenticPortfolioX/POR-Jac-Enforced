@@ -100,7 +100,7 @@ Command 3 creates the root asset node. Everything the Jac Walkers do from here h
 
 ---
 
-## Command 4 - Browser (click Happy in the UI)
+## Command 4 - Browser (click Approved in the UI)
 
 Command 4 fills the graph: a price, a proven reserve attestation, and a child claim. The Freshness Walker, the Cover Walker, and the Auditor Walker run in sequence. In Terminal 1, watch each Jac Walker visit nodes and cross edges. Three green stamps land. The Auditor Walker still prints four findings. That is the system trying to fail and finding no reason.
 
@@ -118,7 +118,7 @@ Command 6 is the refuse. Same asset, same button. Caution is a flat reserve: the
 
 ---
 
-## Click Happy again and end on green
+## Click Approved again and end on green
 
 ---
 

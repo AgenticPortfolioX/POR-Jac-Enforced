@@ -5,7 +5,7 @@ interface PathSelectorProps {
 
 const PATHS = [
   { key: 'live', label: '⚡ Live Feed', desc: 'Chainlink Sepolia' },
-  { key: 'happy', label: '✅ Happy Path', desc: 'All green' },
+  { key: 'approved', label: '✅ Approved Path', desc: 'All green' },
   { key: 'caution', label: '⚠️ Caution Path', desc: 'Flat reserve' },
   { key: 'unknown', label: '❌ Unknown Path', desc: 'Missing child' },
 ];

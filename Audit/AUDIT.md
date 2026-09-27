@@ -171,7 +171,7 @@ ratio to 0.666667 and the verdict red.
   PoRToken totalSupply  : 0 wei
   last attestation id   : 0
 
-[4/9] Happy path on a fresh asset
+[4/9] Approved path on a fresh asset
   Cover justified amount: 250000.0
 
 [5/9] Minting via Act (requested 1000000.0)
@@ -546,7 +546,7 @@ below were closed and re-verified on this tree. No findings were deleted or modi
 |---|---|---|
 | **P-1 (bare edges)** | **FIXED** | `jac/schemas/edges.jac` restored to bare edges with node imports (typed-endpoint syntax `edge E: Src --> Dst {}` parses as E0002/E0005 on this toolchain; bare edges with per-walker imports are the correct form). `jac check jac/` passes all 17 walker/lib files it checks. |
 | **P-2 (trace not committed)** | **FIXED** | `PORJE_TRACE` glob added to `jac/lib/utils.jac`. Five walker files (Freshness, Cover, Auditor, Counsel, Act) each import `PORJE_TRACE` and emit gated `[TRACE]` lines at entry and exit. `PORJE_TRACE=1 jac test -d jac/tests` → 17 passed with trace output confirmed from all 5 walkers. `PORJE_TRACE=0 jac test -d jac/tests` → 17 passed, no trace output. |
-| **P-3 (D1/D2 not committed)** | **FIXED** | `_to_wei(amount: float) -> int` helper added to `jac/lib/evm_py.py` using `Decimal(str(amount)) * Decimal(10**18)` with `ROUND_HALF_UP`. Both `mint()` and `mint_attestation()` call sites updated from `int(float(amount) * 10**18)` to `_to_wei(amount)`. Live verification: `run_demo_path.py happy` produced tx `39dcd4906fbc419156c3dcc08f39bf31647073b2e25255ca51c1845fb271f7ac`, minted 250000.0 on Sepolia, `nft_id: 2`. |
+| **P-3 (D1/D2 not committed)** | **FIXED** | `_to_wei(amount: float) -> int` helper added to `jac/lib/evm_py.py` using `Decimal(str(amount)) * Decimal(10**18)` with `ROUND_HALF_UP`. Both `mint()` and `mint_attestation()` call sites updated from `int(float(amount) * 10**18)` to `_to_wei(amount)`. Live verification: `run_demo_path.py approved` produced tx `39dcd4906fbc419156c3dcc08f39bf31647073b2e25255ca51c1845fb271f7ac`, minted 250000.0 on Sepolia, `nft_id: 2`. |
 | **F-1 (zero-address claim)** | **FIXED** | `demo.md` line 10 updated: warning about zero-address mint replaced with accurate statement that the UI mints to `0x748ABdeF0775132E8F941e1513152D5eb02D3a4B`. `docs/demo-runbook.md` pre-flight item 4 and "Known gaps - The UI mint recipient" section updated to match. `grep "zero address" demo.md docs/demo-runbook.md` → no matches. |
 | **F-2 (DemoControl claim)** | **FIXED** | `demo.md` line 10 updated: wording that path buttons drive `DemoControl` replaced with accurate description that path buttons drive the three walkers in sequence, with DemoControl available as CLI/API fallback. `grep -n "DemoControl" demo.md` → only references describing it as CLI fallback. `grep -rn "DemoControl" frontend/src/` → no call site. |
 | **F-3 (stale INVENTORY.md)** | **REGENERATED** | `Audit/INVENTORY.md` regenerated with accurate counts for this tree: 17 tests across 5 files (not 63/12 - the 63/12 count is from `/home/grams121/porje`, not present on this host). Added runtime section, removed stale typed-edge syntax, added `flat_history` note, added trace instrumentation section. |
@@ -564,11 +564,11 @@ below were closed and re-verified on this tree. No findings were deleted or modi
 | 10.3b | `PORJE_TRACE=0 jac test -d jac/tests` | 17 passed; no TRACE output |
 | 10.5 | `python scripts/verify_por_feeds.py` | Fixtures 1-3 PASS; live-negative case FAIL (Ingest does not refuse on empty feed addresses - known open gap, not a regression) |
 | 10.6 | `python scripts/verify_sizing.py` | FileNotFoundError - script calls `pkill` which is not available on Windows; not runnable on this host |
-| 10.8 | `python scripts/run_demo_path.py happy` | EXIT 0 - three green stamps, mint 250000.0, tx returned |
+| 10.8 | `python scripts/run_demo_path.py approved` | EXIT 0 - three green stamps, mint 250000.0, tx returned |
 | 10.9 | `python scripts/run_demo_path.py caution` | EXIT 0 - Cover caution, Act refuses (Cover stamp is caution) |
 | 10.10 | `python scripts/run_demo_path.py unknown` | EXIT 0 - Cover red, Auditor red, Act refuses (Cover stamp is red) |
 | 10.11 | `cd frontend && npm run build` | Running (background) |
-| 10.12 | `curl http://localhost:8000/healthz` | Backend confirmed live (happy/caution/unknown paths all received 200 responses) |
+| 10.12 | `curl http://localhost:8000/healthz` | Backend confirmed live (approved/caution/unknown paths all received 200 responses) |
 
 ### Open items after remediation
 

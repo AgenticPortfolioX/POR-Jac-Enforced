@@ -121,9 +121,9 @@ reserve, then the three stamps - and the mapping is implemented in
 `color` field, and `jacClient.ts:165` labels the node `` `${walker_name}: ${color}` ``.
 There is no colour transformation between the graph and the screen.
 
-**What remains for a human:** the actual click-through - press **Happy**,
+**What remains for a human:** the actual click-through - press **Approved**,
 **Caution**, **Unknown**, and confirm the rendered graph matches the table above,
-and press **Mint** on the happy path. This document should not be read as
+and press **Mint** on the approved path. This document should not be read as
 claiming that was done.
 
 ---
@@ -160,7 +160,7 @@ observation was not performed by this audit.
 ## 10.5 The walker trace is observable for the path being run - **PASS**
 
 Verified against the **live server**, not only under `jac test`. The backend was
-started with `PORJE_TRACE=1`, the happy path was walked over HTTP one walker per
+started with `PORJE_TRACE=1`, the approved path was walked over HTTP one walker per
 request, and the server log was then read:
 
 ```

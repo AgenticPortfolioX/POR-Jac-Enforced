@@ -5,12 +5,12 @@ import from jac.walkers.cover { Cover }
 import from jac.walkers.auditor { Auditor }
 
 walker:pub DemoControl {
-    has path: str = "happy";
+    has path: str = "approved";
 
     can run with Asset entry {
         # Stamps are upserted in place by each approval walker, replacing prior stamps
         # and preserving graph invariants across concurrent sibling frames.
-        if self.path == "happy" {
+        if self.path == "approved" {
             here spawn Ingest(use_fixture=True, fixture_name="por_live");
         } elif self.path == "caution" {
             here spawn Ingest(use_fixture=True, fixture_name="por_flat");

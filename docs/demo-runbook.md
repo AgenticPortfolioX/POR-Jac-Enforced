@@ -1,6 +1,6 @@
 # Demo Runbook - Proof of Reserve, Jac Enforced
 
-Operator checklist for the three-path demonstration: pre-flight, happy, caution, unknown, reset, troubleshooting.
+Operator checklist for the three-path demonstration: pre-flight, approved, caution, unknown, reset, troubleshooting.
 
 **Toolchain.** Every command below was re-verified against **Jac 0.37.23** (`jac --version`). Evidence blocks are labelled with the runtime they came from; the pre-0.37 material is retained under **Historical evidence** for reference only and is not reproducible on this tree.
 
@@ -93,19 +93,19 @@ the server does not reset the graph either**: the store outlives the process, so
 > fresh asset, or a dropped store, starts from the one-of-each invariant. Reset
 > before a demo on a store that predates the fix.
 
-## Path 1 - Happy (all green)
+## Path 1 - Approved (all green)
 
 ```bash
 .jac/venv/bin/python scripts/seed_graph.py
-.jac/venv/bin/python scripts/run_demo_path.py happy
+.jac/venv/bin/python scripts/run_demo_path.py approved
 ```
 
-**In the UI.** Select **✅ Happy Path**. Freshness, Cover and Auditor each render a green `StampBadge`; the `MintButton` reads `Mint (justified: 250000.00)` and is enabled; `CounselPanel` replaces `Counsel is blind until three stamps exist.` with the narration; `ExplorerLink` appears after the mint.
+**In the UI.** Select **✅ Approved Path**. Freshness, Cover and Auditor each render a green `StampBadge`; the `MintButton` reads `Mint (justified: 250000.00)` and is enabled; `CounselPanel` replaces `Counsel is blind until three stamps exist.` with the narration; `ExplorerLink` appears after the mint.
 
 **Evidence - Jac 0.37.23.** Captured from a dropped store, `jac run main.jac --no-client`, on 2026-09-26.
 
 ```json
-// DemoControl happy - all three approval walkers
+// DemoControl approved - all three approval walkers
 { "asset_id": "asset-1", "price_source": "fixture", "reserve_source": "fixture" }
 { "walker": "Freshness", "color": "green",
   "reasons": ["price age 12s <= max 300s", "reserve age 30s <= max 3600s", "source is fixture (labeled)"] }
@@ -128,7 +128,7 @@ stamps: [("Freshness","green"), ("Cover","green"), ("Auditor","green")]
   "narration": "Freshness green: price age 12s <= max 300s, reserve age 30s <= max 3600s, source is fixture (labeled). Cover green: coverage ratio 1.25, justified 250000.0. Auditor green: age skew - none; flat reserve - none; child attestation - present; liability cover - holds. The mint was justified for 250000.0 units." }
 ```
 
-**Re-running is idempotent.** A second `run_demo_path.py happy` on the same asset
+**Re-running is idempotent.** A second `run_demo_path.py approved` on the same asset
 returns the *same node ids* for every observation and stamp - the upsert mutates
 in place rather than appending. Verified across runs:
 
@@ -167,7 +167,7 @@ reconciles the existing nodes and their positions survive instead of being rebui
 > `MintedAs` edge when it refuses, so `MintedAs=0` in the evidence above is correct
 > for a refused mint, not a missing feature. To close this clause, fix `.env` per
 > Pre-flight item 2, then set `DEMO_RECIPIENT` to a funded non-zero address and
-> re-run `run_demo_path.py happy`.
+> re-run `run_demo_path.py approved`.
 
 <details>
 <summary><strong>Historical evidence - pre-0.37 runtime, retained for reference only</strong></summary>
@@ -179,7 +179,7 @@ provider. It is **not reproducible on this tree** - the runtime, the store engin
 because it is the only record of a completed mint in this repository's history.
 
 ```json
-// Act - DemoControl happy, requested 1,000,000, justified 250,000
+// Act - DemoControl approved, requested 1,000,000, justified 250,000
 { "minted": true, "amount": 250000.0, "justified": 250000.0,
   "tx": "f83aa8fb4e3bb3d506ea5cbb4c2822af1719c04f660001bdeeaa4dd8403620eb",
   "nft_id": 1 }
@@ -251,12 +251,12 @@ Act:    { "minted": false, "reason": "Cover stamp is red" }
 MintedAs: 0  ->  no mint record
 ```
 
-**Returning to happy.** Running `happy` again after `caution` comes back **green**, not
+**Returning to approved.** Running `approved` again after `caution` comes back **green**, not
 stuck caution. That is the `flat_history` clear in the Ingest upsert doing its work:
 the reserve node now persists across runs, so without an explicit reset to `[]` the
 flat windows written by `por_flat` would still be attached and Cover would keep
-reading caution on a healthy reserve. Verified in sequence - happy, caution, unknown,
-happy - with the final run green.
+reading caution on a healthy reserve. Verified in sequence - approved, caution, unknown,
+approved - with the final run green.
 
 > **Known deviation - AC 6's first clause.** Prompt 13 asks for `Freshness unknown` on
 > this path, but Prompt 5 specifies Freshness *"looks at clocks only"* and goes
@@ -309,7 +309,7 @@ serves `http://localhost:3000` with the expected server-rendered content - inclu
 `Counsel is blind until three stamps exist.` in the zero-stamp state, and no
 `ExplorerLink` before a mint. What has **not** been verified is anything requiring a
 browser session: graph node positions holding still across a refresh, badge colours
-matching the last path run, and the Happy → Mint click-through.
+matching the last path run, and the Approved → Mint click-through.
 
 Operator steps to close it:
 
@@ -319,7 +319,7 @@ npm install
 npm run dev            # http://localhost:3000, with `jac run main.jac` up on :8000
 ```
 
-Then: click **Happy**, confirm three green badges and an enabled
+Then: click **Approved**, confirm three green badges and an enabled
 `Mint (justified: 250000.00)`; click **Mint** and confirm the refusal is displayed
 (hard-coded zero recipient - see above) rather than a silent no-op; refresh and
 confirm the graph nodes do not move; click **Caution** and **Unknown** and confirm the

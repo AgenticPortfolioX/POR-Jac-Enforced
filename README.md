@@ -202,7 +202,7 @@ sequenceDiagram
     G-->>UI: mint min(requested, justified) - or refuse, writing nothing
 ```
 
-| | **Happy** | **Caution** | **Unknown** |
+| | **Approved** | **Caution** | **Unknown** |
 |---|---|---|---|
 | Fixture | `por_live` | `por_flat` + `price_live` | `child_missing` |
 | Scenario | healthy reserve | flat reserve **while price moved** | the layer beneath is gone |
@@ -242,7 +242,7 @@ Our first `Ingest` used the obvious re-runnable pattern - delete the old edges, 
 
 The cause is a real property of Jac 0.37. `DemoControl` spawns `Ingest`, `Freshness`, `Cover` and `Auditor` as **siblings from one frame**, and each child's commit re-writes the parent's edge set from its own snapshot. So a sibling's `del [edge …]` is silently lost while its attachment is not. Delete-then-create degrades to append-only.
 
-It was not merely untidy. `Freshness` reads the **oldest** surviving observation - so once the accumulated graph aged past `max_price_age_seconds`, the happy path reported 🔴 **red on an asset that had just been refreshed**. A false negative, on a system whose entire claim is that a green means green.
+It was not merely untidy. `Freshness` reads the **oldest** surviving observation - so once the accumulated graph aged past `max_price_age_seconds`, the approved path reported 🔴 **red on an asset that had just been refreshed**. A false negative, on a system whose entire claim is that a green means green.
 
 The fix is **upsert in place**: attach only when no edge exists, otherwise mutate the existing node's fields. A mutation has no edge to lose, so the invariant holds regardless of sibling count or commit order. The same pattern holds the one-stamp-per-walker invariant.
 
@@ -266,19 +266,19 @@ $ jac test -d jac/tests
 17 passed in 15.66s
 ```
 
-The regression guard is `test_re_ingest_does_not_accumulate_edges` - three happy runs against one asset, asserting exactly one of each observation and exactly three green stamps. `test_stepwise_walk_matches_demo_control` pins the UI's four-request walk to the same verdicts, so the demo cannot drift from the CLI.
+The regression guard is `test_re_ingest_does_not_accumulate_edges` - three approved runs against one asset, asserting exactly one of each observation and exactly three green stamps. `test_stepwise_walk_matches_demo_control` pins the UI's four-request walk to the same verdicts, so the demo cannot drift from the CLI.
 
-**The accumulation fix, over HTTP on a single asset.** Five consecutive runs - including happy *twice on the same asset*, which is the regression test:
+**The accumulation fix, over HTTP on a single asset.** Five consecutive runs - including approved *twice on the same asset*, which is the regression test:
 
 | Run | `HasPrice` | `HasReserve` | `DependsOn` | `HasLiability` | `StampedBy` | Stamps |
 |---|---|---|---|---|---|---|
-| happy #1 | 1 | 1 | 1 | 1 | 3 | 🟢🟢🟢 |
-| **happy #2** *(same asset)* | **1** | **1** | **1** | **1** | **3** | 🟢🟢🟢 |
+| approved #1 | 1 | 1 | 1 | 1 | 3 | 🟢🟢🟢 |
+| **approved #2** *(same asset)* | **1** | **1** | **1** | **1** | **3** | 🟢🟢🟢 |
 | caution | 1 | 1 | 1 | 1 | 3 | 🟢🟡🟡 |
 | unknown | 1 | 1 | 1 | 1 | 3 | 🟢🔴🔴 |
-| happy #3 | 1 | 1 | 1 | 1 | 3 | 🟢🟢🟢 |
+| approved #3 | 1 | 1 | 1 | 1 | 3 | 🟢🟢🟢 |
 
-Before the fix this column read 1, 2, 3. It is now flat at 1 across five runs - and the third happy run proves the `flat_history` clear works after the flat-reserve path.
+Before the fix this column read 1, 2, 3. It is now flat at 1 across five runs - and the third approved run proves the `flat_history` clear works after the flat-reserve path.
 
 Two consecutive `GetAsset` calls returned **identical ids for all seven nodes**, which is also the mechanism that keeps the React Flow node positions stable on screen.
 
@@ -302,7 +302,7 @@ Then seed the graph and walk a path:
 ```bash
 jac install                                    # runtime deps into .jac/venv
 .jac/venv/bin/python scripts/seed_graph.py     # prints the asset node_id
-.jac/venv/bin/python scripts/run_demo_path.py happy
+.jac/venv/bin/python scripts/run_demo_path.py approved
 .jac/venv/bin/python scripts/run_demo_path.py caution
 .jac/venv/bin/python scripts/run_demo_path.py unknown
 ```

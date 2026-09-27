@@ -50,7 +50,7 @@ export const WALK_STEPS: readonly WalkStep[] = [
 
 /** The fixture and child state that define each demo path. */
 export const PATH_CONFIG = {
-  happy: { fixture: 'por_live', childPresent: true },
+  approved: { fixture: 'por_live', childPresent: true },
   caution: { fixture: 'por_flat', childPresent: true },
   unknown: { fixture: 'por_live', childPresent: false },
 } as const;

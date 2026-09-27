@@ -6,7 +6,7 @@ import from jac.walkers.act { Act }
 import from jac.walkers.counsel { Counsel }
 
 walker:pub DemoOrchestrator {
-    has path: str = "happy";
+    has path: str = "approved";
     has asset_id: str = "asset-1";
     has requested_amount: float = 1000000.0;
     has recipient: str = "0x0000000000000000000000000000000000000000";

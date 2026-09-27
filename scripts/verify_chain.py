@@ -240,8 +240,8 @@ def main() -> int:
     print(f"  PoRToken totalSupply  : {supply_before} wei")
     print(f"  last attestation id   : {next_id_before}")
 
-    # --- 7.4 happy path ------------------------------------------------------
-    print("\n[4/9] Happy path on a fresh asset")
+    # --- 7.4 approved path ------------------------------------------------------
+    print("\n[4/9] Approved path on a fresh asset")
     try:
         rt.reset_store()
         log_path = "/tmp/porje_verify_chain_server.log"
@@ -252,8 +252,8 @@ def main() -> int:
             rt.stop_server(proc)
             return 1
         node_id = rt.seed_asset()
-        rt.require_ok(rt.post_walker("DemoControl", {"path": "happy"}, node_id),
-                      "DemoControl(happy)")
+        rt.require_ok(rt.post_walker("DemoControl", {"path": "approved"}, node_id),
+                      "DemoControl(approved)")
         payload = rt.get_asset(node_id)
     except Exception as exc:
         print(f"  {FAIL}: {type(exc).__name__}: {exc}")
@@ -266,7 +266,7 @@ def main() -> int:
     covers = [e for e in payload["edges"]
               if e["type"] == "StampedBy" and e["target"]["walker_name"] == "Cover"]
     if not covers:
-        print(f"  {FAIL}: no Cover stamp after the happy path")
+        print(f"  {FAIL}: no Cover stamp after the approved path")
         rt.stop_server(proc)
         return 1
     justified = float(covers[0]["target"]["payload"]["justified_amount"])
@@ -292,7 +292,7 @@ def main() -> int:
 
     if not report.get("minted"):
         print(f"  {FAIL}: Act refused: {report.get('reason')!r}")
-        failures.append(f"Act refused the happy path: {report.get('reason')!r}")
+        failures.append(f"Act refused the approved path: {report.get('reason')!r}")
         rt.stop_server(proc)
         _summary(chain_label, failures, findings, verdict, None)
         return 1

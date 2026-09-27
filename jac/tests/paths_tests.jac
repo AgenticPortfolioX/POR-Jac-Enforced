@@ -8,9 +8,9 @@ import from jac.walkers.cover { Cover }
 import from jac.walkers.auditor { Auditor }
 import from jac.tests.spy_bridge { spy_install, spy_uninstall, spy_reset }
 
-test "test_happy_path_stamps_are_green" {
+test "test_approved_path_stamps_are_green" {
     asset = Asset(
-        id="test-path-happy",
+        id="test-path-approved",
         name="PathTest1",
         symbol="PTH1",
         chain="test",
@@ -20,7 +20,7 @@ test "test_happy_path_stamps_are_green" {
     );
     root ++> asset;
 
-    asset spawn DemoControl(path="happy");
+    asset spawn DemoControl(path="approved");
 
     stamps = [asset ->:StampedBy:->];
     assert len(stamps) == 3;
@@ -87,10 +87,10 @@ test "test_re_ingest_does_not_accumulate_edges" {
     );
     root ++> asset;
 
-    # Three consecutive happy runs against the SAME asset.
-    asset spawn DemoControl(path="happy");
-    asset spawn DemoControl(path="happy");
-    asset spawn DemoControl(path="happy");
+    # Three consecutive approved runs against the SAME asset.
+    asset spawn DemoControl(path="approved");
+    asset spawn DemoControl(path="approved");
+    asset spawn DemoControl(path="approved");
 
     # Exactly one observation of each type survives - upsert, not append.
     assert len([asset ->:HasPrice:->]) == 1;
@@ -142,7 +142,7 @@ test "test_stepwise_walk_matches_demo_control" {
     );
     root ++> onestep;
 
-    onestep spawn DemoControl(path="happy");
+    onestep spawn DemoControl(path="approved");
 
     for name in ["Freshness", "Cover", "Auditor"] {
         a = [s for s in [stepwise ->:StampedBy:->] if str(s.walker_name) == name];
