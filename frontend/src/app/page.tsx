@@ -222,21 +222,27 @@ export default function HomePage() {
                 </div>
               </div>
             ) : walkLog.length > 0 ? (
-              <div className="flex items-start gap-3">
-                <span className={allGreen ? "text-cl-green font-bold mt-0.5" : "text-cl-red font-bold mt-0.5"}>■</span>
-                <div className="flex flex-col gap-1 w-full">
-                  <div className="flex justify-between items-center w-full">
-                    <span className="text-white font-bold uppercase">Execution Complete</span>
-                    <span className={`uppercase text-[9px] font-bold tracking-widest px-2 py-0.5 rounded ${allGreen ? 'bg-cl-green/10 text-cl-green' : 'bg-cl-red/10 text-cl-red'}`}>
-                      {allGreen ? 'APPROVED' : 'REJECTED'}
+              <div className="flex items-center justify-between gap-4 w-full h-full">
+                <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                  <span className={allGreen ? "text-cl-green font-bold mt-0.5 text-xs shrink-0" : "text-cl-red font-bold mt-0.5 text-xs shrink-0"}>■</span>
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <span className="text-white font-bold uppercase text-[12px] tracking-wide">Execution Complete</span>
+                    <span className="text-cl-muted text-[11px] leading-snug">
+                      {allGreen ? 'All stamps are GREEN. The graph permits minting.' : 'One or more stamps failed the policy graph.'}
                     </span>
+                    {!allGreen && auditorReasons.length > 0 && (
+                      <span className="text-cl-caution mt-0.5 text-[10px]">Audit Findings: {auditorReasons.join(', ')}</span>
+                    )}
                   </div>
-                  <span className="text-cl-muted">
-                    Decision: {allGreen ? 'All stamps are GREEN. The graph permits minting.' : 'One or more stamps failed the policy graph.'}
-                  </span>
-                  {!allGreen && auditorReasons.length > 0 && (
-                    <span className="text-cl-caution mt-1">Audit Findings: {auditorReasons.join(', ')}</span>
-                  )}
+                </div>
+                <div className="shrink-0 flex items-center justify-center">
+                  <div className={`uppercase text-[28px] md:text-[34px] font-black tracking-widest px-6 py-2 rounded-lg border leading-none select-none ${
+                    allGreen 
+                      ? 'bg-cl-green/15 text-cl-green border-cl-green/50 shadow-[0_0_20px_rgba(5,196,107,0.3)] animate-pulse' 
+                      : 'bg-cl-red/15 text-cl-red border-cl-red/50 shadow-[0_0_20px_rgba(255,94,87,0.3)]'
+                  }`}>
+                    {allGreen ? 'APPROVED' : 'REJECTED'}
+                  </div>
                 </div>
               </div>
             ) : (
