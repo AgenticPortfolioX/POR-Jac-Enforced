@@ -30,21 +30,17 @@ and the raw output. Do not attempt fixes.
 
 ## Part 2: Terminal Setup Before You Present
 
-You will need **two separate terminal tabs** open in your code editor (like VS Code or Cursor).
+You will need **two separate terminals** split top and bottom in your code editor.
 
-**How to open two terminals:**
-1. Open your terminal at the bottom of the screen (`Ctrl + ~` or `View > Terminal`). This is **Terminal 1**.
-2. Click the **`+` (plus) icon** in the top right corner of the terminal panel to open a new tab. This is **Terminal 2**.
-
-**Terminal 1 (Backend - The Jac Server)**
-Copy and paste these commands into the first terminal:
+**Terminal 1 (Top / Backend - The Jac Server)**
+Copy and paste these commands into the top terminal:
 ```powershell
 cd C:\Users\jmgra\antigravityagents\.agents\workflows\POR_Jac_Enforced
 $env:PORJE_TRACE=1
 ```
 
-**Terminal 2 (Frontend - The React UI)**
-Click over to your second terminal tab, then copy and paste this command:
+**Terminal 2 (Bottom / Frontend - The React UI)**
+Click into your bottom terminal, then copy and paste this command:
 ```powershell
 cd C:\Users\jmgra\antigravityagents\.agents\workflows\POR_Jac_Enforced\frontend
 ```
