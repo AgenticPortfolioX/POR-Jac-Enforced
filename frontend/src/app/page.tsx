@@ -250,8 +250,7 @@ export default function HomePage() {
           {/* Counsel Walker in Header */}
           <div className="w-full md:w-1/4">
             {(() => {
-              const isCounselComplete = walkLog.some((log) => log.walker === 'Act');
-              const counselColor = !isCounselComplete ? null : (allGreen ? 'green' : (stamps['Auditor']?.color === 'red' || stamps['Cover']?.color === 'red' ? 'red' : 'caution'));
+              const counselColor = !narration ? null : (allGreen ? 'green' : (stamps['Auditor']?.color === 'red' || stamps['Cover']?.color === 'red' ? 'red' : 'caution'));
               
               // Trim narration
               let shortNarration = narration;
