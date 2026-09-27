@@ -163,6 +163,45 @@ Two consequences worth stating plainly:
 
 One call — `DemoControl(path=…)` — seeds the fixtures and runs all three approvers. The printer stays a deliberate, separate act.
 
+### You can watch it happen
+
+`DemoControl` runs all four walkers inside a single frame. That is the right shape for a CLI and for tests, and completely invisible on screen. So the UI does not use it: it sends **four requests** — `Ingest`, `Freshness`, `Cover`, `Auditor` — and refreshes the graph between each.
+
+What that buys you, per click:
+
+- the **edges the current walker traverses animate** in green while it runs;
+- its **stamp node takes a green ring** as it lands, then settles;
+- a **Walk strip** names the walker on screen, its intent, and the verdict it returned;
+- and because the walkers **upsert in place**, you can watch a stamp *change colour without the node moving* — Cover goes 🟢 → 🟡 → 🔴 across three paths at the same coordinates.
+
+The equivalence is asserted, not assumed: `test_stepwise_walk_matches_demo_control` fails if the four-request walk and the one-call path ever disagree on a colour or a graph shape.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant UI
+    participant G as Jac graph
+
+    UI->>G: Ingest
+    Note over G: PriceObservation · ReserveAttestation<br/>ChildClaim · Liability — upserted in place
+    G-->>UI: edges animate, nodes appear
+
+    UI->>G: Freshness
+    Note over G: reads only the clocks
+    G-->>UI: Stamp · green — node ringed
+
+    UI->>G: Cover
+    Note over G: coverage maths
+    G-->>UI: Stamp · green/yellow/red + justified_amount
+
+    UI->>G: Auditor
+    Note over G: attacks the claim
+    G-->>UI: Stamp · 4 findings, always
+
+    UI->>G: Act — separate, deliberate
+    G-->>UI: mint min(requested, justified) — or refuse, writing nothing
+```
+
 | | **Happy** | **Yellow** | **Unknown** |
 |---|---|---|---|
 | Fixture | `por_live` | `por_flat` + `price_live` | `child_missing` |
@@ -218,17 +257,16 @@ Full write-up: [docs/architecture.md](docs/architecture.md#spawned-sibling-commi
 Everything below was run on **Jac 0.37.23** against a dropped-and-reseeded Postgres store.
 
 ```
-$ jac check jac/main.jac
-jac/main.jac ok [100%]
-============================== 1 passed in 1.12s ===============================
+$ jac check jac/
+============================== 24 passed in 5.44s ==============================
 
 $ jac test -d jac/tests
-...............                                                          [100%]
+.................                                                        [100%]
 
-15 passed in 6.24s
+17 passed in 15.66s
 ```
 
-The regression guard is `test_re_ingest_does_not_accumulate_edges` — three happy runs against one asset, asserting exactly one of each observation and exactly three green stamps.
+The regression guard is `test_re_ingest_does_not_accumulate_edges` — three happy runs against one asset, asserting exactly one of each observation and exactly three green stamps. `test_stepwise_walk_matches_demo_control` pins the UI's four-request walk to the same verdicts, so the demo cannot drift from the CLI.
 
 **The accumulation fix, over HTTP on a single asset.** Five consecutive runs — including happy *twice on the same asset*, which is the regression test:
 
@@ -292,7 +330,7 @@ jac run main.jac --no-client
 | `jac/walkers/` | Ten walkers — Ingest, Freshness, Cover, Auditor, Act, Counsel, DemoControl, SeedAsset, GetAsset, GetStamps |
 | `jac/schemas/` | Node and edge archetypes — the vocabulary of the claim graph |
 | `jac/lib/` | `policy.jac` (every threshold in one dict), `colors.jac`, `fixtures.jac`, `chainlink.jac`, `utils.jac` |
-| `jac/tests/` | 15 tests, including the EVM spy that proves the mint decision without a network |
+| `jac/tests/` | 17 tests, including the EVM spy that proves the mint decision without a network |
 | `contracts/` | `PoRToken` (mint locked to `Act`) and `PoRAttestation` (ERC-721 durable record) |
 | `frontend/` | Next.js demo surface — React Flow graph, stamp badges, mint gate |
 | `fixtures/` | Schema-faithful JSON inputs, each stamped `"label": "fixture"` |
@@ -304,7 +342,7 @@ Every policy threshold lives in one place. Nothing hard-codes a number — [docs
 
 ## Status
 
-**Verified:** the type layer (`jac check`, 0 errors across 24 files), the full 15-test suite including the mint-decision spy tests, all three demo paths end to end over HTTP, and the one-of-each idempotence invariant across repeated runs.
+**Verified:** the type layer (`jac check`, 0 errors across 24 files), the full 17-test suite including the mint-decision spy tests, all three demo paths end to end over HTTP — walked one walker at a time, the way the UI does it — and the one-of-each idempotence invariant across repeated runs.
 
 **Not yet verified — the chain boundary.** `Act` reaches the mint and **fails closed** with `The private key must be exactly 32 bytes long, instead of 0 bytes.` The deployer key and contract addresses in this environment's `.env` are empty (the file carries duplicate keys, and the blank second copy wins), and there is no local anvil or built `artifacts/` fallback. The decision to mint is proven by the spy tests; the transaction itself needs funded credentials. We left it refusing rather than adding a dry-run path, because a manufactured success signal is worse than an honest refusal.
 

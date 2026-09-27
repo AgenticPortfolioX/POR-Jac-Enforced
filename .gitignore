@@ -76,6 +76,9 @@ frontend/out/
 .next/
 out/
 .turbo/
+# TypeScript incremental build state — a local artifact that changes on every
+# type-check and would otherwise churn the tree on each run.
+*.tsbuildinfo
 
 # ==========================================
 # Smart Contract & Solidity Artifacts

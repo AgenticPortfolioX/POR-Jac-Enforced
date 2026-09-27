@@ -1,5 +1,4 @@
 import from jac.schemas.nodes { Asset }
-import from jac.schemas.edges { HasReserve, DependsOn }
 import from jac.walkers.ingest { Ingest }
 import from jac.walkers.freshness { Freshness }
 import from jac.walkers.cover { Cover }
@@ -16,13 +15,7 @@ walker:pub DemoControl {
         } elif self.path == "yellow" {
             here spawn Ingest(use_fixture=True, fixture_name="por_flat");
         } elif self.path == "unknown" {
-            here spawn Ingest(use_fixture=True, fixture_name="por_live");
-            reserves = [here ->:HasReserve:->];
-            if len(reserves) > 0 {
-                for child in [reserves[0] ->:DependsOn:->] {
-                    child.present = False;
-                }
-            }
+            here spawn Ingest(use_fixture=True, fixture_name="por_live", child_present=False);
         } elif self.path == "live" {
             here spawn Ingest(use_fixture=False);
         } else {

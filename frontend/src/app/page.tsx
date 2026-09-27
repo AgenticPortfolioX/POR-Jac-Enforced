@@ -3,7 +3,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Node, Edge } from 'reactflow';
 import { fetchGraph, runWalker, seedAsset } from '@/lib/jacClient';
-import { ASSET_ID, WALKER_ORDER } from '@/lib/constants';
+import {
+  ASSET_ID,
+  WALKER_ORDER,
+  WALK_STEPS,
+  WALK_STEP_MS,
+  PATH_CONFIG,
+  type PathName,
+  type WalkStep,
+} from '@/lib/constants';
 import type { Stamp } from '@/lib/types';
 import { GraphView } from '@/components/GraphView';
 import { StampBadge } from '@/components/StampBadge';
@@ -13,6 +21,15 @@ import { PathSelector } from '@/components/PathSelector';
 import { MintButton } from '@/components/MintButton';
 import { ExplorerLink } from '@/components/ExplorerLink';
 import { PolicyCard } from '@/components/PolicyCard';
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** One completed walker in the current walk. */
+interface WalkEntry {
+  walker: string;
+  /** Absent for Ingest, which reports sources rather than a verdict. */
+  color?: string;
+}
 
 export default function HomePage() {
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -28,6 +45,9 @@ export default function HomePage() {
   // when spawned ON this node (POST /walker/{Name}/{nodeId}), so nothing in the
   // UI can read or write the graph until SeedAsset has reported it.
   const [nodeId, setNodeId] = useState<string | null>(null);
+  // The walk, made visible: which walker is on screen, and what each has said.
+  const [activeStep, setActiveStep] = useState<WalkStep | null>(null);
+  const [walkLog, setWalkLog] = useState<WalkEntry[]>([]);
 
   const refresh = useCallback(async (nd: string) => {
     try {
@@ -77,19 +97,52 @@ export default function HomePage() {
   const stampsReady = WALKER_ORDER.every((w) => w in stamps);
   const justified = (stamps['Cover']?.payload?.justified_amount as number) ?? 0;
 
+  /**
+   * Walk the path one walker at a time, refreshing and re-highlighting between
+   * each so the traversal is visible rather than instantaneous.
+   *
+   * DemoControl would run all four in a single server-side frame — same result,
+   * nothing to watch. Here each walker is its own request against the same
+   * asset, which also means a stamp can be seen flipping colour in place.
+   */
   const runPath = async (path: string) => {
     setPending(true);
     setNarration(null);
     setTxHash(null);
     setError(null);
+    setWalkLog([]);
     try {
-      // Seed asset first (idempotent) — returns the node id DemoControl needs.
+      // Seed asset first (idempotent) — returns the node id the walkers need.
       const nd = await ensureSeeded();
-      await runWalker('DemoControl', { path, asset_id: ASSET_ID }, nd);
-      await refresh(nd);
+      const cfg = PATH_CONFIG[path as PathName] ?? PATH_CONFIG.happy;
+
+      for (const step of WALK_STEPS) {
+        setActiveStep(step);
+        const body =
+          step.walker === 'Ingest'
+            ? {
+                use_fixture: true,
+                fixture_name: cfg.fixture,
+                child_present: cfg.childPresent,
+              }
+            : {};
+        const report = await runWalker<Record<string, unknown>>(
+          step.walker,
+          body,
+          nd
+        );
+        await refresh(nd);
+        setWalkLog((log) => [
+          ...log,
+          { walker: step.walker, color: report?.color as string | undefined },
+        ]);
+        await sleep(WALK_STEP_MS);
+      }
+      setActiveStep(null);
     } catch (e) {
       setError(String(e));
     } finally {
+      setActiveStep(null);
       setPending(false);
     }
   };
@@ -105,7 +158,7 @@ export default function HomePage() {
         {
           asset_id: ASSET_ID,
           requested_amount: requested,
-          recipient: '0x0000000000000000000000000000000000000000',
+          recipient: '0x748ABdeF0775132E8F941e1513152D5eb02D3a4B',
           token_address: process.env.NEXT_PUBLIC_POR_TOKEN_ADDRESS ?? '',
           attestation_address:
             process.env.NEXT_PUBLIC_POR_ATTESTATION_ADDRESS ?? '',
@@ -156,11 +209,64 @@ export default function HomePage() {
         <PathSelector onSelect={runPath} disabled={pending} />
       </section>
 
+      {/* Walk — the traversal, made visible */}
+      <section>
+        <div className="mb-2 flex items-baseline gap-3">
+          <h2 className="text-xs uppercase tracking-wider text-neutral-500">
+            Walk
+          </h2>
+          <span className="text-xs text-neutral-400">
+            {activeStep
+              ? `${activeStep.walker} — ${activeStep.intent}…`
+              : walkLog.length > 0
+                ? 'walk complete'
+                : 'pick a path to walk the claim'}
+          </span>
+        </div>
+        <ol className="flex flex-wrap gap-2">
+          {WALK_STEPS.map((s) => {
+            const entry = walkLog.find((l) => l.walker === s.walker);
+            const isActive = activeStep?.walker === s.walker;
+            const verdict = entry ? (entry.color ?? 'done') : null;
+            const tone =
+              verdict === 'green'
+                ? 'border-green-700 text-green-300'
+                : verdict === 'yellow'
+                  ? 'border-yellow-700 text-yellow-300'
+                  : verdict === 'red'
+                    ? 'border-red-700 text-red-300'
+                    : verdict === 'done'
+                      ? 'border-neutral-600 text-neutral-300'
+                      : 'border-neutral-800 text-neutral-600';
+            return (
+              <li
+                key={s.walker}
+                className={`rounded-lg border px-3 py-2 text-xs transition-colors ${tone} ${
+                  isActive ? 'ring-2 ring-green-500' : ''
+                }`}
+              >
+                <div className="font-semibold">{s.walker}</div>
+                <div className="text-neutral-500">
+                  {verdict ?? (isActive ? 'walking…' : 'queued')}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+
       {/* Policy Card */}
       <PolicyCard />
 
       {/* Graph View */}
-      <GraphView nodes={nodes} edges={edges} />
+      <GraphView
+        nodes={nodes}
+        edges={edges}
+        traverses={activeStep?.traverses ?? []}
+        activeWalker={
+          activeStep && activeStep.walker !== 'Ingest' ? activeStep.walker : null
+        }
+      />
 
       {/* Stamp Badges */}
       <section className="flex gap-3 flex-wrap">

@@ -11,6 +11,10 @@ walker:pub Ingest {
     has child_asset_id: str = "USDC";
     has use_fixture: bool = True;
     has fixture_name: str = "por_live";
+    # Lets the caller simulate a missing child attestation in one call, so the
+    # "unknown" demo path is expressible as a single Ingest — which is what lets
+    # the UI walk Ingest -> Freshness -> Cover -> Auditor as visible steps.
+    has child_present: bool = True;
 
     can run with Asset entry {
         parts = self.fixture_name.split("_");
@@ -132,7 +136,7 @@ walker:pub Ingest {
             child_node.amount = float(child_data.get("amount", 0.0));
             child_node.timestamp = int(child_data.get("timestamp", now_unix()));
             child_node.source = str(child_data.get("source", "fixture"));
-            child_node.present = bool(child_data.get("present", True));
+            child_node.present = bool(child_data.get("present", True)) and self.child_present;
             child_node.provenance = str(child_data.get("provenance", ""));
         } else {
             child_node = ChildClaim(
@@ -140,7 +144,7 @@ walker:pub Ingest {
                 amount=float(child_data.get("amount", 0.0)),
                 timestamp=int(child_data.get("timestamp", now_unix())),
                 source=str(child_data.get("source", "fixture")),
-                present=bool(child_data.get("present", True)),
+                present=bool(child_data.get("present", True)) and self.child_present,
                 provenance=str(child_data.get("provenance", ""))
             );
             reserve_node +>: DependsOn() :+> child_node;
