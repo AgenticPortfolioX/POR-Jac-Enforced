@@ -10,52 +10,60 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-const HOT_STROKE = '#22c55e';
-const HOT_RING = '0 0 0 2px #22c55e, 0 0 18px rgba(34,197,94,0.55)';
+const HOT_STROKE = '#0847F7';
+const HOT_RING = '0 0 0 2px #0847F7';
 
-function NodeShell({ data }: NodeProps) {
+function NodeShell({ data, className = '' }: NodeProps & { className?: string }) {
   return (
-    <div className="rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-xs text-neutral-200 shadow-lg max-w-[180px]">
-      <div className="font-semibold text-neutral-100 truncate">{data.label}</div>
+    <div className={`hex-cut p-4 text-xs text-cl-primary shadow-lg max-w-[200px] bg-cl-surface1 border border-cl-gray/10 ${className}`}>
+      <div className="font-semibold text-white tracking-tight truncate leading-snug">{data.label}</div>
       {data.source && (
-        <div className="text-neutral-500 mt-1">src: {data.source}</div>
+        <div className="text-cl-muted mt-1 text-[10px] uppercase tracking-wider">src: {data.source}</div>
       )}
       {data.detail && (
-        <div className="text-neutral-400 mt-1">{data.detail}</div>
+        <div className="text-cl-muted mt-1 leading-tight">{data.detail}</div>
       )}
     </div>
   );
 }
 
 const nodeTypes = {
-  asset: NodeShell,
+  asset: (props: NodeProps) => (
+    <NodeShell
+      {...props}
+      className="bg-cl-blue border-transparent"
+    />
+  ),
   priceobservation: (props: NodeProps) => (
     <NodeShell
       {...props}
+      className="border-cl-wash border-[1.5px] bg-cl-surface2"
       data={{
         ...props.data,
-        label: `Chainlink Price: $${props.data.value ?? '?'}`,
-        detail: `Source: ${props.data.source ?? '?'}`,
+        label: `Price: $${props.data.value ?? '?'}`,
+        detail: `Round: ${props.data.round_id ?? '?'}`,
       }}
     />
   ),
   reserveattestation: (props: NodeProps) => (
     <NodeShell
       {...props}
+      className="border-cl-blue border-[1.5px] bg-cl-surface2"
       data={{
         ...props.data,
-        label: `Proven Reserves: ${props.data.amount ?? '?'}`,
-        detail: `Source: ${props.data.source ?? '?'}`,
+        label: `Reserves: ${props.data.amount ?? '?'}`,
+        detail: `Round: ${props.data.round_id ?? '?'}`,
       }}
     />
   ),
   childclaim: (props: NodeProps) => (
     <NodeShell
       {...props}
+      className="text-[10px] p-2 bg-cl-surface1 border-cl-gray/20"
       data={{
         ...props.data,
-        label: `Child Attestation`,
-        detail: `ID: ${props.data.asset_id ?? '?'} | Present: ${String(props.data.present ?? '?')}`,
+        label: `Child Claim`,
+        detail: `${props.data.asset_id ?? '?'} | ${props.data.present ? 'Present' : 'Missing'}`,
       }}
     />
   ),
@@ -84,11 +92,17 @@ const nodeTypes = {
     return (
       <NodeShell
         {...props}
+        className={
+          props.data.color === 'green' ? 'border-cl-green border-[1.5px]' :
+          props.data.color === 'yellow' ? 'border-cl-yellow border-[1.5px]' :
+          props.data.color === 'red' ? 'border-cl-red border-[1.5px]' :
+          'border-cl-unknown border-[1.5px]'
+        }
         data={{
           ...props.data,
-          label: `${props.data.walker_name ?? '?'} Decision: ${props.data.color?.toUpperCase() ?? 'PENDING'}`,
+          label: `${props.data.walker_name ?? '?'} Decision`,
           detail: showAmount
-            ? `Approved Amount: ${Number(justified).toLocaleString()} units`
+            ? `Approved: ${Number(justified).toLocaleString()}`
             : roleDescription,
         }}
       />
@@ -125,15 +139,22 @@ export function GraphView({
     () =>
       edges.map((e) => {
         const hot = traverses.includes(String(e.label ?? ''));
-        if (!hot) return e;
+        const isVisiting = activeWalker != null && activeWalker !== 'Ingest';
+        if (!hot) return {
+          ...e,
+          style: { stroke: '#0847F7', strokeWidth: 1.5, opacity: 0.55 },
+          labelStyle: { fill: '#F5F7FA', fontWeight: 500, fontSize: 10 },
+          labelBgStyle: { fill: '#1A2030', fillOpacity: 0.8 },
+        };
         return {
           ...e,
-          animated: true,
-          style: { stroke: HOT_STROKE, strokeWidth: 2.5 },
-          labelStyle: { fill: HOT_STROKE, fontWeight: 600 },
+          animated: isVisiting,
+          style: { stroke: HOT_STROKE, strokeWidth: 2.5, opacity: 1 },
+          labelStyle: { fill: '#DCEBFF', fontWeight: 600, fontSize: 11 },
+          labelBgStyle: { fill: '#0847F7', fillOpacity: 0.9, rx: 4, ry: 4 },
         };
       }),
-    [edges, traverses]
+    [edges, traverses, activeWalker]
   );
 
   const decoratedNodes = useMemo(() => {
@@ -142,12 +163,12 @@ export function GraphView({
       const isActiveStamp =
         n.type === 'stamp' && n.data?.walker_name === activeWalker;
       if (!isActiveStamp) return n;
-      return { ...n, style: { ...n.style, boxShadow: HOT_RING, borderRadius: 8 } };
+      return { ...n, className: 'animate-pulse-ring', style: { ...n.style, boxShadow: HOT_RING } };
     });
   }, [nodes, activeWalker]);
 
   return (
-    <div className="h-[520px] rounded-lg border border-neutral-800 bg-neutral-950">
+    <div className="h-[520px] rounded-[12px] border border-cl-gray/10 bg-cl-bg overflow-hidden relative">
       <ReactFlow
         nodes={decoratedNodes}
         edges={decoratedEdges}
@@ -155,8 +176,8 @@ export function GraphView({
         fitView
         proOptions={{ hideAttribution: true }}
       >
-        <Background color="#374151" gap={20} />
-        <Controls className="[&>button]:bg-neutral-800 [&>button]:border-neutral-700 [&>button]:text-neutral-300" />
+        <Background color="rgba(245,247,250,0.04)" gap={24} size={1.5} />
+        <Controls className="[&>button]:bg-cl-surface2 [&>button]:border-cl-gray/10 [&>button]:text-cl-primary" />
       </ReactFlow>
     </div>
   );

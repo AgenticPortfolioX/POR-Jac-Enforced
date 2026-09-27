@@ -10,15 +10,15 @@ const POLICY = {
 
 export function PolicyCard() {
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900 p-4">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-neutral-400">
+    <div className="rounded-[12px] border border-cl-gray/10 bg-cl-surface1 p-4 mb-6">
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-cl-muted px-1">
         Active Policy
       </h2>
-      <ul className="space-y-1">
+      <ul className="space-y-1.5 px-1">
         {Object.entries(POLICY).map(([key, value]) => (
-          <li key={key} className="flex justify-between text-xs">
-            <span className="text-neutral-400">{key.replace(/_/g, ' ')}</span>
-            <span className="font-mono text-neutral-200">{String(value)}</span>
+          <li key={key} className="flex justify-between items-center text-xs border-b border-cl-gray/5 pb-1 last:border-0 last:pb-0">
+            <span className="text-cl-muted capitalize">{key.replace(/_/g, ' ')}</span>
+            <span className="font-mono text-cl-primary bg-cl-surface2 px-1.5 py-0.5 rounded text-[10px]">{String(value)}</span>
           </li>
         ))}
       </ul>

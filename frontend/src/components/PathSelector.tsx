@@ -12,17 +12,17 @@ const PATHS = [
 
 export function PathSelector({ onSelect, disabled }: PathSelectorProps) {
   return (
-    <div className="flex gap-3 flex-wrap">
+    <div className="flex flex-col gap-2">
       {PATHS.map((p) => (
         <button
           key={p.key}
           id={`path-${p.key}`}
           onClick={() => onSelect(p.key)}
           disabled={disabled}
-          className="flex flex-col items-start rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-3 hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+          className="flex justify-between items-center rounded-[8px] border border-cl-gray/10 bg-cl-surface2 px-4 py-3 hover:bg-cl-gray/5 hover:border-cl-gray/20 disabled:cursor-not-allowed disabled:opacity-50 transition-colors w-full text-left"
         >
-          <span className="font-semibold text-sm text-neutral-100">{p.label}</span>
-          <span className="text-xs text-neutral-400 mt-0.5">{p.desc}</span>
+          <span className="font-semibold text-sm text-cl-primary">{p.label}</span>
+          <span className="text-xs text-cl-muted">{p.desc}</span>
         </button>
       ))}
     </div>

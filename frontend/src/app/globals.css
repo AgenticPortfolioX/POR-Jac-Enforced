@@ -4,8 +4,23 @@
 
 /* Custom PoRJE dark theme enhancements */
 :root {
-  --color-green: #16a34a;
-  --color-yellow: #ca8a04;
-  --color-red: #dc2626;
-  --color-unknown: #525252;
+  --color-green: #05C46B;
+  --color-yellow: #FFDD59;
+  --color-red: #FF5E57;
+  --color-unknown: #6D7380;
+}
+
+@layer utilities {
+  .hex-cut {
+    clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+  }
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(220, 235, 255, 0.7); }
+  100% { box-shadow: 0 0 0 10px rgba(220, 235, 255, 0); }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1s cubic-bezier(0.24, 0, 0.38, 1) forwards;
 }

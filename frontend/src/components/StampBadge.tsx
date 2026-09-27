@@ -1,10 +1,17 @@
 type Color = 'green' | 'yellow' | 'red' | 'unknown';
 
 const colorMap: Record<Color, string> = {
-  green: 'bg-green-600 text-white',
-  yellow: 'bg-yellow-500 text-black',
-  red: 'bg-red-600 text-white',
-  unknown: 'bg-neutral-600 text-neutral-300',
+  green: 'border-cl-green text-cl-green bg-cl-green/10',
+  yellow: 'border-cl-yellow text-cl-yellow bg-cl-yellow/10',
+  red: 'border-cl-red text-cl-red bg-cl-red/10',
+  unknown: 'border-cl-unknown text-cl-unknown bg-cl-unknown/10',
+};
+
+const leftBarMap: Record<Color, string> = {
+  green: 'bg-cl-green',
+  yellow: 'bg-cl-yellow',
+  red: 'bg-cl-red',
+  unknown: 'bg-cl-unknown',
 };
 
 interface StampBadgeProps {
@@ -13,13 +20,15 @@ interface StampBadgeProps {
 }
 
 export function StampBadge({ walker, color }: StampBadgeProps) {
-  const pill = color ? colorMap[color] : 'bg-neutral-800 text-neutral-500';
+  const borderPill = color ? colorMap[color] : 'border-cl-gray/10 text-cl-muted';
+  const leftBar = color ? leftBarMap[color] : 'bg-transparent';
   const label = color ?? 'pending';
 
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-neutral-800 px-4 py-2">
-      <span className="text-sm font-medium text-neutral-300">{walker}</span>
-      <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${pill}`}>
+    <div className={`relative flex flex-col justify-center rounded-[12px] border bg-cl-surface1 px-5 py-3 overflow-hidden min-w-[180px] transition-colors duration-300 ${color ? 'border-cl-gray/20' : 'border-cl-gray/10'}`}>
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${leftBar}`} />
+      <span className="text-xs uppercase tracking-wider text-cl-muted mb-1 font-semibold">{walker}</span>
+      <span className={`self-start rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${borderPill}`}>
         {label}
       </span>
     </div>

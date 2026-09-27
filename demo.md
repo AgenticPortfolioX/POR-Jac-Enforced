@@ -1,3 +1,7 @@
+---
+description: 
+---
+
 # PoRJE Demo, Full Package
 
 ---
@@ -41,7 +45,7 @@ cd C:\Users\jmgra\antigravityagents\.agents\workflows\POR_Jac_Enforced\frontend
 
 Nothing runs yet. You start the two servers as Command 1 and Command 2 once you begin.
 
-Browser: open `http://localhost:3000` in one tab and `https://sepolia.etherscan.io/address/0x77a3A9fCe83c715AB8020fe72e94669C3298b321` in a second tab. Keep them side by side.
+Browser: open http://localhost:3000 in one tab and https://sepolia.etherscan.io/address/0x77a3A9fCe83c715AB8020fe72e94669C3298b321` in a second tab. Keep them side by side.
 
 ---
 

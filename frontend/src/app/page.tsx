@@ -189,134 +189,139 @@ export default function HomePage() {
   };
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 space-y-6">
-      {/* Header */}
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight text-white">
-          Proof of Reserve,{' '}
-          <span className="text-green-500">Jac Enforced</span>
-        </h1>
-        <p className="mt-1 text-sm text-neutral-400">
-          PoR attests. Jac enforces. The printer is the proof.
-        </p>
-      </header>
+    <main className="min-h-screen bg-cl-bg text-cl-primary p-6 lg:p-8 font-sans">
+      <div className="mx-auto max-w-[1400px] space-y-6">
+        
+        {/* Header */}
+        <header className="flex flex-col md:flex-row md:items-end justify-between border-b border-cl-gray/10 pb-4">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.2em] text-cl-muted mb-1 font-semibold">Chainlink attestation, Jac enforcement</div>
+            <h1 className="text-2xl font-normal tracking-tight text-white">
+              Proof of Reserve, Jac Enforced
+            </h1>
+          </div>
+        </header>
 
-      {/* Path Selector */}
-      <section>
-        <h2 className="mb-3 text-xs uppercase tracking-wider text-neutral-500">
-          Demo Path
-        </h2>
-        <PathSelector onSelect={runPath} disabled={pending} />
-      </section>
-
-      {/* Walk - the traversal, made visible */}
-      <section>
-        <div className="mb-2 flex items-baseline gap-3">
-          <h2 className="text-xs uppercase tracking-wider text-neutral-500">
-            Walk
-          </h2>
-          <span className="text-xs text-neutral-400">
-            {activeStep
-              ? `${activeStep.walker} - ${activeStep.intent}…`
-              : walkLog.length > 0
-                ? 'walk complete'
-                : 'pick a path to walk the claim'}
-          </span>
-        </div>
-        <ol className="flex flex-wrap gap-2">
-          {WALK_STEPS.map((s) => {
-            const entry = walkLog.find((l) => l.walker === s.walker);
-            const isActive = activeStep?.walker === s.walker;
-            const verdict = entry ? (entry.color ?? 'done') : null;
-            const tone =
-              verdict === 'green'
-                ? 'border-green-700 text-green-300'
-                : verdict === 'yellow'
-                  ? 'border-yellow-700 text-yellow-300'
-                  : verdict === 'red'
-                    ? 'border-red-700 text-red-300'
-                    : verdict === 'done'
-                      ? 'border-neutral-600 text-neutral-300'
-                      : 'border-neutral-800 text-neutral-600';
-            return (
-              <li
-                key={s.walker}
-                className={`rounded-lg border px-3 py-2 text-xs transition-colors ${tone} ${
-                  isActive ? 'ring-2 ring-green-500' : ''
-                }`}
-              >
-                <div className="font-semibold">{s.walker}</div>
-                <div className="text-neutral-500">
-                  {verdict ?? (isActive ? 'walking…' : 'queued')}
+        <div className="grid grid-cols-12 gap-6 items-start">
+          
+          {/* Left/Top: Command Bar */}
+          <div className="col-span-12 lg:col-span-3 space-y-6">
+            <section className="rounded-[12px] border border-cl-gray/10 bg-cl-surface1 p-5 shadow-sm">
+              <h2 className="mb-4 text-xs uppercase tracking-wider text-cl-muted font-semibold">
+                Demo Path
+              </h2>
+              <PathSelector onSelect={runPath} disabled={pending} />
+            </section>
+            
+            <section className="rounded-[12px] border border-cl-gray/10 bg-cl-surface1 p-5 shadow-sm">
+              <h2 className="mb-4 text-xs uppercase tracking-wider text-cl-muted font-semibold">
+                Action
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="requested-amount" className="block text-xs text-cl-muted mb-2 font-medium">
+                    Requested amount
+                  </label>
+                  <input
+                    id="requested-amount"
+                    type="number"
+                    value={requested}
+                    onChange={(e) => setRequested(Number(e.target.value))}
+                    className="w-full rounded-[8px] border border-cl-gray/20 bg-cl-surface2 px-3 py-2 text-sm text-white focus:outline-none focus:border-cl-blue focus:ring-1 focus:ring-cl-blue transition-colors"
+                  />
                 </div>
-              </li>
-            );
-          })}
-        </ol>
-      </section>
+                <MintButton
+                  enabled={allGreen}
+                  justified={justified}
+                  onMint={onMint}
+                  pending={pending}
+                />
+              </div>
+            </section>
 
-      {/* Policy Card */}
-      <PolicyCard />
+            {/* Walk Log (Compact) */}
+            <section className="rounded-[12px] border border-cl-gray/10 bg-cl-surface1 p-5 shadow-sm">
+              <div className="mb-3 flex items-baseline justify-between">
+                <h2 className="text-xs uppercase tracking-wider text-cl-muted font-semibold">Walk State</h2>
+                <span className="text-[10px] text-cl-muted">
+                  {activeStep ? activeStep.walker : walkLog.length > 0 ? 'Done' : 'Idle'}
+                </span>
+              </div>
+              <ol className="flex flex-col gap-2">
+                {WALK_STEPS.map((s) => {
+                  const entry = walkLog.find((l) => l.walker === s.walker);
+                  const isActive = activeStep?.walker === s.walker;
+                  const verdict = entry ? (entry.color ?? 'done') : null;
+                  const tone =
+                    verdict === 'green' ? 'border-cl-green text-cl-green' :
+                    verdict === 'yellow' ? 'border-cl-yellow text-cl-yellow' :
+                    verdict === 'red' ? 'border-cl-red text-cl-red' :
+                    verdict === 'done' ? 'border-cl-muted text-cl-primary' :
+                    'border-transparent text-cl-muted';
+                  return (
+                    <li key={s.walker} className={`flex items-center justify-between rounded px-2 py-1.5 text-xs transition-colors border-l-2 ${tone} ${isActive ? 'bg-cl-blue/10 border-l-cl-blue text-cl-blue' : ''} ${!entry && !isActive ? 'opacity-50' : ''}`}>
+                      <div className="font-medium">{s.walker}</div>
+                      <div className="text-[10px] uppercase opacity-80">
+                        {verdict ?? (isActive ? 'working' : 'wait')}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
 
-      {/* Graph View */}
-      <GraphView
-        nodes={nodes}
-        edges={edges}
-        traverses={activeStep?.traverses ?? []}
-        activeWalker={
-          activeStep && activeStep.walker !== 'Ingest' ? activeStep.walker : null
-        }
-      />
+            {/* Policy Card */}
+            <PolicyCard />
+          </div>
 
-      {/* Stamp Badges */}
-      <section className="flex gap-3 flex-wrap">
-        {WALKER_ORDER.map((w) => (
-          <StampBadge
-            key={w}
-            walker={w}
-            color={(stamps[w]?.color as 'green' | 'yellow' | 'red' | 'unknown') ?? null}
-          />
-        ))}
-      </section>
+          {/* Center: Graph Stage */}
+          <div className="col-span-12 lg:col-span-6 space-y-6">
+            <GraphView
+              nodes={nodes}
+              edges={edges}
+              traverses={activeStep?.traverses ?? []}
+              activeWalker={
+                activeStep && activeStep.walker !== 'Ingest' ? activeStep.walker : null
+              }
+            />
+            {error && (
+              <div className="rounded-[12px] border border-cl-red/50 bg-cl-red/10 px-4 py-3 text-sm text-cl-red">
+                {error}
+              </div>
+            )}
+          </div>
 
-      {/* Auditor Panel */}
-      <AuditorPanel reasons={auditorReasons} />
+          {/* Right: Stamp Column + Panels */}
+          <div className="col-span-12 lg:col-span-3 space-y-4">
+            <h2 className="text-xs uppercase tracking-wider text-cl-muted font-semibold mb-2 px-1">Verdicts</h2>
+            <div className="flex flex-col gap-3">
+              {WALKER_ORDER.map((w) => (
+                <StampBadge
+                  key={w}
+                  walker={w}
+                  color={(stamps[w]?.color as 'green' | 'yellow' | 'red' | 'unknown') ?? null}
+                />
+              ))}
+            </div>
 
-      {/* Counsel Panel */}
-      <CounselPanel narration={narration} enabled={stampsReady} />
+            <div className="mt-6">
+              <AuditorPanel reasons={auditorReasons} />
+            </div>
 
-      {/* Mint Row */}
-      <section className="flex items-center gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <label
-            htmlFor="requested-amount"
-            className="text-sm text-neutral-400"
-          >
-            Requested amount:
-          </label>
-          <input
-            id="requested-amount"
-            type="number"
-            value={requested}
-            onChange={(e) => setRequested(Number(e.target.value))}
-            className="w-36 rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-green-500"
-          />
+            <div className="mt-4">
+              <CounselPanel narration={narration} enabled={stampsReady} />
+            </div>
+          </div>
+
         </div>
-        <MintButton
-          enabled={allGreen}
-          justified={justified}
-          onMint={onMint}
-          pending={pending}
-        />
-        <ExplorerLink txHash={txHash} />
-      </section>
 
-      {/* Error */}
-      {error && (
-        <div className="rounded-lg border border-red-800 bg-red-950 px-4 py-3 text-sm text-red-300">
-          {error}
-        </div>
-      )}
+        {/* Footer: Etherscan Link */}
+        {txHash && (
+          <footer className="mt-8 border-t border-cl-gray/10 pt-6 flex justify-center">
+            <ExplorerLink txHash={txHash} />
+          </footer>
+        )}
+      </div>
     </main>
   );
 }

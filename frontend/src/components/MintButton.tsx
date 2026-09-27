@@ -16,7 +16,11 @@ export function MintButton({
       id="mint-button"
       onClick={onMint}
       disabled={!enabled || pending}
-      className="rounded-lg px-6 py-3 font-semibold text-sm transition-colors bg-green-700 hover:bg-green-600 text-white disabled:bg-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed"
+      className={`w-full rounded-[8px] px-6 py-3 font-semibold text-sm transition-all text-white flex justify-center items-center ${
+        enabled && !pending 
+          ? 'bg-cl-blue hover:brightness-110 shadow-lg shadow-cl-blue/20' 
+          : 'bg-cl-blue opacity-40 cursor-not-allowed'
+      }`}
     >
       {pending
         ? 'Minting...'
