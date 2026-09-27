@@ -127,18 +127,39 @@ const nodeTypes = {
       />
     );
   },
-  mintrecord: (props: NodeProps) => (
-    <NodeShell
-      {...props}
-      className="border-[1.5px]"
-      style={{ borderColor: props.data.customBorderColor || '#D4AF37' }}
-      data={{
-        ...props.data,
-        label: `Mint Authorization`,
-        detail: `Approved Mint: ${props.data.minted_amount ?? '?'} units`,
-      }}
-    />
-  ),
+  mintrecord: (props: NodeProps) => {
+    const isMinted = props.data.tx_hash != null || props.data.isMinted === true;
+    const isApproved = props.data.isApproved ?? false;
+    const rawAmount = props.data.minted_amount ?? props.data.amount ?? 250000;
+    const numericAmount = typeof rawAmount === 'number'
+      ? rawAmount
+      : (Number(String(rawAmount).replace(/,/g, '')) || 250000);
+    const formattedAmount = numericAmount.toLocaleString();
+
+    let detail = 'Council Gate: Awaiting Approval';
+    if (isMinted) {
+      detail = `Council Approved: ${formattedAmount} units`;
+    } else if (isApproved) {
+      detail = `Council: Ready to Mint (${formattedAmount} units)`;
+    }
+
+    const borderColor = isMinted || isApproved || props.data.customBorderColor
+      ? (props.data.customBorderColor || '#D4AF37')
+      : '#4B5563';
+
+    return (
+      <NodeShell
+        {...props}
+        className="border-[1.5px]"
+        style={{ borderColor }}
+        data={{
+          ...props.data,
+          label: 'Mint Authorization',
+          detail,
+        }}
+      />
+    );
+  },
   walkertoken: (props: NodeProps) => (
     <div 
       className="hex-cut flex items-center justify-center px-4 py-2 text-white font-bold text-[11px] uppercase tracking-wider shadow-lg whitespace-nowrap border border-white/20"
@@ -213,13 +234,21 @@ export function GraphView({
     const prevNode = nodes.find(n => getNodeKey(n) === queue[hopIndex - 1]);
     const currNode = nodes.find(n => getNodeKey(n) === queue[hopIndex]);
     if (prevNode && currNode) {
-      liveEdgeId = `e-${prevNode.id}-${currNode.id}`;
+      const match = edges.find(
+        e => (e.source === prevNode.id && e.target === currNode.id) ||
+             (e.source === currNode.id && e.target === prevNode.id)
+      );
+      liveEdgeId = match ? match.id : `e-${prevNode.id}-${currNode.id}`;
     }
     for (let i = 1; i < hopIndex; i++) {
       const pNode = nodes.find(n => getNodeKey(n) === queue[i - 1]);
       const cNode = nodes.find(n => getNodeKey(n) === queue[i]);
       if (pNode && cNode) {
-        completedEdgeIds.add(`e-${pNode.id}-${cNode.id}`);
+        const match = edges.find(
+          e => (e.source === pNode.id && e.target === cNode.id) ||
+               (e.source === cNode.id && e.target === pNode.id)
+        );
+        completedEdgeIds.add(match ? match.id : `e-${pNode.id}-${cNode.id}`);
       }
     }
   }
@@ -271,7 +300,7 @@ export function GraphView({
       if (n.type === 'stamp' && n.data?.color === 'green') {
         customBorderColor = showGold ? '#D4AF37' : (WALKER_BRAND_COLORS[n.data.walker_name] || '#10B981');
       } else if (n.type === 'mintrecord') {
-        customBorderColor = '#D4AF37';
+        customBorderColor = (n.data?.isApproved || n.data?.isMinted || showGold) ? '#D4AF37' : '#4B5563';
       }
 
       if (isAnimating && isCurrent) {

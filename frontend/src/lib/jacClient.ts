@@ -97,15 +97,15 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
 
   // Fixed layout coordinates
   const positions: Record<string, { x: number; y: number }> = {
-    Asset: { x: 400, y: 0 },
-    Liability: { x: 50, y: 150 },
-    PriceObservation: { x: 260, y: 150 },
-    ReserveAttestation: { x: 540, y: 150 },
-    ChildClaim: { x: 710, y: 225 },
-    FreshnessStamp: { x: 260, y: 320 },
-    CoverStamp: { x: 540, y: 320 },
-    AuditorStamp: { x: 400, y: 430 },
-    MintRecord: { x: 400, y: 540 },
+    Asset: { x: 425, y: 0 },
+    Liability: { x: 70, y: 110 },
+    PriceObservation: { x: 260, y: 110 },
+    ReserveAttestation: { x: 590, y: 110 },
+    ChildClaim: { x: 840, y: 175 },
+    FreshnessStamp: { x: 260, y: 245 },
+    CoverStamp: { x: 590, y: 245 },
+    AuditorStamp: { x: 425, y: 345 },
+    MintRecord: { x: 425, y: 440 },
   };
 
   nodes.push({
@@ -136,6 +136,16 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
     
     // The user prefers ChildClaim to visually bridge Reserve and Cover instead of Asset
     if (n.nodeType === 'ChildClaim') {
+      return;
+    }
+
+    // CoverStamp is reached via ReserveAttestation -> ChildClaim -> Cover to avoid crossing lines
+    if (n.nodeType === 'Stamp' && n.walker_name === 'Cover') {
+      return;
+    }
+
+    // MintRecord is authorized and reached from AuditorStamp
+    if (n.nodeType === 'MintRecord') {
       return;
     }
 
@@ -174,15 +184,15 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
     });
   }
 
-  // Inject dotted review edges for the Auditor
+  // Inject review edges flowing into Auditor Decision
   const freshnessNode = nodes.find(n => n.type === 'stamp' && n.data.walker_name === 'Freshness');
   const auditorNode = nodes.find(n => n.type === 'stamp' && n.data.walker_name === 'Auditor');
 
   if (auditorNode && freshnessNode) {
     edges.push({
-      id: `e-${auditorNode.id}-${freshnessNode.id}`,
-      source: auditorNode.id,
-      target: freshnessNode.id,
+      id: `e-${freshnessNode.id}-${auditorNode.id}`,
+      source: freshnessNode.id,
+      target: auditorNode.id,
       label: 'Reviews',
       type: 'smoothstep',
       style: { strokeDasharray: '5,5', stroke: '#94A3B8', strokeWidth: 1.5 },
@@ -191,12 +201,55 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
 
   if (auditorNode && coverNode) {
     edges.push({
-      id: `e-${auditorNode.id}-${coverNode.id}`,
-      source: auditorNode.id,
-      target: coverNode.id,
+      id: `e-${coverNode.id}-${auditorNode.id}`,
+      source: coverNode.id,
+      target: auditorNode.id,
       label: 'Reviews',
       type: 'smoothstep',
       style: { strokeDasharray: '5,5', stroke: '#94A3B8', strokeWidth: 1.5 },
+    });
+  }
+
+  // Always ensure the terminal Mint Authorization node is present
+  const isApproved = asset.edges.some((e: JacEdge) => {
+    const t = e.target as any;
+    return t.nodeType === 'Stamp' && t.walker_name === 'Auditor' && t.color === 'green';
+  });
+
+  let mintNode = nodes.find(n => n.type === 'mintrecord');
+  if (!mintNode) {
+    const coverStamp = asset.edges.find((e: JacEdge) => (e.target as any).nodeType === 'Stamp' && (e.target as any).walker_name === 'Cover');
+    const justified = (coverStamp?.target as any)?.payload?.justified_amount ?? 250000;
+
+    mintNode = {
+      id: 'node-mint-authorization',
+      type: 'mintrecord',
+      position: positions.MintRecord,
+      data: {
+        label: 'Mint Authorization',
+        nodeType: 'MintRecord',
+        minted_amount: isApproved ? Number(justified).toLocaleString() : undefined,
+        isApproved,
+        isMinted: false,
+      },
+    };
+    nodes.push(mintNode);
+  } else {
+    mintNode.data = {
+      ...mintNode.data,
+      isApproved,
+      isMinted: true,
+    };
+  }
+
+  if (auditorNode && mintNode) {
+    edges.push({
+      id: `e-${auditorNode.id}-${mintNode.id}`,
+      source: auditorNode.id,
+      target: mintNode.id,
+      label: 'Authorizes',
+      type: 'smoothstep',
+      style: { stroke: isApproved ? '#D4AF37' : '#4B5563', strokeWidth: 1.5 },
     });
   }
 
