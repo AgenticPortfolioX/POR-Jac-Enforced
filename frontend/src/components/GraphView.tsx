@@ -1,11 +1,12 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import ReactFlow, {
   Background,
   Controls,
   Handle,
   Position,
+  MarkerType,
   type Node,
   type Edge,
   type NodeProps,
@@ -13,9 +14,9 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { WALKER_BRAND_COLORS } from '@/lib/constants';
 
-function NodeShell({ data, className = '' }: NodeProps & { className?: string }) {
+function NodeShell({ data, className = '', style }: NodeProps & { className?: string; style?: React.CSSProperties }) {
   return (
-    <div className={`hex-cut p-4 text-xs text-cl-primary shadow-lg max-w-[200px] bg-cl-surface1 border border-cl-gray/10 ${className}`}>
+    <div style={style} className={`hex-cut p-4 text-xs text-cl-primary shadow-lg max-w-[200px] bg-cl-surface1 border border-cl-gray/10 ${className}`}>
       <Handle type="target" position={Position.Top} className="invisible" />
       <div className="font-semibold text-white tracking-tight truncate leading-snug">{data.label}</div>
       {data.source && (
@@ -118,56 +119,169 @@ const nodeTypes = {
       }}
     />
   ),
+  walkertoken: (props: NodeProps) => (
+    <div className="hex-cut flex items-center justify-center px-4 py-2 bg-[#0847F7] text-white font-bold text-[11px] uppercase tracking-wider shadow-lg whitespace-nowrap border border-white/20">
+      {props.data.label}
+    </div>
+  ),
 };
 
 interface GraphViewProps {
   nodes: Node[];
   edges: Edge[];
-  /** Edge types the walker currently on screen traverses. These animate. */
   traverses?: readonly string[];
-  /** Walker whose stamp node just landed - it gets a green ring. */
   activeWalker?: string | null;
+}
+
+const HOP_QUEUES: Record<string, string[]> = {
+  Freshness: ['asset', 'priceobservation', 'reserveattestation', 'FreshnessStamp'],
+  Cover: ['asset', 'reserveattestation', 'childclaim', 'liability', 'CoverStamp'],
+  Auditor: ['asset', 'reserveattestation', 'childclaim', 'FreshnessStamp', 'CoverStamp', 'AuditorStamp'],
+  Act: ['asset', 'FreshnessStamp', 'CoverStamp', 'AuditorStamp', 'mintrecord']
+};
+
+function getNodeKey(n: Node) {
+  if (n.type === 'stamp') return `${n.data.walker_name}Stamp`;
+  return n.type;
 }
 
 export function GraphView({
   nodes,
   edges,
-  traverses = [],
   activeWalker = null,
 }: GraphViewProps) {
   const activeColor = activeWalker ? (WALKER_BRAND_COLORS[activeWalker] || '#0847F7') : '#0847F7';
+  const [hopIndex, setHopIndex] = useState(-1);
 
-  const decoratedEdges = useMemo(
-    () =>
-      edges.map((e) => {
-        const hot = traverses.includes(String(e.label ?? ''));
-        const isVisiting = activeWalker != null && activeWalker !== 'Ingest';
-        if (!hot) return {
-          ...e,
-          style: { stroke: '#0847F7', strokeWidth: 1.5, opacity: 0.55 },
-          labelStyle: { fill: '#F5F7FA', fontWeight: 500, fontSize: 10 },
-          labelBgStyle: { fill: '#1A2030', fillOpacity: 0.8 },
-        };
-        return {
-          ...e,
-          animated: isVisiting,
-          style: { stroke: activeColor, strokeWidth: 2.5, opacity: 1 },
-          labelStyle: { fill: '#141824', fontWeight: 600, fontSize: 11 },
-          labelBgStyle: { fill: activeColor, fillOpacity: 0.9, rx: 4, ry: 4 },
-        };
-      }),
-    [edges, traverses, activeWalker, activeColor]
-  );
+  useEffect(() => {
+    if (!activeWalker || activeWalker === 'Ingest' || activeWalker === 'Counsel') {
+      setHopIndex(-1);
+      return;
+    }
+    const queue = HOP_QUEUES[activeWalker] || [];
+    if (queue.length === 0) {
+      setHopIndex(-1);
+      return;
+    }
+    setHopIndex(0);
+    
+    let currentHop = 0;
+    const interval = setInterval(() => {
+      currentHop++;
+      if (currentHop >= queue.length) {
+        clearInterval(interval);
+      } else {
+        setHopIndex(currentHop);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [activeWalker]);
+
+  const isAnimating = activeWalker && activeWalker !== 'Ingest' && activeWalker !== 'Counsel' && hopIndex >= 0;
+  const queue = isAnimating ? (HOP_QUEUES[activeWalker!] || []) : [];
+  const currentKey = isAnimating ? queue[hopIndex] : null;
+
+  let liveEdgeId: string | null = null;
+  const completedEdgeIds = new Set<string>();
+
+  if (isAnimating && hopIndex > 0) {
+    const prevNode = nodes.find(n => getNodeKey(n) === queue[hopIndex - 1]);
+    const currNode = nodes.find(n => getNodeKey(n) === queue[hopIndex]);
+    if (prevNode && currNode) {
+      liveEdgeId = `e-${prevNode.id}-${currNode.id}`;
+    }
+    for (let i = 1; i < hopIndex; i++) {
+      const pNode = nodes.find(n => getNodeKey(n) === queue[i - 1]);
+      const cNode = nodes.find(n => getNodeKey(n) === queue[i]);
+      if (pNode && cNode) {
+        completedEdgeIds.add(`e-${pNode.id}-${cNode.id}`);
+      }
+    }
+  }
+
+  const decoratedEdges = useMemo(() => edges.map(e => {
+    const isLive = e.id === liveEdgeId;
+    const isCompleted = completedEdgeIds.has(e.id);
+    
+    if (isLive) {
+      return {
+        ...e,
+        animated: false,
+        style: { stroke: '#0847F7', strokeWidth: 2.5, opacity: 1 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: '#DCEBFF' },
+      };
+    } else if (isCompleted) {
+      return {
+        ...e,
+        animated: false,
+        style: { stroke: '#0847F7', strokeWidth: 1.5, opacity: 0.7 }
+      };
+    } else {
+      return {
+        ...e,
+        animated: false,
+        style: { stroke: '#0847F7', strokeWidth: 1.5, opacity: 0.4 }
+      };
+    }
+  }), [edges, liveEdgeId, completedEdgeIds]);
 
   const decoratedNodes = useMemo(() => {
-    if (!activeWalker) return nodes;
-    return nodes.map((n) => {
-      const isActiveStamp =
-        n.type === 'stamp' && n.data?.walker_name === activeWalker;
-      if (!isActiveStamp) return n;
-      return { ...n, className: 'animate-pulse-ring', style: { ...n.style, boxShadow: `0 0 0 2px ${activeColor}` } };
+    const renderNodes = nodes.map(n => {
+      const key = getNodeKey(n);
+      const isCurrent = key === currentKey;
+      const isFinalHop = isAnimating && hopIndex === queue.length - 1;
+      
+      let opacity = 1;
+      if (isAnimating) {
+        opacity = isCurrent ? 1 : 0.2;
+      }
+
+      let shadow = undefined;
+      let extraClass = '';
+
+      if (isAnimating && isCurrent) {
+        if (isFinalHop && n.type === 'stamp') {
+          extraClass = 'animate-pulse-ring';
+        } else {
+          shadow = `0 0 0 2px ${activeColor}`;
+        }
+      }
+
+      return {
+        ...n,
+        style: {
+          ...n.style,
+          opacity,
+          boxShadow: shadow,
+          transition: 'opacity 0.3s ease-in-out, box-shadow 0.2s',
+        },
+        className: `${n.className || ''} ${extraClass}`
+      };
     });
-  }, [nodes, activeWalker, activeColor]);
+
+    if (isAnimating && currentKey) {
+      const targetNode = renderNodes.find(n => getNodeKey(n) === currentKey);
+      if (targetNode) {
+        renderNodes.push({
+          id: 'walker-token',
+          type: 'walkertoken',
+          position: {
+            x: targetNode.position.x + 40,
+            y: targetNode.position.y - 20
+          },
+          data: { label: `${activeWalker} Walker` },
+          style: {
+            zIndex: 1000,
+            transition: 'transform 450ms cubic-bezier(0.4, 0, 0.2, 1)',
+            pointerEvents: 'none'
+          }
+        });
+      }
+    }
+
+    return renderNodes;
+  }, [nodes, isAnimating, currentKey, hopIndex, queue.length, activeColor, activeWalker]);
 
   return (
     <div className="h-[520px] rounded-[12px] border border-cl-gray/10 bg-cl-bg overflow-hidden relative">
@@ -181,20 +295,7 @@ export function GraphView({
         <Background color="rgba(245,247,250,0.04)" gap={24} size={1.5} />
         <Controls className="[&>button]:bg-cl-surface2 [&>button]:border-cl-gray/10 [&>button]:text-cl-primary" />
       </ReactFlow>
-
-      {/* Walker Scanning Animation */}
-      {activeWalker && (
-        <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[12px]">
-          <div
-            className="h-[2px] w-full animate-[scan_2.5s_ease-in-out_infinite]"
-            style={{
-              backgroundColor: activeColor,
-              boxShadow: `0 0 15px ${activeColor}`,
-              opacity: 0.8,
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 }
+

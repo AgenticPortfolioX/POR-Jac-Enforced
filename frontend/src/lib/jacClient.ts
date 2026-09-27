@@ -95,82 +95,49 @@ export function toReactFlowGraph(asset: JacAsset): ReactFlowGraph {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
-  // Asset node at (0,0)
+  // Fixed layout coordinates
+  const positions: Record<string, { x: number; y: number }> = {
+    Asset: { x: 400, y: 0 },
+    PriceObservation: { x: 200, y: 150 },
+    ReserveAttestation: { x: 600, y: 150 },
+    ChildClaim: { x: 600, y: 300 },
+    Liability: { x: 200, y: 300 },
+    FreshnessStamp: { x: 200, y: 450 },
+    CoverStamp: { x: 400, y: 450 },
+    AuditorStamp: { x: 600, y: 450 },
+    MintRecord: { x: 400, y: 600 },
+  };
+
   nodes.push({
     id: asset.id,
     type: 'asset',
-    position: { x: 0, y: 0 },
+    position: positions.Asset,
     data: { label: `${asset.symbol} (${asset.chain})`, ...asset },
   });
 
-  const nonStampEdges = asset.edges.filter((e) => e.type !== 'StampedBy');
-  const stampEdges = asset.edges.filter((e) => e.type === 'StampedBy');
-
-  // Non-stamp nodes at y=200
-  let reserveNodeId: string | null = null;
-  nonStampEdges.forEach((e: JacEdge, i: number) => {
-    const n = e.target as JacNodeData & { id: string };
-    const x = (i - (nonStampEdges.length - 1) / 2) * 220;
-    const nodeId = n.id ?? `${e.type}-${i}`;
-    nodes.push({
-      id: nodeId,
-      type: n.nodeType.toLowerCase(),
-      position: { x, y: 200 },
-      data: { label: n.nodeType, ...n },
-    });
-    edges.push({
-      id: `e-${asset.id}-${nodeId}`,
-      source: asset.id,
-      target: nodeId,
-      label: e.type,
-      type: 'smoothstep',
-    });
-    if (e.type === 'HasReserve') {
-      reserveNodeId = nodeId;
+  asset.edges.forEach((e: JacEdge, i: number) => {
+    const n = e.target as any;
+    let posKey = n.nodeType;
+    if (n.nodeType === 'Stamp') {
+      posKey = `${n.walker_name}Stamp`;
     }
-  });
+    
+    const pos = positions[posKey] || { x: 400, y: 800 + i * 100 };
+    const nodeId = n.id ?? `${e.type}-${i}`;
 
-  // DependsOn child claims at y=320
-  const childEdges = asset.edges.filter((e) => e.type === 'DependsOn');
-  childEdges.forEach((e: JacEdge, i: number) => {
-    const n = e.target as JacNodeData & { id: string };
-    const x = (i - (childEdges.length - 1) / 2) * 220;
-    const nodeId = n.id ?? `child-${i}`;
-    const parentId = e.source ?? reserveNodeId ?? asset.id;
     nodes.push({
       id: nodeId,
       type: n.nodeType.toLowerCase(),
-      position: { x, y: 320 },
+      position: pos,
       data: { label: n.nodeType, ...n },
     });
+
+    const parentId = e.source ?? asset.id;
     edges.push({
       id: `e-${parentId}-${nodeId}`,
       source: parentId,
       target: nodeId,
-      label: 'DependsOn',
-      type: 'smoothstep',
-    });
-  });
-
-  // Stamp nodes at y=420
-  stampEdges.forEach((e: JacEdge, i: number) => {
-    const n = e.target as Stamp & { id: string };
-    const x = (i - (stampEdges.length - 1) / 2) * 220;
-    const nodeId = n.id ?? `stamp-${i}`;
-    nodes.push({
-      id: nodeId,
-      type: 'stamp',
-      position: { x, y: 420 },
-      data: {
-        label: `${n.walker_name}: ${n.color}`,
-        ...n,
-      },
-    });
-    edges.push({
-      id: `e-${asset.id}-${nodeId}`,
-      source: asset.id,
-      target: nodeId,
-      label: 'StampedBy',
+      label: e.type,
       type: 'smoothstep',
     });
   });
