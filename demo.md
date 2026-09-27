@@ -1,28 +1,187 @@
-# Demo — Proof of Reserve, Jac Enforced
+# PoRJE Demo, Full Package
 
-> Proof of Reserve attests that backing was reported. Proof of Reserve, Jac Enforced puts that attestation on a graph, requires three green stamps from walkers that are allowed to attack the claim, and only then mints — only as much as current coverage justifies — so "backed" is a permit with a quantity, not a text output you can quote.
+---
 
-Audience: Jack Hacks judges. Length: 4 minutes live + 1 minute Q&A. Surface: Next.js frontend at http://localhost:3000 + Etherscan tabs pre-opened.
+## Part 1: Pre-Demo Prompt for Your Coding Agent
 
-## Pre-demo checklist (run 10 minutes before)
-1. `jac run main.jac --no-client` is running and `/healthz` returns 200 (Jac 0.37 serves with `jac run`, not `jac start`; `/health` is 404 and `/docs` is the API page, not a readiness probe). 2. cd frontend && npm run dev is running. 3. .env has POR_TOKEN_ADDRESS, POR_ATTESTATION_ADDRESS, PRICE_FEED_ADDRESS, RESERVE_FEED_ADDRESS, SEPOLIA_RPC_URL — each exactly once, since python-dotenv lets a later blank duplicate win. 4. Two browser tabs pre-opened: demo UI and https://sepolia.etherscan.io/address/$POR_TOKEN_ADDRESS. 5. A wallet with Sepolia ETH unlocked for the deployer. 6. No fixture has label != "fixture".
+Copy this to your agent before you present.
 
-> Three steps in this script have been updated since the initial audit; see **Known gaps** in `docs/demo-runbook.md` before presenting. The UI has no per-walker buttons — clicking a path button (Happy, Yellow, Unknown) drives the three walkers in sequence: Ingest, Freshness, Cover, Auditor. The same sequence can be triggered from the CLI via DemoControl for scripted or fallback demos. The Mint button in the UI initiates a real on-chain mint to the configured demo recipient (0x748ABdeF0775132E8F941e1513152D5eb02D3a4B). It succeeds only when all three stamps are green and the requested amount is within the justified amount computed by Cover.
+```
+TASK: Prepare the PoRJE demo environment. Do not change any code. Only run
+cleanup, verification, and warm-up steps. Report pass or fail for each step
+with the exact command and its output.
 
-## The screen
-In order: Header (asset symbol, chain, token address truncated); PolicyCard (active POLICY values); GraphView (nodes and edges of the claim graph; price and reserve labeled live or fixture); StampBadge row (Freshness, Cover, Auditor); AuditorPanel (verbatim finding lines); CounselPanel (narration, disabled until three stamps exist); PathSelector (Happy, Yellow, Unknown); MintButton (disabled unless three greens; shows justified_amount); ExplorerLink (after successful mint).
+STEP 1. Kill any stale runtime processes.
+  pkill -f "jac run"
+  pkill -f "next dev"
+  sleep 3
+  Confirm no process is listening on ports 8000 or 3000.
 
-## Path 1 — Happy (all green)
-1. Click Happy. DemoControl seeds live-shaped fixtures. 2. Click Freshness. Badge green. Reasons appear. 3. Click Cover. Badge green. "coverage ratio 1.25 ≥ 1.0", "justified amount: 250,000 pUSD". 4. Click Auditor. Badge green. All four checklist lines appear even on pass. 5. Enter requested_amount = 1000000. Click Act. 6. UI shows minted: 250,000 pUSD. Not 1,000,000. 7. Click Counsel. Narrates. 8. Open Etherscan tx.
+STEP 2. Confirm the Jac binary and version.
+  jac --version
+  Expect 0.37.23. If not, stop and report.
 
-## Path 2 — Yellow (stale or stuck reserve)
-1. Click Yellow. DemoControl seeds a flat reserve. 2. Run Freshness → Cover → Auditor. 3. Cover yellow: "flat reserve while price moved (punctual but no pulse)". 4. Click Act. Refuses. 5. Click Counsel. Speaks.
+STEP 3. Confirm the Python environment.
+  cd ~/proof-of-reserve-jac
+  source .venv/bin/activate
+  python --version
+  pip show web3 eth-account python-dotenv requests | head -40
+  Confirm web3 >= 6.0.0 is installed.
 
-## Path 3 — Unknown / red (missing PoR or missing child)
-1. Click Unknown. DemoControl drops the child attestation. 2. Run Freshness → Cover → Auditor. 3. Freshness unknown. Cover red. Auditor red. 4. Click Act. Refuses. 5. Click Counsel. Names the hole.
+STEP 4. Confirm .env is complete.
+  Read .env and confirm every key below is present and non-empty. Print only
+  the key names, not the values.
+  SEPOLIA_RPC_URL
+  DEPLOYER_PRIVATE_KEY
+  POR_TOKEN_ADDRESS
+  POR_ATTESTATION_ADDRESS
+  PRICE_FEED_ADDRESS
+  RESERVE_FEED_ADDRESS
+  JAC_CLOUD_URL
+  CHAIN_ID
+  NEXT_PUBLIC_JAC_URL
+  NEXT_PUBLIC_POR_TOKEN_ADDRESS
+  NEXT_PUBLIC_POR_ATTESTATION_ADDRESS
 
-## Why this is an impressive use of Jac's capabilities
-"In Jac, data and compute are the same graph. Here, the claims are nodes, the walkers are the compute, the stamps are the verdicts, and the mint is a walker that reads the verdicts. We did not build a dashboard that queries a database. We built a graph that carries its own policy, its own auditors, and its own printer." Concretely: (1) Graph-native policy — approvals are Stamp nodes on the Asset. (2) Walker-scoped authority — Act is the only walker imported into the EVM bridge. (3) Blind explainer — Counsel refuses to speak until three stamps exist. (4) Adversarial visibility — Auditor writes findings even on green. (5) Sized printing — mint = min(requested, justified_by_coverage). (6) Durable on-chain record — PoRAttestation stores stamps, times, coverage.
+STEP 5. Confirm fixtures are labeled correctly.
+  For each file in fixtures/*.json, confirm "label": "fixture" is present.
+  Report any file that fails.
 
-## Post-demo pointer
-Open docs/architecture.md and docs/policy.md. Both fit on one screen.
+STEP 6. Confirm contracts are deployed.
+  Using web3.py and SEPOLIA_RPC_URL, call the following reads and print the
+  results:
+    PoRToken at POR_TOKEN_ADDRESS: name(), symbol(), actWalker()
+    PoRAttestation at POR_ATTESTATION_ADDRESS: name(), symbol()
+  Confirm actWalker() equals the deployer address.
+
+STEP 7. Confirm Postgres is accepting connections.
+  pg_isready -h localhost
+  Report the exact output. Do not proceed if it is not "accepting connections".
+
+STEP 8. Reset the runtime store so the demo starts empty.
+  Kill jac run if it is running.
+  Drop the Postgres database named jac_por_jac_enforced_a3a8aeca.
+  Do not touch .jac/data/jwt_secret. Do not rm -rf .jac/data.
+
+STEP 9. Confirm the frontend builds.
+  cd frontend
+  npm install
+  npm run build
+  Report the exit code.
+
+STEP 10. Warm start and shut down once to preload Postgres and the JIT.
+  jac run jac/main.jac --no-client &
+  sleep 12
+  curl -s http://localhost:8000/healthz
+  Confirm a 200 response.
+  pkill -f "jac run"
+  sleep 2
+
+STEP 11. Print a final one-line status report:
+  "PRE-DEMO READY: jac=<version> node=<version> pg=<ok|fail> frontend=<ok|fail>
+   contracts=<ok|fail> env=<ok|fail> fixtures=<ok|fail>"
+
+Do not modify any file in jac/, contracts/, frontend/src/, scripts/, docs/,
+README.md, or demo.md. If any step fails, stop and report the exact failure
+and the raw output. Do not attempt fixes.
+```
+
+---
+
+## Part 2: Terminal Setup Before You Present
+
+Two terminals. Leave them open side by side. Backend on the left, frontend on the right.
+
+**Terminal 1 (backend and graph, this is where the Jac Walkers print)**
+```
+cd ~/proof-of-reserve-jac
+source .venv/bin/activate
+export PORJE_TRACE=1
+```
+
+**Terminal 2 (frontend, this is the demo screen)**
+```
+cd ~/proof-of-reserve-jac/frontend
+```
+
+Nothing runs yet. You start the two servers as Command 1 and Command 2 once you begin.
+
+Browser: open `http://localhost:3000` in one tab and `https://sepolia.etherscan.io/address/YOUR_POR_TOKEN_ADDRESS` in a second tab. Keep them side by side.
+
+---
+
+## Part 3: Intro to Say Before You Touch a Keyboard
+
+Welcome Everyone. Proof of Reserve, Jack Enforced. is a Jac protocol that turns a Chainlink reserve attestation into a permit, so a mint can only happen after the attestation survives a walk. Chainlink Proof of Reserve is the attestation itself: at a stated time, a stated amount of backing was reported for a stated asset, and that report is what makes on-chain reserves usable as evidence instead of a screenshot. The problem is that almost every application treats that report as a badge. A number is displayed, but nothing has to happen because of it. The report is a fact about the past, not authorization to move value. A price can be fresh while the reserve is old. A reserve timestamp can update while the amount never moves. A parent asset can look backed while the claim it depends on is missing. And missing Proof of Reserve is usually an empty field, not a hard stop. Proof of Reserve today is a strong sensor and a weak primitive. It tells you something was reported. It does not decide whether that report is still usable, and it does not decide how much new supply that report can support.
+
+Our project closes that gap. We take the Chainlink attestation and place those cryptographically attested Proof of Reserve amounts and times on a Jac graph as nodes and edges, so the Freshness Walker, the Cover Walker, and the Auditor Walker can move across the claim. Each one writes a colored stamp. The mint stays locked until all three are green, and when it runs it issues exactly what the current reserve covers, sized by the graph itself. This turns Proof of Reserve from something you can quote into something you have to pass through.
+
+Issuers, vaults, lenders, bridges, and treasury tokens all mint or accept size against a reserve, often on a static number or a yes-or-no read. We gate new supply, refuse thin or stale collateral, and size a mint to live coverage. When a dashboard still looks fine and the backing underneath is already broken, the mint refuses in public, with a readable record of why.
+
+Terminal 1 is the backend. It runs the Jac runtime, holds the graph, and prints every node the Jac Walkers visit. Terminal 2 is the frontend. It renders the graph and gives you the three buttons that trigger each demo path. Both are open the whole time.
+
+---
+
+## Command 1
+
+**Terminal 1**
+
+```
+jac run jac/main.jac
+```
+
+Command 1 boots the backend. Starts the graph, loads every Jac Walker, and turns each one into a callable endpoint.
+
+---
+
+## Command 2
+
+**Terminal 2**
+
+```
+npm run dev
+```
+
+Command 2 boots the frontend on port 3000. It reads the graph, it does not compute anything. Every verdict it shows comes from Terminal 1.
+
+---
+
+## Command 3
+
+**Terminal 1**
+
+```
+python scripts/seed_graph.py
+```
+
+Command 3 creates the root asset node. Everything the Jac Walkers do from here happens on top of this node.
+
+---
+
+## Command 4 - Browser (click Happy in the UI)
+
+Command 4 fills the graph: a price, a proven reserve attestation, and a child claim. The Freshness Walker, the Cover Walker, and the Auditor Walker run in sequence. In Terminal 1, watch each Jac Walker visit nodes and cross edges. Three green stamps land. The Auditor Walker still prints four findings. That is the system trying to fail and finding no reason.
+
+---
+
+## Command 5 - Browser (enter 1000000 in the requested amount, then click Mint)
+
+Command 5 is the mint. The Cover Walker already set how much the reserve justifies. The Act Walker reads the three stamps and mints the smaller of the amount you asked for and the amount that is justified. The transaction lands on Ethereum Sepolia, a public test network, so anyone can inspect it. Open Etherscan for the transaction and the NFT: minted amount, coverage used, price time stamp, reserve time stamp, and the three stamp colors. Anyone can open that record later and see why the mint was allowed.
+
+---
+
+## Command 6 - Browser (click Yellow, then click Unknown)
+
+Command 6 is the refuse. Same asset, same button. Yellow is a flat reserve: the time stamp moved, the amount did not, while price did. Unknown is a missing child: the parent looks attested, the claim under it is gone. The mint sends nothing. The Counsel Walker, silent until the stamps existed, names what broke.
+
+---
+
+## Click Happy again and end on green
+
+---
+
+## Closing, Tie It Together
+
+This project is best in class because it does something no Proof of Reserve dashboard does. It refuses. Jac Walkers carry attested reserve figures across the graph. The Freshness Walker, the Cover Walker, and the Auditor Walker write a time stamp, coverage, and an audit. The Act Walker cannot mint until those three stamps are green. A refusal is the product, not a crash.
+
+Jac fits because the graph is the data and the computation at once: claims as nodes, Jac Walkers as approvals, stamps as verdicts, and the Act Walker as the Jac Walker that reads them. There is no separate database, policy engine, or glue code. Issuers, lenders, bridges, and treasury tokens that mint against a reserve that can look healthy while it is not get a mandatory walk and an on-chain refusal anyone can audit.
